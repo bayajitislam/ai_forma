@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:ai_forma/core/icons/app_icons.dart';
+import 'package:ai_forma/core/constants/app_images.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
 import 'package:ai_forma/core/theme/app_text_styles.dart';
-import 'package:ai_forma/core/widgets/app_icon.dart';
 import 'package:ai_forma/features/dashboard/constants/dashboard_strings.dart';
 
 class LatestCheckInCard extends StatelessWidget {
   const LatestCheckInCard({super.key});
+
+  static const List<String> _analysisImages = [
+    AppImages.frontView,
+    AppImages.sideView,
+    AppImages.backView,
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -38,31 +43,41 @@ class LatestCheckInCard extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Row(
-            children: List.generate(3, (index) {
+            children: List.generate(_analysisImages.length, (index) {
               return Expanded(
                 child: Padding(
                   padding: EdgeInsets.only(
-                    right: index < 2 ? 10 : 0,
+                    right: index < _analysisImages.length - 1 ? 10 : 0,
                   ),
-                  child: Container(
-                    height: 120,
-                    decoration: BoxDecoration(
-                      color: AppColors.progressInactive,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: const Center(
-                      child: AppIcon(
-                        icon: AppIcons.bodyScan,
-                        size: 36,
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                  ),
+                  child: _AnalysisImage(imagePath: _analysisImages[index]),
                 ),
               );
             }),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _AnalysisImage extends StatelessWidget {
+  const _AnalysisImage({required this.imagePath});
+
+  final String imagePath;
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(10),
+      child: Container(
+        height: 152,
+        color: AppColors.progressInactive,
+        child: Image.asset(
+          imagePath,
+          height: 152,
+          width: double.infinity,
+          fit: BoxFit.cover,
+        ),
       ),
     );
   }
