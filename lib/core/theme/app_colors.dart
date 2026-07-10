@@ -25,6 +25,7 @@ abstract final class AppColors {
   static const Color darkCard = Color(0xFF1E1E1E);
   static const Color darkCardText = Color(0xFFB0B0B0);
   static const Color navInactive = Color(0xFF9E9E9E);
+  static const Color cameraBackground = Color(0xFF000000);
 
   static const Color splashBackground = Color(0xFFFFFFFF);
 

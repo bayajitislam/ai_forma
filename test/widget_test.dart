@@ -6,6 +6,8 @@ import 'package:ai_forma/features/assessment/view/pages/age_view.dart';
 import 'package:ai_forma/features/assessment/view/pages/height_view.dart';
 import 'package:ai_forma/features/assessment/view/pages/objective_view.dart';
 import 'package:ai_forma/features/assessment/view/pages/supplements_view.dart';
+import 'package:ai_forma/features/check_in/constants/check_in_strings.dart';
+import 'package:ai_forma/features/check_in/view/pages/check_in_home_view.dart';
 import 'package:ai_forma/features/dashboard/constants/dashboard_strings.dart';
 import 'package:ai_forma/features/shell/constants/shell_strings.dart';
 import 'package:ai_forma/features/shell/view/pages/app_shell_view.dart';
@@ -174,5 +176,16 @@ void main() {
     expect(find.text(ShellStrings.navCheckIn), findsOneWidget);
     expect(find.text(ShellStrings.navAnalysis), findsOneWidget);
     expect(find.text(ShellStrings.navProfile), findsOneWidget);
+  });
+
+  testWidgets('Check-in home shows streak and begin scan button',
+      (WidgetTester tester) async {
+    await tester.pumpWidget(
+      const MaterialApp(home: CheckInHomeView()),
+    );
+
+    expect(find.text(CheckInStrings.beginNewScan), findsOneWidget);
+    expect(find.text(CheckInStrings.latestScan), findsOneWidget);
+    expect(find.text(CheckInStrings.statTotal), findsOneWidget);
   });
 }

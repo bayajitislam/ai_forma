@@ -30,4 +30,10 @@ abstract final class AppIcons {
   static const IconData calendar = Remix.calendar_line;
   static const IconData arrowDown = Remix.arrow_down_line;
   static const IconData arrowRight = Remix.arrow_right_s_line;
+  static const IconData fire = Remix.fire_line;
+  static const IconData star = Remix.star_line;
+  static const IconData info = Remix.information_line;
+  static const IconData refresh = Remix.refresh_line;
+  static const IconData time = Remix.time_line;
+  static const IconData arrowUpDown = Remix.arrow_up_down_line;
 }

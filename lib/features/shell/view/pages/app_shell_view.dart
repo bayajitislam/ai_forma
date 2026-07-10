@@ -3,6 +3,7 @@ import 'package:ai_forma/core/theme/app_colors.dart';
 import 'package:ai_forma/core/widgets/app_navbar.dart';
 import 'package:ai_forma/features/dashboard/view/pages/dashboard_view.dart';
 import 'package:ai_forma/features/shell/constants/shell_strings.dart';
+import 'package:ai_forma/features/check_in/view/pages/check_in_home_view.dart';
 import 'package:ai_forma/features/shell/view/widgets/app_shell_header.dart';
 import 'package:ai_forma/features/shell/view/pages/placeholder_tab_view.dart';
 
@@ -34,7 +35,7 @@ class _AppShellViewState extends State<AppShellView> {
                 index: _selectedItem.index,
                 children: const [
                   DashboardView(),
-                  PlaceholderTabView(title: ShellStrings.navCheckIn),
+                  CheckInHomeView(),
                   PlaceholderTabView(title: ShellStrings.navAnalysis),
                   PlaceholderTabView(title: ShellStrings.navTimeline),
                   PlaceholderTabView(title: ShellStrings.navProfile),
