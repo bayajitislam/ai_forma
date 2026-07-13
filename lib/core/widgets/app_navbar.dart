@@ -27,7 +27,7 @@ class AppNavbar extends StatelessWidget {
     (
       item: AppNavItem.insights,
       icon: AppIcons.barChart,
-      label: ShellStrings.navAnalysis,
+      label: ShellStrings.navInsights,
     ),
     (
       item: AppNavItem.timeline,

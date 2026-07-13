@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:ai_forma/core/icons/app_icons.dart';
+import 'package:ai_forma/core/constants/app_images.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
 import 'package:ai_forma/core/theme/app_fonts.dart';
 import 'package:ai_forma/core/theme/app_text_styles.dart';
-import 'package:ai_forma/core/widgets/app_icon.dart';
 import 'package:ai_forma/core/widgets/primary_button.dart';
 import 'package:ai_forma/features/check_in/constants/check_in_strings.dart';
 import 'package:ai_forma/features/check_in/view/widgets/check_in_header.dart';
@@ -21,52 +20,93 @@ class AnalysisCompleteView extends StatelessWidget {
           child: Column(
             children: [
               const CheckInHeader(),
-              const Spacer(),
-              Container(
-                width: 88,
-                height: 88,
-                decoration: BoxDecoration(
-                  color: AppColors.brandTeal.withValues(alpha: 0.15),
-                  shape: BoxShape.circle,
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 12),
+                      Container(
+                        width: double.infinity,
+                        height: 280,
+                        decoration: BoxDecoration(
+                          color: AppColors.insightChartBackground,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: AppColors.cardBorder),
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(20),
+                          child: Image.asset(
+                            AppImages.frontView,
+                            fit: BoxFit.contain,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 28),
+                      Text(
+                        CheckInStrings.completeTitle,
+                        style: AppTextStyles.authSectionTitle.copyWith(
+                          fontSize: 26,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      const Text(
+                        CheckInStrings.completeSubtitle,
+                        textAlign: TextAlign.center,
+                        style: AppTextStyles.authBody,
+                      ),
+                      const SizedBox(height: 36),
+                      Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          Container(
+                            width: 220,
+                            height: 220,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              gradient: RadialGradient(
+                                colors: [
+                                  AppColors.brandTealLight.withValues(
+                                    alpha: 0.18,
+                                  ),
+                                  AppColors.brandTealLight.withValues(
+                                    alpha: 0.0,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          const Row(
+                            children: [
+                              Expanded(
+                                child: _StatColumn(
+                                  label: CheckInStrings.checkInLabel,
+                                  value: CheckInStrings.checkInNumber,
+                                ),
+                              ),
+                              Expanded(
+                                child: _StatColumn(
+                                  label: CheckInStrings.currentStreakLabel,
+                                  value: CheckInStrings.streakNumber,
+                                  suffix: CheckInStrings.streakUnit,
+                                ),
+                              ),
+                              Expanded(
+                                child: _StatColumn(
+                                  label: CheckInStrings.momentumLabel,
+                                  value: CheckInStrings.momentumValue,
+                                  suffix: CheckInStrings.momentumSuffix,
+                                  highlight: true,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 40),
+                    ],
+                  ),
                 ),
-                child: const AppIcon(
-                  icon: AppIcons.star,
-                  size: 40,
-                  color: AppColors.brandTeal,
-                ),
               ),
-              const SizedBox(height: 24),
-              const Text(
-                CheckInStrings.completeTitle,
-                style: AppTextStyles.authSectionTitle,
-              ),
-              const SizedBox(height: 12),
-              const Text(
-                CheckInStrings.completeSubtitle,
-                textAlign: TextAlign.center,
-                style: AppTextStyles.authBody,
-              ),
-              const SizedBox(height: 32),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _StatColumn(
-                    label: CheckInStrings.checkInLabel,
-                    value: CheckInStrings.checkInNumber,
-                  ),
-                  _StatColumn(
-                    label: CheckInStrings.currentStreakLabel,
-                    value: CheckInStrings.streakValue,
-                  ),
-                  _StatColumn(
-                    label: CheckInStrings.momentumLabel,
-                    value: CheckInStrings.momentumValue,
-                    suffix: '/100',
-                    highlight: true,
-                  ),
-                ],
-              ),
-              const Spacer(),
               PrimaryButton(
                 onPressed: () {
                   Navigator.of(context).popUntil((route) => route.isFirst);
@@ -99,9 +139,14 @@ class _StatColumn extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Text(label, style: AppTextStyles.dashboardMetricLabel),
-        const SizedBox(height: 4),
+        Text(
+          label,
+          textAlign: TextAlign.center,
+          style: AppTextStyles.dashboardMetricLabel,
+        ),
+        const SizedBox(height: 6),
         Row(
+          mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.baseline,
           textBaseline: TextBaseline.alphabetic,
@@ -110,7 +155,7 @@ class _StatColumn extends StatelessWidget {
               value,
               style: TextStyle(
                 fontFamily: AppFonts.family,
-                fontSize: 20,
+                fontSize: 22,
                 fontWeight: FontWeight.w700,
                 color: highlight ? AppColors.brandTeal : AppColors.textPrimary,
               ),
@@ -118,11 +163,13 @@ class _StatColumn extends StatelessWidget {
             if (suffix != null)
               Text(
                 suffix!,
-                style: const TextStyle(
+                style: TextStyle(
                   fontFamily: AppFonts.family,
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
-                  color: AppColors.textSecondary,
+                  color: highlight
+                      ? AppColors.textSecondary
+                      : AppColors.textPrimary,
                 ),
               ),
           ],

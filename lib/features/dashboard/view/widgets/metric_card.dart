@@ -11,6 +11,7 @@ class MetricCard extends StatelessWidget {
     this.trendText,
     this.caption,
     this.child,
+    this.height = 144,
   });
 
   final String label;
@@ -18,11 +19,13 @@ class MetricCard extends StatelessWidget {
   final String? trendText;
   final String? caption;
   final Widget? child;
+  final double height;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(16),
+      height: height,
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(14),
@@ -54,6 +57,9 @@ class MetricCard extends StatelessWidget {
               ),
             ),
           ],
+
+          if (child != null) ...[const SizedBox(height: 12), child!],
+
           if (caption != null) ...[
             const SizedBox(height: 4),
             Text(
@@ -65,10 +71,6 @@ class MetricCard extends StatelessWidget {
                 color: AppColors.textSecondary,
               ),
             ),
-          ],
-          if (child != null) ...[
-            const SizedBox(height: 12),
-            child!,
           ],
         ],
       ),

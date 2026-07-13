@@ -11,7 +11,7 @@ class MomentumCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.darkCard,
         borderRadius: BorderRadius.circular(16),
@@ -19,6 +19,7 @@ class MomentumCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // ── Header row ──────────────────────────────────────────────────
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -29,49 +30,91 @@ class MomentumCard extends StatelessWidget {
                   fontWeight: FontWeight.w600,
                 ),
               ),
+              // Badge with arrow + text
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: AppColors.brandTeal.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
                 ),
-                child: const Text(
-                  DashboardStrings.momentumBadge,
-                  style: TextStyle(
-                    fontFamily: AppFonts.family,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.brandTeal,
+                decoration: BoxDecoration(
+                  color: AppColors.brandTeal.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: AppColors.brandTeal.withValues(alpha: 0.25),
+                    width: 1,
                   ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      DashboardStrings.momentumBadge,
+                      style: TextStyle(
+                        fontFamily: AppFonts.family,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.brandTeal,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
           const SizedBox(height: 20),
+
+          // ── Score ring + text block ──────────────────────────────────────
           Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+              // Circular progress ring
               SizedBox(
                 width: 96,
                 height: 96,
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
+                    // Glow layer (subtle teal halo behind ring)
+                    Container(
+                      width: 96,
+                      height: 96,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.brandTeal.withValues(alpha: 0.18),
+                            blurRadius: 18,
+                            spreadRadius: 2,
+                          ),
+                        ],
+                      ),
+                    ),
+                    // Track
+                    SizedBox(
+                      width: 96,
+                      height: 96,
+                      child: CircularProgressIndicator(
+                        value: 1.0,
+                        strokeWidth: 7,
+                        backgroundColor: Colors.transparent,
+                        color: AppColors.darkCardText.withValues(alpha: 0.18),
+                        strokeCap: StrokeCap.round,
+                      ),
+                    ),
+                    // Fill
                     SizedBox(
                       width: 96,
                       height: 96,
                       child: CircularProgressIndicator(
                         value: 0.82,
-                        strokeWidth: 8,
-                        backgroundColor: AppColors.darkCardText.withValues(
-                          alpha: 0.3,
-                        ),
+                        strokeWidth: 7,
+                        backgroundColor: Colors.transparent,
                         color: AppColors.brandTeal,
                         strokeCap: StrokeCap.round,
                       ),
                     ),
-                    const Column(
+                    // Center label
+                    Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
@@ -81,13 +124,14 @@ class MomentumCard extends StatelessWidget {
                             fontSize: 28,
                             fontWeight: FontWeight.w700,
                             color: AppColors.onPrimary,
+                            height: 1.0,
                           ),
                         ),
                         Text(
                           '/ 100',
                           style: TextStyle(
                             fontFamily: AppFonts.family,
-                            fontSize: 12,
+                            fontSize: 11,
                             fontWeight: FontWeight.w500,
                             color: AppColors.darkCardText,
                           ),
@@ -97,7 +141,10 @@ class MomentumCard extends StatelessWidget {
                   ],
                 ),
               ),
+
               const SizedBox(width: 20),
+
+              // Title + subtitle + chips
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -107,31 +154,32 @@ class MomentumCard extends StatelessWidget {
                       style: AppTextStyles.dashboardCardTitle,
                     ),
                     const SizedBox(height: 6),
-                    const Text(
+                    Text(
                       DashboardStrings.momentumSubtitle,
                       style: TextStyle(
                         fontFamily: AppFonts.family,
                         fontSize: 13,
                         fontWeight: FontWeight.w400,
                         color: AppColors.darkCardText,
-                        height: 1.4,
+                        height: 1.45,
                       ),
-                    ),
-                    const SizedBox(height: 12),
-                    Wrap(
-                      spacing: 6,
-                      runSpacing: 6,
-                      children: const [
-                        _MomentumChip(label: DashboardStrings.momentumChipMuscle),
-                        _MomentumChip(label: DashboardStrings.momentumChipFat),
-                        _MomentumChip(
-                          label: DashboardStrings.momentumChipStreak,
-                        ),
-                      ],
                     ),
                   ],
                 ),
               ),
+            ],
+          ),
+
+          const SizedBox(height: 16),
+
+          // ── Chips row (full-width, evenly spaced) ───────────────────────
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              _MomentumChip(label: DashboardStrings.momentumChipMuscle),
+              _MomentumChip(label: DashboardStrings.momentumChipFat),
+              _MomentumChip(label: DashboardStrings.momentumChipStreak),
             ],
           ),
         ],
@@ -148,22 +196,44 @@ class _MomentumChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
       decoration: BoxDecoration(
-        color: AppColors.brandTeal.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(8),
+        color: AppColors.brandTeal.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(50),
         border: Border.all(
-          color: AppColors.brandTeal.withValues(alpha: 0.3),
+          color: AppColors.brandTeal.withValues(alpha: 0.28),
+          width: 1,
         ),
       ),
-      child: Text(
-        label,
-        style: const TextStyle(
-          fontFamily: AppFonts.family,
-          fontSize: 10,
-          fontWeight: FontWeight.w600,
-          color: AppColors.brandTeal,
-        ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Checkmark icon
+          Container(
+            width: 14,
+            height: 14,
+            decoration: BoxDecoration(shape: BoxShape.circle),
+            child: const Icon(
+              Icons.check,
+              size: 14,
+              color: AppColors.brandTealLight,
+            ),
+          ),
+          const SizedBox(width: 5),
+          Flexible(
+            child: Text(
+              label,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontFamily: AppFonts.family,
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: AppColors.onPrimary,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -1,3 +1,4 @@
+import 'package:ai_forma/features/check_in/view/pages/analysing_view.dart';
 import 'package:flutter/material.dart';
 import 'package:ai_forma/core/constants/app_strings.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
@@ -7,7 +8,6 @@ import 'package:ai_forma/features/assessment/constants/assessment_strings.dart';
 import 'package:ai_forma/features/assessment/view/widgets/assessment_unit_toggle.dart';
 import 'package:ai_forma/features/assessment/view/widgets/measurement_wheel_picker.dart';
 import 'package:ai_forma/features/check_in/constants/check_in_strings.dart';
-import 'package:ai_forma/features/check_in/view/pages/body_measurements_view.dart';
 import 'package:ai_forma/features/check_in/view/widgets/check_in_header.dart';
 
 class CheckInWeightView extends StatefulWidget {
@@ -101,7 +101,7 @@ class _CheckInWeightViewState extends State<CheckInWeightView> {
                 onPressed: () {
                   Navigator.of(context).push(
                     MaterialPageRoute<void>(
-                      builder: (_) => const BodyMeasurementsView(),
+                      builder: (_) => const AnalysingView(),
                     ),
                   );
                 },

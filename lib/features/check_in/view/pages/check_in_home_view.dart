@@ -55,6 +55,7 @@ class CheckInHomeView extends StatelessWidget {
             children: [
               Expanded(
                 child: MetricCard(
+                  height: 118,
                   label: CheckInStrings.currentWeight,
                   value: CheckInStrings.currentWeightValue,
                   trendText: CheckInStrings.weightChange,
@@ -82,6 +83,7 @@ class _LatestScanCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(16),
+      height: 118,
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(14),

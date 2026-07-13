@@ -4,6 +4,7 @@ import 'package:remixicon/remixicon.dart';
 abstract final class AppIcons {
   static const IconData back = Remix.arrow_left_s_line;
   static const IconData heartPulse = Remix.heart_pulse_line;
+  static const IconData heart = Remix.heart_line;
   static const IconData focusTarget = Remix.focus_3_line;
   static const IconData flash = Remix.flashlight_line;
   static const IconData shield = Remix.shield_line;
@@ -14,6 +15,7 @@ abstract final class AppIcons {
   static const IconData eyeOff = Remix.eye_off_line;
   static const IconData mail = Remix.mail_line;
   static const IconData checkCircle = Remix.checkbox_circle_line;
+  static const IconData checkCircleFill = Remix.checkbox_circle_fill;
   static const IconData check = Remix.check_line;
   static const IconData sendPlane = Remix.send_plane_line;
   static const IconData men = Remix.men_line;
@@ -29,11 +31,23 @@ abstract final class AppIcons {
   static const IconData barChart = Remix.bar_chart_line;
   static const IconData calendar = Remix.calendar_line;
   static const IconData arrowDown = Remix.arrow_down_line;
+  static const IconData arrowUp = Remix.arrow_up_line;
   static const IconData arrowRight = Remix.arrow_right_s_line;
+  static const IconData arrowRightLine = Remix.arrow_right_line;
+  static const IconData layoutColumn = Remix.layout_column_line;
   static const IconData fire = Remix.fire_line;
   static const IconData star = Remix.star_line;
   static const IconData info = Remix.information_line;
   static const IconData refresh = Remix.refresh_line;
   static const IconData time = Remix.time_line;
   static const IconData arrowUpDown = Remix.arrow_up_down_line;
+  static const IconData arrowLeftRight = Remix.arrow_left_right_line;
+  static const IconData cpu = Remix.cpu_line;
+  static const IconData alert = Remix.alert_line;
+  static const IconData shieldCheck = Remix.shield_check_line;
+  static const IconData apple = Remix.apple_line;
+  static const IconData footprint = Remix.footprint_line;
+  static const IconData pulse = Remix.pulse_line;
+  static const IconData arrowUpRight = Remix.arrow_right_up_line;
+  static const IconData connector = Remix.connector_line;
 }

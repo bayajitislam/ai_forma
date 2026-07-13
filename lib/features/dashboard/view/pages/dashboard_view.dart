@@ -13,7 +13,7 @@ class DashboardView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(24, 0, 24, 120),
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 120),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

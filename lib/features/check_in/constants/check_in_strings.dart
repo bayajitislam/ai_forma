@@ -50,9 +50,9 @@ abstract final class CheckInStrings {
   static const String frontInstruction =
       'Stand tall. Keep your feet shoulder-width apart and your arms slightly away from your body. This gives AiFORMA the clearest analysis.';
   static const String sideInstruction =
-      'Turn 90\u00b0 to your left, stand naturally.';
+      'Turn 90\u00b0 to your left. Stand naturally and look straight ahead.';
   static const String backInstruction =
-      'Turn away from the camera and stand tall.';
+      'Face away from the camera. Stand tall with your arms relaxed by your sides.';
   static const String retake = 'Retake';
   static const String guide = 'Guide';
   static const String tips = 'Tips';
@@ -83,7 +83,8 @@ abstract final class CheckInStrings {
 
   // Analysing
   static const String analysingTitle = 'AiFORMA is analysing your physique';
-  static const String analysingSubtitle = 'This usually takes less than 30 seconds.';
+  static const String analysingSubtitle =
+      'This usually takes less than 30 seconds.';
   static const String stepMapping = 'Mapping body composition';
   static const String stepMuscle = 'Identifying muscle development';
   static const String stepSymmetry = 'Assessing symmetry';
@@ -93,12 +94,14 @@ abstract final class CheckInStrings {
   // Complete
   static const String completeTitle = 'Analysis Complete';
   static const String completeSubtitle =
-      'Your latest physique scan has been added to your timeline.';
+      'Your latest AI analysis is complete. Compare your progress and discover what\u2019s changed.';
   static const String checkInLabel = 'Check-In';
   static const String currentStreakLabel = 'Current Streak';
   static const String momentumLabel = 'Momentum';
   static const String checkInNumber = '#12';
-  static const String streakValue = '12 weeks';
+  static const String streakNumber = '12';
+  static const String streakUnit = ' weeks';
   static const String momentumValue = '82';
+  static const String momentumSuffix = ' /100';
   static const String viewResults = 'VIEW MY RESULTS';
 }

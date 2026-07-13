@@ -5,9 +5,9 @@ abstract final class DashboardStrings {
   static const String momentumSubtitle =
       'You\u2019re making measurable progress. Keep doing what works.';
 
-  static const String momentumChipMuscle = '\u2713 Muscle +8%';
-  static const String momentumChipFat = '\u2713 Fat -0.6 kg';
-  static const String momentumChipStreak = '\u2713 5 week streak';
+  static const String momentumChipMuscle = 'Muscle +8%';
+  static const String momentumChipFat = 'Fat -0.6 kg';
+  static const String momentumChipStreak = '5 week streak';
 
   static const String todaysPriority = 'Today\u2019s Priority';
   static const String todaysPriorityBody =

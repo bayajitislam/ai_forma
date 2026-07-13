@@ -1,3 +1,4 @@
+import 'package:ai_forma/core/icons/app_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
 import 'package:ai_forma/core/theme/app_text_styles.dart';
@@ -25,11 +26,17 @@ class TodaysPriorityCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            DashboardStrings.todaysPriority,
-            style: AppTextStyles.featureTitle.copyWith(
-              fontWeight: FontWeight.w700,
-            ),
+          Row(
+            children: [
+              Icon(AppIcons.connector, size: 18, color: AppColors.textPrimary),
+              const SizedBox(width: 8),
+              Text(
+                DashboardStrings.todaysPriority,
+                style: AppTextStyles.featureTitle.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 8),
           Text(
