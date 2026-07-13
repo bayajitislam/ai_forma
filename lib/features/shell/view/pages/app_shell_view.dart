@@ -10,6 +10,8 @@ import 'package:ai_forma/features/shell/view/pages/placeholder_tab_view.dart';
 
 import 'package:ai_forma/features/timeline/view/pages/timeline_view.dart';
 
+import 'package:ai_forma/features/profile/view/pages/profile_view.dart';
+
 class AppShellView extends StatefulWidget {
   const AppShellView({super.key});
 
@@ -41,7 +43,7 @@ class _AppShellViewState extends State<AppShellView> {
                   CheckInHomeView(),
                   InsightsView(),
                   TimelineView(),
-                  PlaceholderTabView(title: ShellStrings.navProfile),
+                  ProfileView(),
                 ],
               ),
             ),
