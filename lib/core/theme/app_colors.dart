@@ -44,7 +44,7 @@ abstract final class AppColors {
 
   static const Color insightConsistencyCompleteBg = Color(0xFFE8F7F6);
   static const Color insightConsistencyCompleteIcon = Color(0xFF14968D);
-  static const Color insightConsistencyIncompleteBg = Color(0xFFF5F5F5);
+  static const Color insightConsistencyIncompleteBg = Color(0xFFFFFFFF);
   static const Color insightConsistencyIncompleteIcon = Color(0xFFD1D5DB);
   static const Color visualScanDatePill = Color(0xFF4A4A4A);
 

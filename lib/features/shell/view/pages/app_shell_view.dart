@@ -8,6 +8,8 @@ import 'package:ai_forma/features/insights/view/pages/insights_view.dart';
 import 'package:ai_forma/features/shell/view/widgets/app_shell_header.dart';
 import 'package:ai_forma/features/shell/view/pages/placeholder_tab_view.dart';
 
+import 'package:ai_forma/features/timeline/view/pages/timeline_view.dart';
+
 class AppShellView extends StatefulWidget {
   const AppShellView({super.key});
 
@@ -28,7 +30,7 @@ class _AppShellViewState extends State<AppShellView> {
         child: Column(
           children: [
             const Padding(
-              padding: EdgeInsets.fromLTRB(24, 8, 24, 16),
+              padding: EdgeInsets.fromLTRB(20, 8, 20, 16),
               child: AppShellHeader(),
             ),
             Expanded(
@@ -38,7 +40,7 @@ class _AppShellViewState extends State<AppShellView> {
                   DashboardView(),
                   CheckInHomeView(),
                   InsightsView(),
-                  PlaceholderTabView(title: ShellStrings.navTimeline),
+                  TimelineView(),
                   PlaceholderTabView(title: ShellStrings.navProfile),
                 ],
               ),
