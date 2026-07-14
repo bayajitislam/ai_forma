@@ -10,10 +10,7 @@ import 'package:ai_forma/features/insights/constants/insights_strings.dart';
 import 'package:ai_forma/features/insights/view/pages/visual_scan_view.dart';
 
 class ComparisonScanData {
-  const ComparisonScanData({
-    required this.shortDate,
-    required this.imageAsset,
-  });
+  const ComparisonScanData({required this.shortDate, required this.imageAsset});
 
   final String shortDate;
   final String imageAsset;
@@ -42,7 +39,10 @@ class ComparisonSummaryView extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
-            const CheckInHeader(),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: const CheckInHeader(),
+            ),
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
@@ -94,7 +94,11 @@ class ComparisonSummaryView extends StatelessWidget {
                           ),
                         ),
                         Padding(
-                          padding: const EdgeInsets.only(top: 90, left: 8, right: 8),
+                          padding: const EdgeInsets.only(
+                            top: 90,
+                            left: 8,
+                            right: 8,
+                          ),
                           child: Container(
                             width: 36,
                             height: 36,
@@ -180,10 +184,7 @@ class _ComparisonImageCard extends StatelessWidget {
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(8, 12, 8, 0),
-                  child: Image.asset(
-                    imageAsset,
-                    fit: BoxFit.contain,
-                  ),
+                  child: Image.asset(imageAsset, fit: BoxFit.contain),
                 ),
               ),
               Padding(
@@ -217,10 +218,7 @@ class _ComparisonImageCard extends StatelessWidget {
 }
 
 class _ComparisonMetricRow extends StatelessWidget {
-  const _ComparisonMetricRow({
-    required this.label,
-    required this.value,
-  });
+  const _ComparisonMetricRow({required this.label, required this.value});
 
   final String label;
   final String value;

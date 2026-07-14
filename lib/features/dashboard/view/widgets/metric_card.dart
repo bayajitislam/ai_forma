@@ -13,7 +13,7 @@ class MetricCard extends StatelessWidget {
     this.trendText,
     this.caption,
     this.child,
-    this.height = 144,
+    this.height = 156,
   });
 
   final String label;

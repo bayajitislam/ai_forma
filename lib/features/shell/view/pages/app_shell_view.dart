@@ -37,7 +37,7 @@ class _AppShellViewState extends State<AppShellView> {
         child: Column(
           children: [
             const Padding(
-              padding: EdgeInsets.fromLTRB(20, 8, 20, 16),
+              padding: EdgeInsets.fromLTRB(16, 8, 16, 16),
               child: AppShellHeader(),
             ),
             Expanded(

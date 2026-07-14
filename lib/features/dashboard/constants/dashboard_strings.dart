@@ -18,7 +18,7 @@ abstract final class DashboardStrings {
   static const String weightChange = '0.6 kg since last week';
 
   static const String weeklyChange = 'Weekly Change';
-  static const String weeklyChangeValue = '\u2193 0.6 kg';
+  static const String weeklyChangeValue = '0.6 kg';
   static const String weeklyChangeCaption = 'On target';
 
   static const String latestAnalysis = 'Latest Analysis';

@@ -22,7 +22,10 @@ class InsightsDetailScaffold extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
-            const CheckInHeader(),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: const CheckInHeader(),
+            ),
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),

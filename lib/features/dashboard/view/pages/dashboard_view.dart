@@ -14,7 +14,7 @@ class DashboardView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(20, 0, 20, 120),
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 120),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -36,7 +36,7 @@ class DashboardView extends StatelessWidget {
               Expanded(
                 child: MetricCard(
                   label: DashboardStrings.weeklyChange,
-                  trendText: DashboardStrings.weeklyChangeValue,
+                  value:DashboardStrings.weeklyChangeValue ,
                   caption: DashboardStrings.weeklyChangeCaption,
                   child: const SparklineChart(),
                 ),
@@ -46,7 +46,7 @@ class DashboardView extends StatelessWidget {
           const SizedBox(height: 16),
           const LatestCheckInCard(),
           const SizedBox(height: 16),
-          AiInsightCard(goInsight: goInsight),
+          AiInsightCard(goInsightPage: goInsight),
           const SizedBox(height: 24),
         ],
       ),

@@ -110,7 +110,10 @@ class _CompareScansViewState extends State<CompareScansView> {
       body: SafeArea(
         child: Column(
           children: [
-            const CheckInHeader(),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20,),
+              child: const CheckInHeader(),
+            ),
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),

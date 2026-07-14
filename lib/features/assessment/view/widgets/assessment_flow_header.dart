@@ -20,26 +20,23 @@ class AssessmentFlowHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              if (showBackButton)
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: IconButton(
-                    onPressed: () => Navigator.maybePop(context),
-                    icon: const AppIcon(
-                      icon: AppIcons.back,
-                      size: 28,
-                      color: AppColors.textPrimary,
-                    ),
+        Stack(
+          alignment: Alignment.center,
+          children: [
+            if (showBackButton)
+              Align(
+                alignment: Alignment.centerLeft,
+                child: GestureDetector(
+                  onTap: () => Navigator.maybePop(context),
+                  child: const AppIcon(
+                    icon: AppIcons.back,
+                    size: 28,
+                    color: AppColors.textPrimary,
                   ),
                 ),
-              const AppBrandText(height: 22, width: 150),
-            ],
-          ),
+              ),
+            const AppBrandText(height: 22, width: 150),
+          ],
         ),
         const SizedBox(height: 16),
         Padding(

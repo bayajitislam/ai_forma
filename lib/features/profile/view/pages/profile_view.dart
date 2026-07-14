@@ -11,7 +11,7 @@ class ProfileView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.only(left: 20, right: 20, bottom: 120),
+      padding: const EdgeInsets.only(left: 16, right: 16, bottom: 120),
       child: Column(
         children: [
           const SizedBox(height: 8),

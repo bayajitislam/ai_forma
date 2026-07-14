@@ -23,7 +23,7 @@ class CheckInHomeView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(20, 0, 20, 100),
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

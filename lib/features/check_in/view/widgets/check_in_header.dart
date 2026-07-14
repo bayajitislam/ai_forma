@@ -16,9 +16,9 @@ class CheckInHeader extends StatelessWidget {
       children: [
         Align(
           alignment: Alignment.centerLeft,
-          child: IconButton(
-            onPressed: () => Navigator.maybePop(context),
-            icon: const AppIcon(
+          child: GestureDetector(
+            onTap: () => Navigator.maybePop(context),
+            child: const AppIcon(
               icon: AppIcons.back,
               size: 28,
               color: AppColors.textPrimary,
