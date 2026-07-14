@@ -94,7 +94,7 @@ abstract final class AppTextStyles {
   static const TextStyle featureTitle = TextStyle(
     fontFamily: AppFonts.family,
     fontSize: 16,
-    fontWeight: FontWeight.w700,
+    fontWeight: FontWeight.w600,
     color: AppColors.textPrimary,
     height: 1.3,
   );

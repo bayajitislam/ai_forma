@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
 import 'package:ai_forma/core/theme/app_text_styles.dart';
@@ -57,7 +59,9 @@ class ForgotPasswordView extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
+              Platform.isAndroid
+                  ? const SizedBox(height: 26)
+                  : SizedBox.shrink(),
             ],
           ),
         ),

@@ -2,6 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:remixicon/remixicon.dart';
 
 abstract final class AppIcons {
+
+  static const String insightSvg = 'assets/Icons/insight.svg';
+  static const String upTrendSvg = 'assets/Icons/up_trend.svg';
+  static const String downTrendSvg = 'assets/Icons/down_trend.svg';
+  static const String userSvg = 'assets/Icons/user.svg';
   static const IconData back = Remix.arrow_left_s_line;
   static const IconData heartPulse = Remix.heart_pulse_line;
   static const IconData heart = Remix.heart_line;

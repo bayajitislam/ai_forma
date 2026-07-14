@@ -13,8 +13,13 @@ class MomentumCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.darkCard,
         borderRadius: BorderRadius.circular(16),
+        gradient: const RadialGradient(
+          center: Alignment(0.6, -1.3),
+          radius: 1,
+          colors: [Color.fromARGB(255, 39, 97, 90), AppColors.darkCard],
+          stops: [0.0, 1],
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

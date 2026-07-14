@@ -15,6 +15,7 @@ class TodaysPriorityCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.border),
         boxShadow: const [
           BoxShadow(
             color: Color(0x0D000000),
@@ -28,12 +29,14 @@ class TodaysPriorityCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(AppIcons.connector, size: 18, color: AppColors.textPrimary),
+              Icon(AppIcons.connector, size: 18, color: AppColors.brandTeal),
               const SizedBox(width: 8),
               Text(
                 DashboardStrings.todaysPriority,
                 style: AppTextStyles.featureTitle.copyWith(
+                  color: AppColors.brandTeal,
                   fontWeight: FontWeight.w700,
+                  letterSpacing: 1.92,
                 ),
               ),
             ],

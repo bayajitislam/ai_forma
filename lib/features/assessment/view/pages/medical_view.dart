@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:ai_forma/core/constants/app_strings.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
@@ -9,12 +11,7 @@ import 'package:ai_forma/features/assessment/view/widgets/assessment_flow_header
 import 'package:ai_forma/features/assessment/view/widgets/assessment_radio_tile.dart';
 import 'package:ai_forma/features/assessment/view/widgets/assessment_skip_link.dart';
 
-enum MedicalOption {
-  no,
-  currentInjury,
-  medicalCondition,
-  preferNotToAnswer,
-}
+enum MedicalOption { no, currentInjury, medicalCondition, preferNotToAnswer }
 
 class MedicalView extends StatefulWidget {
   const MedicalView({super.key});
@@ -27,9 +24,9 @@ class _MedicalViewState extends State<MedicalView> {
   MedicalOption _selected = MedicalOption.no;
 
   void _goToNext() {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(builder: (_) => const MenstrualView()),
-    );
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute<void>(builder: (_) => const MenstrualView()));
   }
 
   @override
@@ -92,11 +89,10 @@ class _MedicalViewState extends State<MedicalView> {
               ),
               AssessmentSkipLink(onTap: _goToNext),
               const SizedBox(height: 16),
-              PrimaryButton(
-                onPressed: _goToNext,
-                label: AppStrings.nextButton,
-              ),
-              const SizedBox(height: 16),
+              PrimaryButton(onPressed: _goToNext, label: AppStrings.nextButton),
+              Platform.isAndroid
+                  ? const SizedBox(height: 26)
+                  : SizedBox.shrink(),
             ],
           ),
         ),

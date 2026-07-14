@@ -8,7 +8,8 @@ import 'package:ai_forma/features/dashboard/view/widgets/sparkline_chart.dart';
 import 'package:ai_forma/features/dashboard/view/widgets/todays_priority_card.dart';
 
 class DashboardView extends StatelessWidget {
-  const DashboardView({super.key});
+  final void Function()? goInsight;
+  const DashboardView({super.key, required this.goInsight});
 
   @override
   Widget build(BuildContext context) {
@@ -45,7 +46,7 @@ class DashboardView extends StatelessWidget {
           const SizedBox(height: 16),
           const LatestCheckInCard(),
           const SizedBox(height: 16),
-          const AiInsightCard(),
+          AiInsightCard(goInsight: goInsight),
           const SizedBox(height: 24),
         ],
       ),

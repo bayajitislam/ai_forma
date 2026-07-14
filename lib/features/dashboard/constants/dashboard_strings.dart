@@ -15,7 +15,7 @@ abstract final class DashboardStrings {
 
   static const String currentWeight = 'Current Weight';
   static const String currentWeightValue = '87.4 kg';
-  static const String weightChange = '\u2193 0.6 kg since last week';
+  static const String weightChange = '0.6 kg since last week';
 
   static const String weeklyChange = 'Weekly Change';
   static const String weeklyChangeValue = '\u2193 0.6 kg';

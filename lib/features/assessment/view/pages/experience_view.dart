@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:ai_forma/core/constants/app_strings.dart';
 import 'package:ai_forma/core/icons/app_icons.dart';
@@ -22,9 +24,9 @@ class _ExperienceViewState extends State<ExperienceView> {
   ExperienceOption _selected = ExperienceOption.intermediate;
 
   void _goToNext() {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(builder: (_) => const SleepView()),
-    );
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute<void>(builder: (_) => const SleepView()));
   }
 
   @override
@@ -58,15 +60,15 @@ class _ExperienceViewState extends State<ExperienceView> {
                       title: AssessmentStrings.experienceBeginner,
                       subtitle: AssessmentStrings.experienceBeginnerSubtitle,
                       isSelected: _selected == ExperienceOption.beginner,
-                      onTap: () => setState(
-                        () => _selected = ExperienceOption.beginner,
-                      ),
+                      onTap: () =>
+                          setState(() => _selected = ExperienceOption.beginner),
                     ),
                     const SizedBox(height: 12),
                     AssessmentRadioTile(
                       icon: AppIcons.brain,
                       title: AssessmentStrings.experienceIntermediate,
-                      subtitle: AssessmentStrings.experienceIntermediateSubtitle,
+                      subtitle:
+                          AssessmentStrings.experienceIntermediateSubtitle,
                       isSelected: _selected == ExperienceOption.intermediate,
                       onTap: () => setState(
                         () => _selected = ExperienceOption.intermediate,
@@ -78,18 +80,16 @@ class _ExperienceViewState extends State<ExperienceView> {
                       title: AssessmentStrings.experienceAdvanced,
                       subtitle: AssessmentStrings.experienceAdvancedSubtitle,
                       isSelected: _selected == ExperienceOption.advanced,
-                      onTap: () => setState(
-                        () => _selected = ExperienceOption.advanced,
-                      ),
+                      onTap: () =>
+                          setState(() => _selected = ExperienceOption.advanced),
                     ),
                   ],
                 ),
               ),
-              PrimaryButton(
-                onPressed: _goToNext,
-                label: AppStrings.nextButton,
-              ),
-              const SizedBox(height: 16),
+              PrimaryButton(onPressed: _goToNext, label: AppStrings.nextButton),
+              Platform.isAndroid
+                  ? const SizedBox(height: 26)
+                  : SizedBox.shrink(),
             ],
           ),
         ),

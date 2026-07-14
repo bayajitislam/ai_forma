@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:ai_forma/core/constants/app_images.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
@@ -16,18 +18,18 @@ class AnalysisCompleteView extends StatelessWidget {
       backgroundColor: AppColors.onboardingBackground,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
+          padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Column(
             children: [
-              const CheckInHeader(),
+              const CheckInHeader(isTitle: true, title: CheckInStrings.result,),
               Expanded(
                 child: SingleChildScrollView(
                   child: Column(
                     children: [
                       const SizedBox(height: 12),
                       Container(
-                        width: double.infinity,
-                        height: 280,
+                        width: 202,
+                        height: 336,
                         decoration: BoxDecoration(
                           color: AppColors.insightChartBackground,
                           borderRadius: BorderRadius.circular(20),
@@ -41,66 +43,67 @@ class AnalysisCompleteView extends StatelessWidget {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 28),
-                      Text(
-                        CheckInStrings.completeTitle,
-                        style: AppTextStyles.authSectionTitle.copyWith(
-                          fontSize: 26,
+                      const SizedBox(height: 12),
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 24,
                         ),
-                      ),
-                      const SizedBox(height: 10),
-                      const Text(
-                        CheckInStrings.completeSubtitle,
-                        textAlign: TextAlign.center,
-                        style: AppTextStyles.authBody,
-                      ),
-                      const SizedBox(height: 36),
-                      Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          Container(
-                            width: 220,
-                            height: 220,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              gradient: RadialGradient(
-                                colors: [
-                                  AppColors.brandTealLight.withValues(
-                                    alpha: 0.18,
-                                  ),
-                                  AppColors.brandTealLight.withValues(
-                                    alpha: 0.0,
-                                  ),
-                                ],
+                        decoration: BoxDecoration(
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.brandTealLight.withValues(
+                                alpha: 0.07,
+                              ),
+                              blurRadius: 20,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Column(
+                          children: [
+                            Text(
+                              CheckInStrings.completeTitle,
+                              style: AppTextStyles.authSectionTitle.copyWith(
+                                fontSize: 26,
                               ),
                             ),
-                          ),
-                          const Row(
-                            children: [
-                              Expanded(
-                                child: _StatColumn(
-                                  label: CheckInStrings.checkInLabel,
-                                  value: CheckInStrings.checkInNumber,
+                            const SizedBox(height: 16),
+                            const Text(
+                              CheckInStrings.completeSubtitle,
+                              textAlign: TextAlign.center,
+                              style: AppTextStyles.authBody,
+                            ),
+                            const SizedBox(height: 36),
+                            const Row(
+                              children: [
+                                Expanded(
+                                  child: _StatColumn(
+                                    label: CheckInStrings.checkInLabel,
+                                    value: CheckInStrings.checkInNumber,
+                                  ),
                                 ),
-                              ),
-                              Expanded(
-                                child: _StatColumn(
-                                  label: CheckInStrings.currentStreakLabel,
-                                  value: CheckInStrings.streakNumber,
-                                  suffix: CheckInStrings.streakUnit,
+                                Expanded(
+                                  child: _StatColumn(
+                                    label: CheckInStrings.currentStreakLabel,
+                                    value: CheckInStrings.streakNumber,
+                                    suffix: CheckInStrings.streakUnit,
+                                  ),
                                 ),
-                              ),
-                              Expanded(
-                                child: _StatColumn(
-                                  label: CheckInStrings.momentumLabel,
-                                  value: CheckInStrings.momentumValue,
-                                  suffix: CheckInStrings.momentumSuffix,
-                                  highlight: true,
+                                Expanded(
+                                  child: _StatColumn(
+                                    label: CheckInStrings.momentumLabel,
+                                    value: CheckInStrings.momentumValue,
+                                    suffix: CheckInStrings.momentumSuffix,
+                                    highlight: true,
+                                  ),
                                 ),
-                              ),
-                            ],
-                          ),
-                        ],
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
                       const SizedBox(height: 40),
                     ],

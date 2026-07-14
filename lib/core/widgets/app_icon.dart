@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
 
 class AppIcon extends StatelessWidget {
@@ -9,16 +10,25 @@ class AppIcon extends StatelessWidget {
     this.color = AppColors.brandTeal,
   });
 
-  final IconData icon;
+  final dynamic icon;
   final double size;
   final Color color;
 
   @override
   Widget build(BuildContext context) {
-    return Icon(
-      icon,
-      size: size,
-      color: color,
-    );
+    if (icon is IconData) {
+      return Icon(icon as IconData, size: size, color: color);
+    }
+
+    if (icon is String) {
+      return SvgPicture.asset(
+        icon as String,
+        width: size,
+        height: size,
+        colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
+      );
+    }
+
+    return const SizedBox.shrink();
   }
 }

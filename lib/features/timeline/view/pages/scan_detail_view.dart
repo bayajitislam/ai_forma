@@ -1,4 +1,3 @@
-import 'package:ai_forma/core/widgets/primary_button.dart';
 import 'package:flutter/material.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
 import 'package:ai_forma/core/constants/app_images.dart';
@@ -66,7 +65,6 @@ class _ScanDetailViewState extends State<ScanDetailView>
         ),
         title: const Center(child: AppBrandText(height: 22, width: 120)),
         actions: const [
-          // Empty action to keep title centered
           SizedBox(width: 48),
         ],
         bottom: TabBar(
@@ -116,28 +114,24 @@ class _ScanDetailViewState extends State<ScanDetailView>
             ),
           ),
           const SizedBox(height: 16),
-          // Body Fat Card
           _buildMetricCard(
             label: 'Body Fat',
             value: '18.2%',
             trendWidget: _buildTrendBadge('↓ 0.6%', isPositive: true),
           ),
           const SizedBox(height: 12),
-          // Lean Muscle Card
           _buildMetricCard(
             label: 'Lean Muscle',
             value: '71.5 kg',
             trendWidget: _buildTrendBadge('↑ 0.8 kg', isPositive: true),
           ),
           const SizedBox(height: 12),
-          // Weight Card
           _buildMetricCard(
             label: 'Weight',
             value: '87.4 kg',
             trendWidget: _buildTrendBadge('↓ 0.6 kg', isPositive: true),
           ),
           const SizedBox(height: 12),
-          // Momentum Card
           _buildMetricCard(
             label: 'Momentum',
             value: '82/100',
@@ -174,15 +168,39 @@ class _ScanDetailViewState extends State<ScanDetailView>
             ),
           ),
           const SizedBox(height: 24),
-          // Main Image Preview
+          // Main Image Preview with overlaid arrows
           Expanded(
-            child: Container(
-              width: double.infinity,
-              padding: EdgeInsets.symmetric(horizontal: 33),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(16),
-                child: Image.asset(photo.imagePath, fit: BoxFit.cover),
-              ),
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                // Image
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(horizontal: 33),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: Image.asset(photo.imagePath, fit: BoxFit.cover),
+                  ),
+                ),
+                // Left arrow
+                if (_currentPhotoIndex > 0)
+                  Positioned(
+                    left: 0,
+                    child: _buildArrowButton(
+                      icon: Icons.arrow_back_ios_rounded,
+                      onPressed: _previousPhoto,
+                    ),
+                  ),
+                // Right arrow
+                if (_currentPhotoIndex < _photos.length - 1)
+                  Positioned(
+                    right: 0,
+                    child: _buildArrowButton(
+                      icon: Icons.arrow_forward_ios_rounded,
+                      onPressed: _nextPhoto,
+                    ),
+                  ),
+              ],
             ),
           ),
           const SizedBox(height: 16),
@@ -205,24 +223,54 @@ class _ScanDetailViewState extends State<ScanDetailView>
               color: AppColors.textPrimary,
             ),
           ),
-          const SizedBox(height: 32),
-          // Control Actions
+          const SizedBox(height: 16),
+          // Dot indicators
           Row(
-            children: [
-              Expanded(
-                child: PrimaryButton(
-                  onPressed: _previousPhoto,
-                  label: 'PREVIOUS VIEW',
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(
+              _photos.length,
+              (i) => AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                margin: const EdgeInsets.symmetric(horizontal: 4),
+                width: i == _currentPhotoIndex ? 20 : 8,
+                height: 8,
+                decoration: BoxDecoration(
+                  color: i == _currentPhotoIndex
+                      ? AppColors.brandTeal
+                      : AppColors.cardBorder,
+                  borderRadius: BorderRadius.circular(4),
                 ),
               ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: PrimaryButton(onPressed: _nextPhoto, label: 'NEXT VIEW'),
-              ),
-            ],
+            ),
           ),
           const SizedBox(height: 16),
         ],
+      ),
+    );
+  }
+
+  Widget _buildArrowButton({
+    required IconData icon,
+    required VoidCallback onPressed,
+  }) {
+    return GestureDetector(
+      onTap: onPressed,
+      child: Container(
+        width: 52,
+        height: 52,
+        decoration: BoxDecoration(
+          color: AppColors.insightConsistencyIncompleteBg.withOpacity(0.5),
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: AppColors.cardBorder.withOpacity(0.5),
+            width: 1,
+          ),
+        ),
+        child: Icon(
+          icon,
+          color: AppColors.brandTeal,
+          size: 20,
+        ),
       ),
     );
   }

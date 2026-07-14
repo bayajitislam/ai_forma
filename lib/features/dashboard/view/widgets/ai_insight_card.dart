@@ -7,7 +7,8 @@ import 'package:ai_forma/core/widgets/app_icon.dart';
 import 'package:ai_forma/features/dashboard/constants/dashboard_strings.dart';
 
 class AiInsightCard extends StatelessWidget {
-  const AiInsightCard({super.key});
+  final void Function()? goInsight;
+  const AiInsightCard({super.key, required this.goInsight});
 
   @override
   Widget build(BuildContext context) {
@@ -37,25 +38,28 @@ class AiInsightCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text(
-                DashboardStrings.viewAnalysis,
-                style: TextStyle(
-                  fontFamily: AppFonts.family,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
+          GestureDetector(
+            onTap: goInsight,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  DashboardStrings.viewAnalysis,
+                  style: TextStyle(
+                    fontFamily: AppFonts.family,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.onPrimary,
+                  ),
+                ),
+                const SizedBox(width: 4),
+                AppIcon(
+                  icon: AppIcons.arrowRight,
+                  size: 16,
                   color: AppColors.onPrimary,
                 ),
-              ),
-              const SizedBox(width: 4),
-              AppIcon(
-                icon: AppIcons.arrowRight,
-                size: 16,
-                color: AppColors.onPrimary,
-              ),
-            ],
+              ],
+            ),
           ),
         ],
       ),

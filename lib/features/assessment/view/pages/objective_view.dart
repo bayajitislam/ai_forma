@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:ai_forma/core/constants/app_strings.dart';
 import 'package:ai_forma/core/icons/app_icons.dart';
@@ -28,9 +30,9 @@ class _ObjectiveViewState extends State<ObjectiveView> {
   ObjectiveOption _selected = ObjectiveOption.reduceBodyFat;
 
   void _goToNext() {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(builder: (_) => const ExperienceView()),
-    );
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute<void>(builder: (_) => const ExperienceView()));
   }
 
   @override
@@ -107,11 +109,10 @@ class _ObjectiveViewState extends State<ObjectiveView> {
                   ],
                 ),
               ),
-              PrimaryButton(
-                onPressed: _goToNext,
-                label: AppStrings.nextButton,
-              ),
-              const SizedBox(height: 16),
+              PrimaryButton(onPressed: _goToNext, label: AppStrings.nextButton),
+              Platform.isAndroid
+                  ? const SizedBox(height: 26)
+                  : SizedBox.shrink(),
             ],
           ),
         ),

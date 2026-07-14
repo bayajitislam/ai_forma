@@ -21,7 +21,7 @@ class StepIntoFrameView extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const CheckInHeader(),
+              const CheckInHeader(title: CheckInStrings.stepIntoFrame,),
               const SizedBox(height: 24),
               const Text(
                 CheckInStrings.stepIntoFrameTitle,

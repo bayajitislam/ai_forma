@@ -2,10 +2,8 @@ import 'package:ai_forma/features/profile/view/pages/edit_personal_details_view.
 import 'package:flutter/material.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
 import 'package:ai_forma/features/profile/view/pages/personal_details_view.dart';
-
 import 'package:ai_forma/features/profile/view/pages/subscription_view.dart';
 import 'package:ai_forma/features/profile/view/pages/help_support_view.dart';
-import 'package:ai_forma/features/profile/view/pages/physique_targets_view.dart';
 
 class ProfileView extends StatelessWidget {
   const ProfileView({super.key});
@@ -24,12 +22,12 @@ class ProfileView extends StatelessWidget {
               color: Colors.white,
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: AppColors.cardBorder.withOpacity(0.5),
+                color: AppColors.cardBorder.withValues(alpha: 0.5),
                 width: 1,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.cardShadow.withOpacity(0.04),
+                  color: AppColors.cardShadow.withValues(alpha: 0.04),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
@@ -238,19 +236,19 @@ class ProfileView extends StatelessWidget {
               );
             },
           ),
-          _buildDivider(),
-          _buildOptionTile(
-            context,
-            icon: Icons.track_changes_outlined,
-            title: 'Physique Targets',
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => const PhysiqueTargetsView(),
-                ),
-              );
-            },
-          ),
+          // _buildDivider(),
+          // _buildOptionTile(
+          //   context,
+          //   icon: Icons.track_changes_outlined,
+          //   title: 'Physique Targets',
+          //   onTap: () {
+          //     Navigator.of(context).push(
+          //       MaterialPageRoute(
+          //         builder: (context) => const PhysiqueTargetsView(),
+          //       ),
+          //     );
+          //   },
+          // ),
           _buildDivider(),
           _buildOptionTile(
             context,

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:ai_forma/core/constants/app_strings.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
@@ -9,14 +11,7 @@ import 'package:ai_forma/features/assessment/view/widgets/assessment_flow_header
 import 'package:ai_forma/features/assessment/view/widgets/assessment_skip_link.dart';
 import 'package:ai_forma/features/shell/view/utils/shell_navigation.dart';
 
-enum SupplementOption {
-  protein,
-  creatine,
-  preWorkout,
-  vitamins,
-  omega3,
-  other,
-}
+enum SupplementOption { protein, creatine, preWorkout, vitamins, omega3, other }
 
 class SupplementsView extends StatefulWidget {
   const SupplementsView({super.key});
@@ -79,8 +74,9 @@ class _SupplementsViewState extends State<SupplementsView> {
                     ),
                     AssessmentCheckboxTile(
                       label: AssessmentStrings.supplementPreWorkout,
-                      isSelected:
-                          _selected.contains(SupplementOption.preWorkout),
+                      isSelected: _selected.contains(
+                        SupplementOption.preWorkout,
+                      ),
                       onTap: () => _toggle(SupplementOption.preWorkout),
                     ),
                     AssessmentCheckboxTile(
@@ -107,7 +103,9 @@ class _SupplementsViewState extends State<SupplementsView> {
                 onPressed: () => navigateToAppShell(context),
                 label: AppStrings.nextButton,
               ),
-              const SizedBox(height: 16),
+              Platform.isAndroid
+                  ? const SizedBox(height: 26)
+                  : SizedBox.shrink(),
             ],
           ),
         ),

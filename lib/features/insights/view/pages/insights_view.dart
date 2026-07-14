@@ -56,7 +56,7 @@ class _InsightsViewState extends State<InsightsView> {
               InsightCategoryCard(
                 label: InsightsStrings.categoryStrengths,
                 icon: AppIcons.shieldCheck,
-                isSelected: _selectedCategory == InsightCategory.strengths,
+                isSelected: true,
                 onTap: () => _openCategory(InsightCategory.strengths),
               ),
               const SizedBox(width: 10),
@@ -64,15 +64,14 @@ class _InsightsViewState extends State<InsightsView> {
                 label: InsightsStrings.categoryFocusAreas,
                 icon: AppIcons.fire,
                 iconColor: AppColors.insightWarning,
-                isSelected: _selectedCategory == InsightCategory.focusAreas,
+                isSelected: false,
                 onTap: () => _openCategory(InsightCategory.focusAreas),
               ),
               const SizedBox(width: 10),
               InsightCategoryCard(
                 label: InsightsStrings.categoryNextSteps,
                 icon: AppIcons.cpu,
-                isSelected:
-                    _selectedCategory == InsightCategory.recommendations,
+                isSelected: false,
                 onTap: () => _openCategory(InsightCategory.recommendations),
               ),
             ],

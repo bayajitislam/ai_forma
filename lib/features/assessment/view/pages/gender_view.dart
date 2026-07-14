@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:ai_forma/core/constants/app_strings.dart';
 import 'package:ai_forma/core/icons/app_icons.dart';
@@ -77,14 +79,14 @@ class _GenderViewState extends State<GenderView> {
               PrimaryButton(
                 onPressed: () {
                   Navigator.of(context).push(
-                    MaterialPageRoute<void>(
-                      builder: (_) => const AgeView(),
-                    ),
+                    MaterialPageRoute<void>(builder: (_) => const AgeView()),
                   );
                 },
                 label: AppStrings.nextButton,
               ),
-              const SizedBox(height: 16),
+              Platform.isAndroid
+                  ? const SizedBox(height: 26)
+                  : SizedBox.shrink(),
             ],
           ),
         ),

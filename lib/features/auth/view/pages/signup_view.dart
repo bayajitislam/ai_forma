@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:ai_forma/core/icons/app_icons.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
@@ -101,7 +103,9 @@ class _SignupViewState extends State<SignupView> {
                 linkText: AuthStrings.logIn,
                 onLinkTap: () => navigateToLogin(context),
               ),
-              const SizedBox(height: 16),
+              Platform.isAndroid
+                  ? const SizedBox(height: 26)
+                  : SizedBox.shrink(),
             ],
           ),
         ),

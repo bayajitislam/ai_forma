@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:ai_forma/core/constants/app_strings.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
@@ -38,17 +40,15 @@ class _HeightViewState extends State<HeightView> {
     });
   }
 
-  int _cmToInches(int cm) =>
-      (cm / 2.54).round().clamp(
-        AssessmentStrings.minHeightInches,
-        AssessmentStrings.maxHeightInches,
-      );
+  int _cmToInches(int cm) => (cm / 2.54).round().clamp(
+    AssessmentStrings.minHeightInches,
+    AssessmentStrings.maxHeightInches,
+  );
 
-  int _inchesToCm(int inches) =>
-      (inches * 2.54).round().clamp(
-        AssessmentStrings.minHeightCm,
-        AssessmentStrings.maxHeightCm,
-      );
+  int _inchesToCm(int inches) => (inches * 2.54).round().clamp(
+    AssessmentStrings.minHeightCm,
+    AssessmentStrings.maxHeightCm,
+  );
 
   String _formatFeetInches(int totalInches) {
     final feet = totalInches ~/ 12;
@@ -111,14 +111,14 @@ class _HeightViewState extends State<HeightView> {
               PrimaryButton(
                 onPressed: () {
                   Navigator.of(context).push(
-                    MaterialPageRoute<void>(
-                      builder: (_) => const WeightView(),
-                    ),
+                    MaterialPageRoute<void>(builder: (_) => const WeightView()),
                   );
                 },
                 label: AppStrings.nextButton,
               ),
-              const SizedBox(height: 16),
+              Platform.isAndroid
+                  ? const SizedBox(height: 26)
+                  : SizedBox.shrink(),
             ],
           ),
         ),

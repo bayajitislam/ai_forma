@@ -52,7 +52,7 @@ class _TrendsTabViewState extends State<TrendsTabView> {
                           decoration: BoxDecoration(
                             color: isSelected
                                 ? AppColors.brandTealDark
-                                : AppColors.insightConsistencyIncompleteBg,
+                                : AppColors.border,
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Text(

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:ai_forma/core/constants/app_strings.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
@@ -38,17 +40,15 @@ class _WeightViewState extends State<WeightView> {
     });
   }
 
-  int _kgToLb(int kg) =>
-      (kg * 2.20462).round().clamp(
-        AssessmentStrings.minWeightLb,
-        AssessmentStrings.maxWeightLb,
-      );
+  int _kgToLb(int kg) => (kg * 2.20462).round().clamp(
+    AssessmentStrings.minWeightLb,
+    AssessmentStrings.maxWeightLb,
+  );
 
-  int _lbToKg(int lb) =>
-      (lb / 2.20462).round().clamp(
-        AssessmentStrings.minWeightKg,
-        AssessmentStrings.maxWeightKg,
-      );
+  int _lbToKg(int lb) => (lb / 2.20462).round().clamp(
+    AssessmentStrings.minWeightKg,
+    AssessmentStrings.maxWeightKg,
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -112,7 +112,9 @@ class _WeightViewState extends State<WeightView> {
                 },
                 label: AppStrings.nextButton,
               ),
-              const SizedBox(height: 16),
+              Platform.isAndroid
+                  ? const SizedBox(height: 26)
+                  : SizedBox.shrink(),
             ],
           ),
         ),

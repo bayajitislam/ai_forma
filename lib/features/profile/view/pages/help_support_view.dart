@@ -120,15 +120,15 @@ class HelpSupportView extends StatelessWidget {
       contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
       leading: Icon(
         icon,
-        color: AppColors.textPrimary.withOpacity(0.7),
+        color: AppColors.textPrimary.withValues(alpha: 0.7),
         size: 24,
       ),
       title: Text(
         title,
         style: const TextStyle(
           fontFamily: 'Nunito',
-          fontSize: 15,
-          fontWeight: FontWeight.bold,
+          fontSize: 16,
+          fontWeight: FontWeight.w700,
           color: AppColors.textPrimary,
         ),
       ),

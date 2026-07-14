@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:ai_forma/core/constants/app_strings.dart';
 import 'package:ai_forma/core/icons/app_icons.dart';
@@ -9,12 +11,7 @@ import 'package:ai_forma/features/assessment/view/pages/medical_view.dart';
 import 'package:ai_forma/features/assessment/view/widgets/assessment_flow_header.dart';
 import 'package:ai_forma/features/assessment/view/widgets/assessment_radio_tile.dart';
 
-enum ActivityOption {
-  sedentary,
-  lightlyActive,
-  moderatelyActive,
-  veryActive,
-}
+enum ActivityOption { sedentary, lightlyActive, moderatelyActive, veryActive }
 
 class ActivityView extends StatefulWidget {
   const ActivityView({super.key});
@@ -27,9 +24,9 @@ class _ActivityViewState extends State<ActivityView> {
   ActivityOption _selected = ActivityOption.moderatelyActive;
 
   void _goToNext() {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(builder: (_) => const MedicalView()),
-    );
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute<void>(builder: (_) => const MedicalView()));
   }
 
   @override
@@ -63,9 +60,8 @@ class _ActivityViewState extends State<ActivityView> {
                       title: AssessmentStrings.activitySedentary,
                       subtitle: AssessmentStrings.activitySedentarySubtitle,
                       isSelected: _selected == ActivityOption.sedentary,
-                      onTap: () => setState(
-                        () => _selected = ActivityOption.sedentary,
-                      ),
+                      onTap: () =>
+                          setState(() => _selected = ActivityOption.sedentary),
                     ),
                     const SizedBox(height: 12),
                     AssessmentRadioTile(
@@ -94,18 +90,16 @@ class _ActivityViewState extends State<ActivityView> {
                       title: AssessmentStrings.activityVeryActive,
                       subtitle: AssessmentStrings.activityVeryActiveSubtitle,
                       isSelected: _selected == ActivityOption.veryActive,
-                      onTap: () => setState(
-                        () => _selected = ActivityOption.veryActive,
-                      ),
+                      onTap: () =>
+                          setState(() => _selected = ActivityOption.veryActive),
                     ),
                   ],
                 ),
               ),
-              PrimaryButton(
-                onPressed: _goToNext,
-                label: AppStrings.nextButton,
-              ),
-              const SizedBox(height: 16),
+              PrimaryButton(onPressed: _goToNext, label: AppStrings.nextButton),
+              Platform.isAndroid
+                  ? const SizedBox(height: 26)
+                  : SizedBox.shrink(),
             ],
           ),
         ),

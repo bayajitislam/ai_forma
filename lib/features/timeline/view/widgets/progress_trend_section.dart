@@ -17,7 +17,7 @@ class ProgressTrendSection extends StatelessWidget {
             'Your Progress',
             style: AppTextStyles.featureTitle.copyWith(
               fontSize: 18,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w600,
               color: AppColors.insightAnalysisTitle,
             ),
           ),
@@ -31,14 +31,14 @@ class ProgressTrendSection extends StatelessWidget {
               color: AppColors.surface,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: AppColors.cardBorder.withOpacity(0.5),
+                color: AppColors.border,
                 width: 1,
               ),
               boxShadow: [
                 BoxShadow(
                   color: AppColors.cardShadow.withOpacity(0.06),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
+                  blurRadius: 8,
+                  offset: const Offset(0, 8),
                 ),
               ],
             ),

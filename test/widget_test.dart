@@ -365,7 +365,9 @@ void main() {
   testWidgets('Check-in home shows streak and begin scan button', (
     WidgetTester tester,
   ) async {
-    await tester.pumpWidget(const MaterialApp(home: CheckInHomeView()));
+    await tester.pumpWidget(
+      MaterialApp(home: CheckInHomeView(goInsightPage: () {})),
+    );
 
     expect(find.text(CheckInStrings.beginNewScan), findsOneWidget);
     expect(find.text(CheckInStrings.latestScan), findsOneWidget);

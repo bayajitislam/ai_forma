@@ -17,7 +17,7 @@ class AppNavbar extends StatelessWidget {
   final AppNavItem selectedItem;
   final ValueChanged<AppNavItem> onItemSelected;
 
-  static const List<({AppNavItem item, IconData icon, String label})> _items = [
+  static const List<({AppNavItem item, dynamic icon, String label})> _items = [
     (item: AppNavItem.home, icon: AppIcons.home, label: ShellStrings.navHome),
     (
       item: AppNavItem.checkIn,
@@ -26,7 +26,7 @@ class AppNavbar extends StatelessWidget {
     ),
     (
       item: AppNavItem.insights,
-      icon: AppIcons.barChart,
+      icon: AppIcons.insightSvg,
       label: ShellStrings.navInsights,
     ),
     (
@@ -36,7 +36,7 @@ class AppNavbar extends StatelessWidget {
     ),
     (
       item: AppNavItem.profile,
-      icon: AppIcons.user,
+      icon: AppIcons.userSvg,
       label: ShellStrings.navProfile,
     ),
   ];

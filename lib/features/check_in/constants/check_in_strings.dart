@@ -1,5 +1,10 @@
 abstract final class CheckInStrings {
   // Home tab
+  static const String cameraPosition = 'Position your camera';
+  static const String result = 'Result';
+  static const String analysingComplete = 'Analysing complete';
+  static const String analysing = 'Analysing';
+  static const String stepIntoFrame = 'Step into the frame';
   static const String weekStreak = 'week streak';
   static const String personalBest = 'Personal Best';
   static const String keepItUp = 'Keep it up!';

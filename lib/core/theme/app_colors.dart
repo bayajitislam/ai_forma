@@ -16,6 +16,7 @@ abstract final class AppColors {
   static const Color textSecondary = Color(0xFF757575);
   static const Color onboardingBackground = Color(0xFFFFFFFF);
   static const Color cardBorder = Color(0xFFDBDBDB);
+  static const Color border = Color(0xFFF3F4F6);
   static const Color inputBorder = Color(0xFFE0E0E0);
   static const Color progressInactive = Color(0xFFE8E8E8);
   static const Color iconBackground = Color(0xFFE8F7F6);

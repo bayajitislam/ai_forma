@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:ai_forma/core/constants/app_strings.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
@@ -29,9 +31,9 @@ class _MenstrualViewState extends State<MenstrualView> {
   MenstrualOption _selected = MenstrualOption.menstrual;
 
   void _goToNext() {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(builder: (_) => const SupplementsView()),
-    );
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute<void>(builder: (_) => const SupplementsView()));
   }
 
   @override
@@ -63,9 +65,8 @@ class _MenstrualViewState extends State<MenstrualView> {
                     AssessmentRadioTile(
                       title: AssessmentStrings.menstrualPhase,
                       isSelected: _selected == MenstrualOption.menstrual,
-                      onTap: () => setState(
-                        () => _selected = MenstrualOption.menstrual,
-                      ),
+                      onTap: () =>
+                          setState(() => _selected = MenstrualOption.menstrual),
                     ),
                     const SizedBox(height: 12),
                     AssessmentRadioTile(
@@ -79,25 +80,22 @@ class _MenstrualViewState extends State<MenstrualView> {
                     AssessmentRadioTile(
                       title: AssessmentStrings.menstrualOvulation,
                       isSelected: _selected == MenstrualOption.ovulation,
-                      onTap: () => setState(
-                        () => _selected = MenstrualOption.ovulation,
-                      ),
+                      onTap: () =>
+                          setState(() => _selected = MenstrualOption.ovulation),
                     ),
                     const SizedBox(height: 12),
                     AssessmentRadioTile(
                       title: AssessmentStrings.menstrualLuteal,
                       isSelected: _selected == MenstrualOption.luteal,
-                      onTap: () => setState(
-                        () => _selected = MenstrualOption.luteal,
-                      ),
+                      onTap: () =>
+                          setState(() => _selected = MenstrualOption.luteal),
                     ),
                     const SizedBox(height: 12),
                     AssessmentRadioTile(
                       title: AssessmentStrings.menstrualNotSure,
                       isSelected: _selected == MenstrualOption.notSure,
-                      onTap: () => setState(
-                        () => _selected = MenstrualOption.notSure,
-                      ),
+                      onTap: () =>
+                          setState(() => _selected = MenstrualOption.notSure),
                     ),
                     const SizedBox(height: 12),
                     AssessmentRadioTile(
@@ -112,11 +110,10 @@ class _MenstrualViewState extends State<MenstrualView> {
               ),
               AssessmentSkipLink(onTap: _goToNext),
               const SizedBox(height: 16),
-              PrimaryButton(
-                onPressed: _goToNext,
-                label: AppStrings.nextButton,
-              ),
-              const SizedBox(height: 16),
+              PrimaryButton(onPressed: _goToNext, label: AppStrings.nextButton),
+              Platform.isAndroid
+                  ? const SizedBox(height: 26)
+                  : SizedBox.shrink(),
             ],
           ),
         ),

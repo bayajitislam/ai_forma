@@ -21,7 +21,7 @@ class CameraPositionView extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const CheckInHeader(),
+              const CheckInHeader(title: CheckInStrings.cameraPosition,),
               const SizedBox(height: 24),
               const Text(
                 CheckInStrings.positionCameraTitle,

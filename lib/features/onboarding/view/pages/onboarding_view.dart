@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:ai_forma/core/constants/app_strings.dart';
 import 'package:ai_forma/core/icons/app_icons.dart';
@@ -32,7 +34,7 @@ class OnboardingView extends StatelessWidget {
                     OnboardingStrings.meetPrefix,
                     style: AppTextStyles.onboardingTitle,
                   ),
-                  const AppBrandText(height: 32,width: 150,),
+                  const AppBrandText(height: 32, width: 150),
                 ],
               ),
               const SizedBox(height: 12),
@@ -88,7 +90,9 @@ class OnboardingView extends StatelessWidget {
                 },
                 label: AppStrings.continueButton,
               ),
-              const SizedBox(height: 16),
+              Platform.isAndroid
+                  ? const SizedBox(height: 26)
+                  : SizedBox.shrink(),
             ],
           ),
         ),

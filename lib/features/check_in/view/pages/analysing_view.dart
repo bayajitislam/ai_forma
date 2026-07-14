@@ -50,7 +50,7 @@ class _AnalysingViewState extends State<AnalysingView> {
           padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Column(
             children: [
-              const CheckInHeader(),
+              const CheckInHeader(title: CheckInStrings.analysing,),
               const SizedBox(height: 48),
               const Text(
                 CheckInStrings.analysingTitle,

@@ -11,7 +11,8 @@ import 'package:ai_forma/features/check_in/view/widgets/check_in_streak_card.dar
 import 'package:ai_forma/features/dashboard/view/widgets/metric_card.dart';
 
 class CheckInHomeView extends StatelessWidget {
-  const CheckInHomeView({super.key});
+  final void Function()? goInsightPage;
+  const CheckInHomeView({super.key, required this.goInsightPage});
 
   void _beginScan(BuildContext context) {
     Navigator.of(
@@ -22,7 +23,7 @@ class CheckInHomeView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(24, 0, 24, 100),
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 100),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -55,7 +56,7 @@ class CheckInHomeView extends StatelessWidget {
             children: [
               Expanded(
                 child: MetricCard(
-                  height: 118,
+                  height: 136,
                   label: CheckInStrings.currentWeight,
                   value: CheckInStrings.currentWeightValue,
                   trendText: CheckInStrings.weightChange,
@@ -71,7 +72,7 @@ class CheckInHomeView extends StatelessWidget {
             label: CheckInStrings.beginNewScan,
           ),
           const SizedBox(height: 16),
-          const _CheckInInsightCard(),
+          _CheckInInsightCard(goInsightPage: goInsightPage),
         ],
       ),
     );
@@ -83,7 +84,7 @@ class _LatestScanCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(16),
-      height: 118,
+      height: 136,
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(14),
@@ -140,7 +141,8 @@ class _LatestScanCard extends StatelessWidget {
 }
 
 class _CheckInInsightCard extends StatelessWidget {
-  const _CheckInInsightCard();
+  final void Function()? goInsightPage;
+  const _CheckInInsightCard({required this.goInsightPage});
 
   static const Color _cardBackground = Color(0xFF081012);
 
@@ -148,20 +150,30 @@ class _CheckInInsightCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
         gradient: const RadialGradient(
-          center: Alignment(1.15, 1.25),
-          radius: 0.75,
-          colors: [Color(0xFF0F3D3A), _cardBackground],
-          stops: [0.0, 0.7],
+          center: Alignment(0.7, 0.6),
+          radius: 1,
+          colors: [Color.fromARGB(255, 48, 113, 106), _cardBackground],
+          stops: [0.0, 1],
         ),
       ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.end,
+      child: Stack(
         children: [
-          Expanded(
+          // Background icon — bottom right
+          Positioned(
+            right: 16,
+            bottom: 12,
+            child: AppIcon(
+              icon: AppIcons.user,
+              size: 96,
+              color: AppColors.brandTeal.withValues(alpha: 0.18),
+            ),
+          ),
+          // Foreground content
+          Padding(
+            padding: const EdgeInsets.all(20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -183,34 +195,31 @@ class _CheckInInsightCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 12),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      CheckInStrings.viewInsight,
-                      style: const TextStyle(
-                        fontFamily: AppFonts.family,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
+                GestureDetector(
+                  onTap: goInsightPage,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        CheckInStrings.viewInsight,
+                        style: const TextStyle(
+                          fontFamily: AppFonts.family,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.onPrimary,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      const AppIcon(
+                        icon: AppIcons.arrowRight,
+                        size: 16,
                         color: AppColors.onPrimary,
                       ),
-                    ),
-                    const SizedBox(width: 4),
-                    const AppIcon(
-                      icon: AppIcons.arrowRight,
-                      size: 16,
-                      color: AppColors.onPrimary,
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ],
             ),
-          ),
-          const SizedBox(width: 12),
-          AppIcon(
-            icon: AppIcons.user,
-            size: 72,
-            color: AppColors.brandTeal.withValues(alpha: 0.35),
           ),
         ],
       ),
