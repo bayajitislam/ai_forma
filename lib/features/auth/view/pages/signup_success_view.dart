@@ -18,7 +18,7 @@ class SignupSuccessView extends StatelessWidget {
       backgroundColor: AppColors.onboardingBackground,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Column(
             children: [
               const AuthFlowHeader(currentStep: 3),

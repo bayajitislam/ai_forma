@@ -1,4 +1,8 @@
 abstract final class DashboardStrings {
+  static const String helloUser = 'Hello, Josh';
+  static const String aiGreeting =
+      'Your transformation is progressing steadily.';
+
   static const String momentumScore = 'Momentum Score';
   static const String momentumBadge = '\u2191 +12 this week';
   static const String momentumTitle = 'Strong Momentum';

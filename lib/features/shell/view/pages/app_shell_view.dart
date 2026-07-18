@@ -36,10 +36,16 @@ class _AppShellViewState extends State<AppShellView> {
         bottom: false,
         child: Column(
           children: [
-            const Padding(
-              padding: EdgeInsets.fromLTRB(16, 8, 16, 16),
-              child: AppShellHeader(),
-            ),
+            if (_selectedItem == AppNavItem.home)
+              const Padding(
+                padding: EdgeInsets.fromLTRB(16, 8, 16, 0),
+                child: AppShellHeader(),
+              ),
+            if (_selectedItem != AppNavItem.home)
+              const Padding(
+                padding: EdgeInsets.fromLTRB(16, 8, 16, 16),
+                child: AppShellHeader(),
+              ),
             Expanded(
               child: IndexedStack(
                 index: _selectedItem.index,

@@ -10,36 +10,36 @@ class AiInsightCard extends StatelessWidget {
   final void Function()? goInsightPage;
   const AiInsightCard({super.key, required this.goInsightPage});
 
-  static const Color _cardBackground = Color(0xFF081012);
-
   @override
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        gradient: const RadialGradient(
-          center: Alignment(0.7, 0.6),
+        borderRadius: BorderRadius.circular(14),
+        color: AppColors.darkCard,
+          gradient: const RadialGradient(
+          center: Alignment(0.6, -1.3),
           radius: 1,
-          colors: [Color.fromARGB(255, 48, 113, 106), _cardBackground],
+          colors: [Color.fromARGB(255, 39, 97, 90), AppColors.darkCard],
           stops: [0.0, 1],
+        ),
+        border: Border.all(
+          color: AppColors.brandTeal.withValues(alpha: 0.12),
         ),
       ),
       child: Stack(
         children: [
-          // Background icon — bottom right
           Positioned(
-            right: 16,
-            bottom: 12,
+            right: 10,
+            bottom: 6,
             child: AppIcon(
               icon: AppIcons.user,
-              size: 96,
-              color: AppColors.brandTeal.withValues(alpha: 0.18),
+              size: 56,
+              color: AppColors.brandTeal.withValues(alpha: 0.08),
             ),
           ),
-          // Foreground content
           Padding(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -47,21 +47,21 @@ class AiInsightCard extends StatelessWidget {
                   DashboardStrings.aiInsight,
                   style: AppTextStyles.dashboardSectionLabel.copyWith(
                     fontSize: 14,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 6),
                 Text(
                   DashboardStrings.aiInsightBody,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: AppFonts.family,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.onPrimary,
-                    height: 1.5,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w400,
+                    color: AppColors.onPrimary.withValues(alpha: 1),
+                    height: 1.4,
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 8),
                 GestureDetector(
                   onTap: goInsightPage,
                   child: Row(
@@ -69,18 +69,18 @@ class AiInsightCard extends StatelessWidget {
                     children: [
                       Text(
                         DashboardStrings.viewAnalysis,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontFamily: AppFonts.family,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.onPrimary,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.brandTealDark,
                         ),
                       ),
                       const SizedBox(width: 4),
                       const AppIcon(
                         icon: AppIcons.arrowRight,
-                        size: 16,
-                        color: AppColors.onPrimary,
+                        size: 14,
+                        color: AppColors.brandTealDark,
                       ),
                     ],
                   ),

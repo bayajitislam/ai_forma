@@ -3,6 +3,7 @@ import 'package:ai_forma/features/dashboard/constants/dashboard_strings.dart';
 import 'package:ai_forma/features/dashboard/view/widgets/ai_insight_card.dart';
 import 'package:ai_forma/features/dashboard/view/widgets/latest_check_in_card.dart';
 import 'package:ai_forma/features/dashboard/view/widgets/metric_card.dart';
+import 'package:ai_forma/features/dashboard/view/widgets/dashboard_header.dart';
 import 'package:ai_forma/features/dashboard/view/widgets/momentum_card.dart';
 import 'package:ai_forma/features/dashboard/view/widgets/sparkline_chart.dart';
 import 'package:ai_forma/features/dashboard/view/widgets/todays_priority_card.dart';
@@ -14,10 +15,12 @@ class DashboardView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 120),
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 120),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          const DashboardHeader(),
+          const SizedBox(height: 16),
           const MomentumCard(),
           const SizedBox(height: 16),
           const TodaysPriorityCard(),

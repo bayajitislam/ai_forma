@@ -8,7 +8,6 @@ import 'package:ai_forma/core/theme/app_text_styles.dart';
 import 'package:ai_forma/core/widgets/primary_button.dart';
 import 'package:ai_forma/features/assessment/constants/assessment_strings.dart';
 import 'package:ai_forma/features/assessment/view/pages/nutrition_preferences_view.dart';
-import 'package:ai_forma/features/assessment/view/widgets/assessment_category_badge.dart';
 import 'package:ai_forma/features/assessment/view/widgets/assessment_flow_header.dart';
 import 'package:ai_forma/features/assessment/view/widgets/assessment_grid_option_tile.dart';
 import 'package:ai_forma/features/assessment/view/widgets/assessment_info_banner.dart';
@@ -143,9 +142,7 @@ class _NutritionDifficultiesViewState extends State<NutritionDifficultiesView> {
 
   void _goToNext() {
     Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => const NutritionPreferencesView(),
-      ),
+      MaterialPageRoute<void>(builder: (_) => const NutritionPreferencesView()),
     );
   }
 
@@ -161,8 +158,6 @@ class _NutritionDifficultiesViewState extends State<NutritionDifficultiesView> {
             children: [
               const SizedBox(height: 8),
               const AssessmentFlowHeader(currentStep: 11),
-              const SizedBox(height: 12),
-              const AssessmentCategoryBadge(),
               const SizedBox(height: 20),
               const Text(
                 AssessmentStrings.nutritionDifficultiesTitle,

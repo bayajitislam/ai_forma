@@ -28,11 +28,13 @@ class AssessmentFlowHeader extends StatelessWidget {
                 alignment: Alignment.centerLeft,
                 child: GestureDetector(
                   onTap: () => Navigator.maybePop(context),
-                  child: const AppIcon(
-                    icon: AppIcons.back,
-                    size: 28,
-                    color: AppColors.textPrimary,
-                  ),
+                  child: Navigator.canPop(context)
+                      ? const AppIcon(
+                          icon: AppIcons.back,
+                          size: 28,
+                          color: AppColors.textPrimary,
+                        )
+                      : const SizedBox.shrink(),
                 ),
               ),
             const AppBrandText(height: 22, width: 150),
