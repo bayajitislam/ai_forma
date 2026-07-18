@@ -9,7 +9,6 @@ import 'package:ai_forma/features/assessment/constants/assessment_strings.dart';
 import 'package:ai_forma/features/assessment/view/pages/supplements_view.dart';
 import 'package:ai_forma/features/assessment/view/widgets/assessment_flow_header.dart';
 import 'package:ai_forma/features/assessment/view/widgets/assessment_radio_tile.dart';
-import 'package:ai_forma/features/assessment/view/widgets/assessment_skip_link.dart';
 
 enum MenstrualOption {
   menstrual,
@@ -42,12 +41,12 @@ class _MenstrualViewState extends State<MenstrualView> {
       backgroundColor: AppColors.onboardingBackground,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 8),
-              const AssessmentFlowHeader(currentStep: 10),
+              const AssessmentFlowHeader(currentStep: 14),
               const SizedBox(height: 32),
               const Text(
                 AssessmentStrings.menstrualTitle,
@@ -108,8 +107,6 @@ class _MenstrualViewState extends State<MenstrualView> {
                   ],
                 ),
               ),
-              AssessmentSkipLink(onTap: _goToNext),
-              const SizedBox(height: 16),
               PrimaryButton(onPressed: _goToNext, label: AppStrings.nextButton),
               Platform.isAndroid
                   ? const SizedBox(height: 26)

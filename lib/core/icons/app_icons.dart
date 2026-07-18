@@ -55,4 +55,23 @@ abstract final class AppIcons {
   static const IconData pulse = Remix.pulse_line;
   static const IconData arrowUpRight = Remix.arrow_right_up_line;
   static const IconData connector = Remix.connector_line;
+  static const IconData thumbUp = Remix.thumb_up_line;
+  static const IconData scales = Remix.scales_3_line;
+  static const IconData restaurant = Remix.restaurant_line;
+  static const IconData closeCircle = Remix.close_circle_line;
+  static const IconData question = Remix.question_line;
+  static const IconData signpost = Remix.signpost_line;
+  static const IconData cake = Remix.cake_3_line;
+  static const IconData cup = Remix.cup_line;
+  static const IconData briefcase = Remix.briefcase_line;
+  static const IconData subtract = Remix.subtract_line;
+  static const IconData fish = Remix.anchor_line;
+  static const IconData timer = Remix.timer_line;
+  static const IconData plane = Remix.plane_line;
+  static const IconData group = Remix.group_line;
+  static const IconData forbid = Remix.forbid_line;
+  static const IconData bowl = Remix.bowl_line;
+  static const IconData weight = Remix.weight_line;
+  static const IconData inbox = Remix.inbox_line;
+  static const IconData sparkle = Remix.sparkling_2_line;
 }

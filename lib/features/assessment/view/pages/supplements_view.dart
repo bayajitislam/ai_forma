@@ -8,7 +8,6 @@ import 'package:ai_forma/core/widgets/primary_button.dart';
 import 'package:ai_forma/features/assessment/constants/assessment_strings.dart';
 import 'package:ai_forma/features/assessment/view/widgets/assessment_checkbox_tile.dart';
 import 'package:ai_forma/features/assessment/view/widgets/assessment_flow_header.dart';
-import 'package:ai_forma/features/assessment/view/widgets/assessment_skip_link.dart';
 import 'package:ai_forma/features/shell/view/utils/shell_navigation.dart';
 
 enum SupplementOption { protein, creatine, preWorkout, vitamins, omega3, other }
@@ -42,12 +41,12 @@ class _SupplementsViewState extends State<SupplementsView> {
       backgroundColor: AppColors.onboardingBackground,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 8),
-              const AssessmentFlowHeader(currentStep: 11),
+              const AssessmentFlowHeader(currentStep: 15),
               const SizedBox(height: 32),
               const Text(
                 AssessmentStrings.supplementsTitle,
@@ -97,8 +96,6 @@ class _SupplementsViewState extends State<SupplementsView> {
                   ],
                 ),
               ),
-              AssessmentSkipLink(onTap: () => navigateToAppShell(context)),
-              const SizedBox(height: 16),
               PrimaryButton(
                 onPressed: () => navigateToAppShell(context),
                 label: AppStrings.nextButton,

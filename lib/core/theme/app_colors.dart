@@ -50,6 +50,7 @@ abstract final class AppColors {
   static const Color visualScanDatePill = Color(0xFF4A4A4A);
 
   static const Color splashBackground = Color(0xFFFFFFFF);
+  static const Color assessmentInfoBannerBg = Color(0xFFFFF5F5);
 
   static const LinearGradient primaryButtonGradient = LinearGradient(
     colors: [brandTealDark, brandTealLight],

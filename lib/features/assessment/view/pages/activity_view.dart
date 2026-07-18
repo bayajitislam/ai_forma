@@ -7,7 +7,7 @@ import 'package:ai_forma/core/theme/app_colors.dart';
 import 'package:ai_forma/core/theme/app_text_styles.dart';
 import 'package:ai_forma/core/widgets/primary_button.dart';
 import 'package:ai_forma/features/assessment/constants/assessment_strings.dart';
-import 'package:ai_forma/features/assessment/view/pages/medical_view.dart';
+import 'package:ai_forma/features/assessment/view/pages/nutrition_current_view.dart';
 import 'package:ai_forma/features/assessment/view/widgets/assessment_flow_header.dart';
 import 'package:ai_forma/features/assessment/view/widgets/assessment_radio_tile.dart';
 
@@ -26,7 +26,7 @@ class _ActivityViewState extends State<ActivityView> {
   void _goToNext() {
     Navigator.of(
       context,
-    ).push(MaterialPageRoute<void>(builder: (_) => const MedicalView()));
+    ).push(MaterialPageRoute<void>(builder: (_) => const NutritionCurrentView()));
   }
 
   @override
@@ -35,7 +35,7 @@ class _ActivityViewState extends State<ActivityView> {
       backgroundColor: AppColors.onboardingBackground,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

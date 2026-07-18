@@ -12,6 +12,7 @@ class AssessmentRadioTile extends StatelessWidget {
     this.subtitle,
     required this.isSelected,
     required this.onTap,
+    this.nutritionStyle = false,
   });
 
   final IconData? icon;
@@ -19,9 +20,21 @@ class AssessmentRadioTile extends StatelessWidget {
   final String? subtitle;
   final bool isSelected;
   final VoidCallback onTap;
+  final bool nutritionStyle;
 
   @override
   Widget build(BuildContext context) {
+    final borderWidth = nutritionStyle ? (isSelected ? 2.0 : 1.0) : 2.0;
+    final iconBackgroundColor = nutritionStyle
+        ? AppColors.iconBackground
+        : (isSelected ? AppColors.brandTeal : AppColors.progressInactive);
+    final iconColor = nutritionStyle
+        ? AppColors.brandTeal
+        : (isSelected ? AppColors.onPrimary : AppColors.textSecondary);
+    final titleColor = nutritionStyle
+        ? AppColors.textPrimary
+        : (isSelected ? AppColors.brandTeal : AppColors.textPrimary);
+
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
@@ -32,7 +45,7 @@ class AssessmentRadioTile extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: isSelected ? AppColors.brandTeal : AppColors.cardBorder,
-            width: 2
+            width: borderWidth,
           ),
         ),
         child: Row(
@@ -42,17 +55,13 @@ class AssessmentRadioTile extends StatelessWidget {
                 width: 44,
                 height: 44,
                 decoration: BoxDecoration(
-                  color: isSelected
-                      ? AppColors.brandTeal
-                      : AppColors.progressInactive,
+                  color: iconBackgroundColor,
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: AppIcon(
                   icon: icon!,
                   size: 22,
-                  color: isSelected
-                      ? AppColors.onPrimary
-                      : AppColors.textSecondary,
+                  color: iconColor,
                 ),
               ),
               const SizedBox(width: 14),
@@ -64,9 +73,7 @@ class AssessmentRadioTile extends StatelessWidget {
                   Text(
                     title,
                     style: AppTextStyles.featureTitle.copyWith(
-                      color: isSelected
-                          ? AppColors.brandTeal
-                          : AppColors.textPrimary,
+                      color: titleColor,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
