@@ -131,7 +131,7 @@ class ProfileView extends StatelessWidget {
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
-                              color: AppColors.brandTeal.withOpacity(0.15),
+                              color: AppColors.brandTeal.withValues(alpha: 0.15),
                               blurRadius: 12,
                               spreadRadius: 2,
                             ),
@@ -146,7 +146,7 @@ class ProfileView extends StatelessWidget {
                           value: 1.0,
                           strokeWidth: 5,
                           backgroundColor: Colors.transparent,
-                          color: AppColors.darkCardText.withOpacity(0.15),
+                          color: AppColors.darkCardText.withValues(alpha: 0.15),
                           strokeCap: StrokeCap.round,
                         ),
                       ),
@@ -304,7 +304,7 @@ class ProfileView extends StatelessWidget {
       contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
       leading: Icon(
         icon,
-        color: AppColors.textPrimary.withOpacity(0.7),
+        color: AppColors.textPrimary.withValues(alpha: 0.7),
         size: 22,
       ),
       title: Text(
@@ -327,7 +327,7 @@ class ProfileView extends StatelessWidget {
 
   Widget _buildDivider() {
     return Divider(
-      color: AppColors.cardBorder.withOpacity(0.4),
+      color: AppColors.cardBorder.withValues(alpha: 0.4),
       height: 1,
       thickness: 1,
     );

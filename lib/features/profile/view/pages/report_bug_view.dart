@@ -95,10 +95,10 @@ class _ReportBugViewState extends State<ReportBugView> {
                         width: double.infinity,
                         height: 96,
                         decoration: BoxDecoration(
-                          color: AppColors.insightConsistencyIncompleteBg.withOpacity(0.3),
+                          color: AppColors.insightConsistencyIncompleteBg.withValues(alpha: 0.3),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: AppColors.cardBorder.withOpacity(0.5),
+                            color: AppColors.cardBorder.withValues(alpha: 0.5),
                             width: 1,
                           ),
                         ),
@@ -190,13 +190,13 @@ class _ReportBugViewState extends State<ReportBugView> {
             hintStyle: TextStyle(
               fontFamily: 'Nunito',
               fontSize: 14,
-              color: AppColors.textSecondary.withOpacity(0.5),
+              color: AppColors.textSecondary.withValues(alpha: 0.5),
             ),
             contentPadding: const EdgeInsets.all(16),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(
-                color: AppColors.cardBorder.withOpacity(0.5),
+                color: AppColors.cardBorder.withValues(alpha: 0.5),
                 width: 1.5,
               ),
             ),

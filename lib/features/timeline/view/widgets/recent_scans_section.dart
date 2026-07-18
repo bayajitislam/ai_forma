@@ -65,14 +65,14 @@ class RecentScansSection extends StatelessWidget {
                         border: Border.all(
                           color: scan.isPlaceholder
                               ? AppColors.cardBorder
-                              : AppColors.cardBorder.withOpacity(0.5),
+                              : AppColors.cardBorder.withValues(alpha: 0.5),
                           width: 1,
                         ),
                         boxShadow: scan.isPlaceholder
                             ? null
                             : [
                                 BoxShadow(
-                                  color: AppColors.cardShadow.withOpacity(0.06),
+                                  color: AppColors.cardShadow.withValues(alpha: 0.06),
                                   blurRadius: 8,
                                   offset: const Offset(0, 4),
                                 ),
@@ -86,8 +86,8 @@ class RecentScansSection extends StatelessWidget {
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
                                   border: Border.all(
-                                    color: AppColors.textSecondary.withOpacity(
-                                      0.4,
+                                    color: AppColors.textSecondary.withValues(
+                                      alpha: 0.4,
                                     ),
                                     width: 1.5,
                                   ),
@@ -95,8 +95,8 @@ class RecentScansSection extends StatelessWidget {
                                 child: Icon(
                                   Icons.add,
                                   size: 18,
-                                  color: AppColors.textSecondary.withOpacity(
-                                    0.6,
+                                  color: AppColors.textSecondary.withValues(
+                                    alpha: 0.6,
                                   ),
                                 ),
                               ),

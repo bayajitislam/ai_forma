@@ -259,10 +259,10 @@ class _ScanDetailViewState extends State<ScanDetailView>
         width: 52,
         height: 52,
         decoration: BoxDecoration(
-          color: AppColors.insightConsistencyIncompleteBg.withOpacity(0.5),
+          color: AppColors.insightConsistencyIncompleteBg.withValues(alpha: 0.5),
           shape: BoxShape.circle,
           border: Border.all(
-            color: AppColors.cardBorder.withOpacity(0.5),
+            color: AppColors.cardBorder.withValues(alpha: 0.5),
             width: 1,
           ),
         ),
@@ -283,10 +283,10 @@ class _ScanDetailViewState extends State<ScanDetailView>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
       decoration: BoxDecoration(
-        color: AppColors.insightConsistencyIncompleteBg.withOpacity(0.5),
+        color: AppColors.insightConsistencyIncompleteBg.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: AppColors.cardBorder.withOpacity(0.5),
+          color: AppColors.cardBorder.withValues(alpha: 0.5),
           width: 1,
         ),
       ),

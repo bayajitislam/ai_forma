@@ -58,7 +58,7 @@ class PersonalDetailsView extends StatelessWidget {
                         children: [
                           Icon(
                             item.icon,
-                            color: AppColors.textSecondary.withOpacity(0.8),
+                            color: AppColors.textSecondary.withValues(alpha: 0.8),
                             size: 22,
                           ),
                           const SizedBox(width: 12),

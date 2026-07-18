@@ -104,7 +104,7 @@ class _CommunityChatViewState extends State<CommunityChatView> {
                 color: Colors.white,
                 border: Border(
                   top: BorderSide(
-                    color: AppColors.cardBorder.withOpacity(0.4),
+                    color: AppColors.cardBorder.withValues(alpha: 0.4),
                     width: 1,
                   ),
                 ),
@@ -114,10 +114,10 @@ class _CommunityChatViewState extends State<CommunityChatView> {
                   Expanded(
                     child: Container(
                       decoration: BoxDecoration(
-                        color: AppColors.insightConsistencyIncompleteBg.withOpacity(0.5),
+                        color: AppColors.insightConsistencyIncompleteBg.withValues(alpha: 0.5),
                         borderRadius: BorderRadius.circular(24),
                         border: Border.all(
-                          color: AppColors.cardBorder.withOpacity(0.5),
+                          color: AppColors.cardBorder.withValues(alpha: 0.5),
                           width: 1,
                         ),
                       ),
@@ -251,14 +251,14 @@ class _CommunityChatViewState extends State<CommunityChatView> {
                   ),
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                   decoration: BoxDecoration(
-                    color: AppColors.insightConsistencyIncompleteBg.withOpacity(0.5),
+                    color: AppColors.insightConsistencyIncompleteBg.withValues(alpha: 0.5),
                     borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(16),
                       topRight: Radius.circular(16),
                       bottomRight: Radius.circular(16),
                     ),
                     border: Border.all(
-                      color: AppColors.cardBorder.withOpacity(0.3),
+                      color: AppColors.cardBorder.withValues(alpha: 0.3),
                       width: 1,
                     ),
                   ),

@@ -154,7 +154,7 @@ class HelpSupportView extends StatelessWidget {
 
   Widget _buildDivider() {
     return Divider(
-      color: AppColors.cardBorder.withOpacity(0.4),
+      color: AppColors.cardBorder.withValues(alpha: 0.4),
       height: 1,
       thickness: 1,
     );

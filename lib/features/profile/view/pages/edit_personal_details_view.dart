@@ -135,7 +135,7 @@ class _EditPersonalDetailsViewState extends State<EditPersonalDetailsView> {
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(
-                color: AppColors.cardBorder.withOpacity(0.5),
+                color: AppColors.cardBorder.withValues(alpha: 0.5),
                 width: 1.5,
               ),
             ),

@@ -73,7 +73,7 @@ class PhysiqueTargetsView extends StatelessWidget {
                 child: ListView.separated(
                   itemCount: targets.length,
                   separatorBuilder: (context, index) => Divider(
-                    color: AppColors.cardBorder.withOpacity(0.4),
+                    color: AppColors.cardBorder.withValues(alpha: 0.4),
                     height: 1,
                   ),
                   itemBuilder: (context, index) {

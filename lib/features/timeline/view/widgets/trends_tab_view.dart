@@ -121,10 +121,10 @@ class _TrendsTabViewState extends State<TrendsTabView> {
             child: Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppColors.dashboardBackground.withOpacity(0.5),
+                color: AppColors.dashboardBackground.withValues(alpha: 0.5),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: AppColors.cardBorder.withOpacity(0.5),
+                  color: AppColors.cardBorder.withValues(alpha: 0.5),
                   width: 1,
                 ),
               ),
@@ -243,7 +243,7 @@ class _BodyFatChartPainter extends CustomPainter {
       textPainter.text = TextSpan(
         text: yLabels[i],
         style: TextStyle(
-          color: AppColors.textSecondary.withOpacity(0.5),
+          color: AppColors.textSecondary.withValues(alpha: 0.5),
           fontSize: 12,
           fontWeight: FontWeight.w500,
           fontFamily: 'Nunito',
@@ -287,7 +287,7 @@ class _BodyFatChartPainter extends CustomPainter {
       textPainter.text = TextSpan(
         text: dp.date,
         style: TextStyle(
-          color: AppColors.textSecondary.withOpacity(0.5),
+          color: AppColors.textSecondary.withValues(alpha: 0.5),
           fontSize: 12,
           fontWeight: FontWeight.w500,
           fontFamily: 'Nunito',

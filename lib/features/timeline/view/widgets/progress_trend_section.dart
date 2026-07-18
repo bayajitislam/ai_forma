@@ -36,7 +36,7 @@ class ProgressTrendSection extends StatelessWidget {
               ),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.cardShadow.withOpacity(0.06),
+                  color: AppColors.cardShadow.withValues(alpha: 0.06),
                   blurRadius: 8,
                   offset: const Offset(0, 8),
                 ),
