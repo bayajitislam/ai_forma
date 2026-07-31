@@ -1,3 +1,5 @@
+import 'package:ai_forma/core/widgets/primary_button.dart';
+import 'package:ai_forma/features/shell/view/utils/shell_navigation.dart';
 import 'package:flutter/material.dart';
 import 'package:ai_forma/core/constants/app_images.dart';
 import 'package:ai_forma/core/icons/app_icons.dart';
@@ -63,19 +65,9 @@ class ComparisonSummaryView extends StatelessWidget {
                           ),
                         ),
                         GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute<void>(
-                                builder: (_) => VisualScanView(
-                                  thenScan: thenScan,
-                                  nowScan: nowScan,
-                                ),
-                              ),
-                            );
-                          },
+                          onTap: () => navigateToAppShell(context),
                           child: const AppIcon(
-                            icon: AppIcons.layoutColumn,
+                            icon: AppIcons.home,
                             size: 22,
                             color: AppColors.textPrimary,
                           ),
@@ -148,6 +140,21 @@ class ComparisonSummaryView extends StatelessWidget {
                     ),
                   ],
                 ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
+              child: PrimaryButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute<void>(
+                      builder: (_) =>
+                          VisualScanView(thenScan: thenScan, nowScan: nowScan),
+                    ),
+                  );
+                },
+                label: InsightsStrings.slideCompare,
               ),
             ),
           ],

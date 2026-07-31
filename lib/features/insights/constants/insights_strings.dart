@@ -27,6 +27,7 @@ abstract final class InsightsStrings {
 
   static const String compareScans = 'COMPARE SCANS';
   static const String compareScansTitle = 'Compare Scans';
+  static const String slideCompare = 'Slide Compare';
   static const String compareScansSubtitle =
       'Choose two body scans to compare.';
   static const String generateComparison = 'GENERATE COMPARISON';
@@ -84,11 +85,14 @@ abstract final class InsightsStrings {
   static const String nutrition = 'Nutrition';
   static const String nutritionSubtitle = 'Increase protein by 20g/day';
   static const String training = 'Training';
-  static const String trainingSubtitle = 'Prioritize two additional lower-body sessions.';
+  static const String trainingSubtitle =
+      'Prioritize two additional lower-body sessions.';
   static const String cardio = 'Cardio';
-  static const String cardioSubtitle = 'Complete 2–3 low-intensity cardio sessions.';
+  static const String cardioSubtitle =
+      'Complete 2–3 low-intensity cardio sessions.';
   static const String recovery = 'Recovery';
-  static const String recoverySubtitle = 'Aim for more consistent sleep timing.';
+  static const String recoverySubtitle =
+      'Aim for more consistent sleep timing.';
 
   static const String progressingWell = 'Progressing Well';
   static const String needsAttention = 'Needs Attention';
