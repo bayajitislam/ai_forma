@@ -209,6 +209,7 @@ abstract final class AssessmentStrings {
   static const String supplementsSubtitle = 'Select all that apply.';
   static const String supplementProtein = 'Protein Powder';
   static const String supplementCreatine = 'Creatine';
+  static const String supplementFatBurner = 'Fat Burner';
   static const String supplementPreWorkout = 'Pre-Workout';
   static const String supplementVitamins = 'Vitamins / Minerals';
   static const String supplementOmega3 = 'Omega 3';

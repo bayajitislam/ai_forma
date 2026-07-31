@@ -26,10 +26,8 @@ class InsightsView extends StatefulWidget {
 }
 
 class _InsightsViewState extends State<InsightsView> {
-  InsightCategory _selectedCategory = InsightCategory.strengths;
 
   void _openCategory(InsightCategory category) {
-    setState(() => _selectedCategory = category);
 
     final page = switch (category) {
       InsightCategory.strengths => const StrengthsView(),

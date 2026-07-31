@@ -37,6 +37,11 @@ dependencies:
   remixicon: ^4.9.3
   google_fonts: ^8.1.0
   flutter_svg: ^2.3.0
+  shared_preferences: ^2.5.5
+  get: ^4.7.3
+  fl_chart: ^1.2.0
+  uuid: ^4.6.0
+  intl: ^0.20.3
 
 dev_dependencies:
   flutter_test:

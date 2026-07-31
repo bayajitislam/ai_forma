@@ -32,4 +32,6 @@ abstract final class DashboardStrings {
   static const String aiInsightBody =
       'Shoulder definition has improved by 8% since your previous scan.';
   static const String viewAnalysis = 'View Analysis';
+  static const String latestScan = 'Latest Scan';
+  static const String imageGenerate =  'Image are genarate from your latest body scan';
 }

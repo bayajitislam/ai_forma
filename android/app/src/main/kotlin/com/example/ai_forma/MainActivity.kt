@@ -1,4 +1,4 @@
-package com.example.ai_forma
+package com.aiforma.app
 
 import io.flutter.embedding.android.FlutterActivity
 

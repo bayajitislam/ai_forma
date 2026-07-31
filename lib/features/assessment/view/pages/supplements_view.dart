@@ -10,7 +10,7 @@ import 'package:ai_forma/features/assessment/view/widgets/assessment_checkbox_ti
 import 'package:ai_forma/features/assessment/view/widgets/assessment_flow_header.dart';
 import 'package:ai_forma/features/shell/view/utils/shell_navigation.dart';
 
-enum SupplementOption { protein, creatine, preWorkout, vitamins, omega3, other }
+enum SupplementOption { protein, creatine, preWorkout,fatBurner,  vitamins, omega3, other }
 
 class SupplementsView extends StatefulWidget {
   const SupplementsView({super.key});
@@ -20,10 +20,7 @@ class SupplementsView extends StatefulWidget {
 }
 
 class _SupplementsViewState extends State<SupplementsView> {
-  final Set<SupplementOption> _selected = {
-    SupplementOption.protein,
-    SupplementOption.creatine,
-  };
+  final Set<SupplementOption> _selected = {};
 
   void _toggle(SupplementOption option) {
     setState(() {
@@ -77,6 +74,13 @@ class _SupplementsViewState extends State<SupplementsView> {
                         SupplementOption.preWorkout,
                       ),
                       onTap: () => _toggle(SupplementOption.preWorkout),
+                    ),
+                    AssessmentCheckboxTile(
+                      label: AssessmentStrings.supplementFatBurner,
+                      isSelected: _selected.contains(
+                        SupplementOption.fatBurner,
+                      ),
+                      onTap: () => _toggle(SupplementOption.fatBurner),
                     ),
                     AssessmentCheckboxTile(
                       label: AssessmentStrings.supplementVitamins,
