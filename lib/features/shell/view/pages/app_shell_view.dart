@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
 import 'package:ai_forma/core/widgets/app_navbar.dart';
@@ -26,6 +28,8 @@ class _AppShellViewState extends State<AppShellView> {
       _selectedItem = AppNavItem.insights;
     });
   }
+
+  final isAndroid = Platform.isAndroid;
 
   @override
   Widget build(BuildContext context) {
@@ -63,7 +67,7 @@ class _AppShellViewState extends State<AppShellView> {
       ),
       bottomNavigationBar: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+          padding: EdgeInsets.fromLTRB(20, 0, 20, isAndroid ? 16 : 0),
           child: AppNavbar(
             selectedItem: _selectedItem,
             onItemSelected: (item) => setState(() => _selectedItem = item),
