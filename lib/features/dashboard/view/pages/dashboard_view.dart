@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:ai_forma/features/dashboard/constants/dashboard_strings.dart';
+import 'package:ai_forma/features/dashboard/controllers/weight_controller.dart';
+import 'package:ai_forma/features/dashboard/view/widgets/ai_daily_brief_card.dart';
 import 'package:ai_forma/features/dashboard/view/widgets/ai_insight_card.dart';
+import 'package:ai_forma/features/dashboard/view/widgets/dashboard_header.dart';
 import 'package:ai_forma/features/dashboard/view/widgets/latest_check_in_card.dart';
 import 'package:ai_forma/features/dashboard/view/widgets/metric_card.dart';
-import 'package:ai_forma/features/dashboard/view/widgets/dashboard_header.dart';
 import 'package:ai_forma/features/dashboard/view/widgets/momentum_card.dart';
 import 'package:ai_forma/features/dashboard/view/widgets/sparkline_chart.dart';
-import 'package:ai_forma/features/dashboard/view/widgets/todays_priority_card.dart';
-
-import 'package:get/get.dart';
-import 'package:ai_forma/features/dashboard/controllers/weight_controller.dart';
+import 'package:ai_forma/features/dashboard/view/widgets/weekly_scan_card.dart';
 import 'package:ai_forma/features/dashboard/view/pages/weight_trends_view.dart';
-
 import 'package:ai_forma/features/dashboard/view/pages/weekly_progress_view.dart';
 
 class DashboardView extends StatelessWidget {
@@ -29,9 +28,19 @@ class DashboardView extends StatelessWidget {
           const DashboardHeader(),
           const SizedBox(height: 16),
           const MomentumCard(),
+          // const SizedBox(height: 16),
+          // const TodaysPriorityCard(),
           const SizedBox(height: 16),
-          const TodaysPriorityCard(),
+
+          // AI Daily Brief Widget
+          const AIDailyBriefCard(),
           const SizedBox(height: 16),
+
+          // Weekly Scan Widget
+          const WeeklyScanCard(),
+          const SizedBox(height: 16),
+
+          // Current Weight & Weekly Change Row
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -46,7 +55,9 @@ class DashboardView extends StatelessWidget {
                     final currentWeight = controller.currentWeight;
                     return MetricCard(
                       label: DashboardStrings.currentWeight,
-                      value: currentWeight != null ? '${currentWeight.weightKg.toStringAsFixed(1)} kg' : '-',
+                      value: currentWeight != null
+                          ? '${currentWeight.weightKg.toStringAsFixed(1)} kg'
+                          : '-',
                       trendText: controller.weightChangeSinceLastString,
                     );
                   }),
@@ -57,7 +68,8 @@ class DashboardView extends StatelessWidget {
                 child: GestureDetector(
                   onTap: () {
                     Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => const WeeklyProgressView()),
+                      MaterialPageRoute(
+                          builder: (_) => const WeeklyProgressView()),
                     );
                   },
                   child: Obx(() {
