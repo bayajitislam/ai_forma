@@ -200,8 +200,9 @@ class WeightTrendsView extends StatelessWidget {
               reservedSize: 30,
               interval: maxX == minX ? 1 : (maxX - minX) / 4,
               getTitlesWidget: (value, meta) {
-                if (value == maxX || value == minX)
+                if (value == maxX || value == minX) {
                   return const SizedBox.shrink();
+                }
                 final date = DateTime.fromMillisecondsSinceEpoch(value.toInt());
                 return Padding(
                   padding: const EdgeInsets.only(top: 8.0),
@@ -294,13 +295,16 @@ class WeightTrendsView extends StatelessWidget {
       return const Text('No history available.');
     }
 
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: ListView.separated(
+    return Material(
+      color: AppColors.surface,
+      borderRadius: BorderRadius.circular(12),
+      clipBehavior: Clip.antiAlias,
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppColors.border),
+        ),
+        child: ListView.separated(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
         itemCount: records.length,
@@ -352,6 +356,7 @@ class WeightTrendsView extends StatelessWidget {
           );
         },
       ),
-    );
+    ),
+  );
   }
 }

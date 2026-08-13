@@ -12,6 +12,8 @@ import 'package:get/get.dart';
 import 'package:ai_forma/features/dashboard/controllers/weight_controller.dart';
 import 'package:ai_forma/features/dashboard/view/pages/weight_trends_view.dart';
 
+import 'package:ai_forma/features/dashboard/view/pages/weekly_progress_view.dart';
+
 class DashboardView extends StatelessWidget {
   final void Function()? goInsight;
   const DashboardView({super.key, required this.goInsight});
@@ -52,14 +54,21 @@ class DashboardView extends StatelessWidget {
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: Obx(() {
-                  return MetricCard(
-                    label: DashboardStrings.weeklyChange,
-                    value: controller.weightChangeSinceLastString,
-                    caption: DashboardStrings.weeklyChangeCaption,
-                    child: const SparklineChart(),
-                  );
-                }),
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const WeeklyProgressView()),
+                    );
+                  },
+                  child: Obx(() {
+                    return MetricCard(
+                      label: DashboardStrings.weeklyChange,
+                      value: controller.weightChangeSinceLastString,
+                      caption: controller.weeklyProgressStatus,
+                      child: const SparklineChart(),
+                    );
+                  }),
+                ),
               ),
             ],
           ),

@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
-import 'package:ai_forma/core/theme/app_text_styles.dart';
 import 'package:ai_forma/core/widgets/primary_button.dart';
 import 'package:ai_forma/features/assessment/constants/assessment_strings.dart';
-import 'package:ai_forma/features/assessment/view/widgets/assessment_unit_toggle.dart';
-import 'package:ai_forma/features/assessment/view/widgets/measurement_wheel_picker.dart';
+import 'package:ai_forma/features/assessment/view/widgets/weight_selector.dart';
 import 'package:ai_forma/features/dashboard/controllers/weight_controller.dart';
 import 'package:ai_forma/core/models/weight_record.dart';
 
@@ -39,51 +37,23 @@ class WeightEntryBottomSheet extends StatefulWidget {
 }
 
 class _WeightEntryBottomSheetState extends State<WeightEntryBottomSheet> {
-  int _unitIndex = 0;
-  late int _weightKg;
-  late int _weightLb;
-
-  bool get _isKg => _unitIndex == 0;
+  late double _selectedWeightKg;
 
   @override
   void initState() {
     super.initState();
-    double startingKg = widget.initialRecord?.weightKg ?? widget.initialWeightKg ?? AssessmentStrings.defaultWeightKg.toDouble();
-    _weightKg = startingKg.round();
-    _weightLb = _kgToLb(_weightKg);
+    _selectedWeightKg = widget.initialRecord?.weightKg ??
+        widget.initialWeightKg ??
+        AssessmentStrings.defaultWeightKg.toDouble();
   }
-
-  void _onUnitChanged(int index) {
-    if (index == _unitIndex) return;
-
-    setState(() {
-      if (index == 0) {
-        _weightKg = _lbToKg(_weightLb);
-      } else {
-        _weightLb = _kgToLb(_weightKg);
-      }
-      _unitIndex = index;
-    });
-  }
-
-  int _kgToLb(int kg) => (kg * 2.20462).round().clamp(
-    AssessmentStrings.minWeightLb,
-    AssessmentStrings.maxWeightLb,
-  );
-
-  int _lbToKg(int lb) => (lb / 2.20462).round().clamp(
-    AssessmentStrings.minWeightKg,
-    AssessmentStrings.maxWeightKg,
-  );
 
   void _save() {
-    final weightToSave = _isKg ? _weightKg.toDouble() : _lbToKg(_weightLb).toDouble();
     final controller = Get.find<WeightController>();
 
     if (widget.initialRecord != null) {
-      controller.updateRecord(widget.initialRecord!.id, weightToSave);
+      controller.updateRecord(widget.initialRecord!.id, _selectedWeightKg);
     } else {
-      controller.addRecord(weightToSave);
+      controller.addRecord(_selectedWeightKg);
     }
 
     Navigator.of(context).pop();
@@ -113,37 +83,16 @@ class _WeightEntryBottomSheetState extends State<WeightEntryBottomSheet> {
           const SizedBox(height: 24),
           Text(
             widget.initialRecord == null ? 'Update Weight' : 'Edit Weight Entry',
-            style: AppTextStyles.primaryButton,
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: AppColors.textPrimary,
+            ),
           ),
           const SizedBox(height: 24),
-          AssessmentUnitToggle(
-            options: const [
-              AssessmentStrings.weightUnitKg,
-              AssessmentStrings.weightUnitLb,
-            ],
-            selectedIndex: _unitIndex,
-            onChanged: _onUnitChanged,
-          ),
-          const SizedBox(height: 32),
-          SizedBox(
-            height: 200,
-            child: _isKg
-                ? MeasurementWheelPicker(
-                    key: const ValueKey('weight-kg'),
-                    minValue: AssessmentStrings.minWeightKg,
-                    maxValue: AssessmentStrings.maxWeightKg,
-                    initialValue: _weightKg,
-                    unit: 'kg',
-                    onChanged: (value) => _weightKg = value,
-                  )
-                : MeasurementWheelPicker(
-                    key: const ValueKey('weight-lb'),
-                    minValue: AssessmentStrings.minWeightLb,
-                    maxValue: AssessmentStrings.maxWeightLb,
-                    initialValue: _weightLb,
-                    unit: 'lb',
-                    onChanged: (value) => _weightLb = value,
-                  ),
+          WeightSelector(
+            initialWeightKg: _selectedWeightKg,
+            onChanged: (val) => _selectedWeightKg = val,
           ),
           const SizedBox(height: 32),
           PrimaryButton(

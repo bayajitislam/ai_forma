@@ -8,8 +8,7 @@ import 'package:ai_forma/core/widgets/primary_button.dart';
 import 'package:ai_forma/features/assessment/constants/assessment_strings.dart';
 import 'package:ai_forma/features/assessment/view/pages/objective_view.dart';
 import 'package:ai_forma/features/assessment/view/widgets/assessment_flow_header.dart';
-import 'package:ai_forma/features/assessment/view/widgets/assessment_unit_toggle.dart';
-import 'package:ai_forma/features/assessment/view/widgets/measurement_wheel_picker.dart';
+import 'package:ai_forma/features/assessment/view/widgets/weight_selector.dart';
 
 class WeightView extends StatefulWidget {
   const WeightView({super.key});
@@ -19,36 +18,7 @@ class WeightView extends StatefulWidget {
 }
 
 class _WeightViewState extends State<WeightView> {
-  int _unitIndex = 0;
-  int _weightKg = AssessmentStrings.defaultWeightKg;
-  int _weightLb = AssessmentStrings.defaultWeightLb;
-
-  bool get _isKg => _unitIndex == 0;
-
-  void _onUnitChanged(int index) {
-    if (index == _unitIndex) {
-      return;
-    }
-
-    setState(() {
-      if (index == 0) {
-        _weightKg = _lbToKg(_weightLb);
-      } else {
-        _weightLb = _kgToLb(_weightKg);
-      }
-      _unitIndex = index;
-    });
-  }
-
-  int _kgToLb(int kg) => (kg * 2.20462).round().clamp(
-    AssessmentStrings.minWeightLb,
-    AssessmentStrings.maxWeightLb,
-  );
-
-  int _lbToKg(int lb) => (lb / 2.20462).round().clamp(
-    AssessmentStrings.minWeightKg,
-    AssessmentStrings.maxWeightKg,
-  );
+  double _selectedWeightKg = AssessmentStrings.defaultWeightKg.toDouble();
 
   @override
   Widget build(BuildContext context) {
@@ -72,34 +42,12 @@ class _WeightViewState extends State<WeightView> {
                 AssessmentStrings.weightSubtitle,
                 style: AppTextStyles.authBody,
               ),
-              const SizedBox(height: 24),
-              AssessmentUnitToggle(
-                options: const [
-                  AssessmentStrings.weightUnitKg,
-                  AssessmentStrings.weightUnitLb,
-                ],
-                selectedIndex: _unitIndex,
-                onChanged: _onUnitChanged,
-              ),
               const Spacer(),
               Center(
-                child: _isKg
-                    ? MeasurementWheelPicker(
-                        key: const ValueKey('weight-kg'),
-                        minValue: AssessmentStrings.minWeightKg,
-                        maxValue: AssessmentStrings.maxWeightKg,
-                        initialValue: _weightKg,
-                        unit: 'kg',
-                        onChanged: (value) => _weightKg = value,
-                      )
-                    : MeasurementWheelPicker(
-                        key: const ValueKey('weight-lb'),
-                        minValue: AssessmentStrings.minWeightLb,
-                        maxValue: AssessmentStrings.maxWeightLb,
-                        initialValue: _weightLb,
-                        unit: 'lb',
-                        onChanged: (value) => _weightLb = value,
-                      ),
+                child: WeightSelector(
+                  initialWeightKg: _selectedWeightKg,
+                  onChanged: (val) => _selectedWeightKg = val,
+                ),
               ),
               const Spacer(),
               PrimaryButton(
@@ -114,7 +62,7 @@ class _WeightViewState extends State<WeightView> {
               ),
               Platform.isAndroid
                   ? const SizedBox(height: 26)
-                  : SizedBox.shrink(),
+                  : const SizedBox.shrink(),
             ],
           ),
         ),

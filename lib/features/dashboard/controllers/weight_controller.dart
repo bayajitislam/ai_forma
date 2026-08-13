@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import 'package:ai_forma/core/models/weight_record.dart';
 import 'package:uuid/uuid.dart';
+import 'package:intl/intl.dart';
 
 enum TimeRange { week1, month1, month3, month6, year1 }
 
@@ -53,8 +54,46 @@ class WeightController extends GetxController {
   
   String get weightChangeSinceLastString {
     final change = weightChangeSinceLast;
-    final sign = change > 0 ? '+' : '';
+    final sign = change > 0 ? '+' : (change < 0 ? '' : '');
     return '$sign${change.toStringAsFixed(1)} kg';
+  }
+
+  WeightRecord? get previousWeight {
+    if (records.length < 2) return null;
+    return records[1];
+  }
+
+  String get comparisonPeriodString {
+    final data = chartData;
+    if (data.length >= 2) {
+      final start = data.first.date;
+      final end = data.last.date;
+      final startStr = DateFormat('d MMM').format(start);
+      final endStr = DateFormat('d MMM').format(end);
+      return '$startStr – $endStr';
+    } else if (records.isNotEmpty) {
+      final end = records.first.date;
+      final start = end.subtract(const Duration(days: 7));
+      return '${DateFormat('d MMM').format(start)} – ${DateFormat('d MMM').format(end)}';
+    }
+    final now = DateTime.now();
+    return '${DateFormat('d MMM').format(now.subtract(const Duration(days: 7)))} – ${DateFormat('d MMM').format(now)}';
+  }
+
+  String get weeklyProgressStatus {
+    if (records.length < 2) return 'Insufficient data';
+    final change = weightChangeSinceLast;
+    if (change.abs() < 0.1) return 'Maintaining';
+    if (change <= -0.3 && change >= -0.8) return 'On target';
+    if (change < -0.8) return 'Faster than target';
+    if (change > -0.3 && change < 0) return 'Slower than target';
+    return 'On target';
+  }
+
+  double getWeightChangeFromPrevious(int chartIndex) {
+    final data = chartData;
+    if (chartIndex <= 0 || chartIndex >= data.length) return 0.0;
+    return data[chartIndex].weightKg - data[chartIndex - 1].weightKg;
   }
 
   // Filtered records for chart
