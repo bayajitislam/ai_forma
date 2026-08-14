@@ -1,5 +1,6 @@
 import 'dart:io';
-
+import 'package:ai_forma/features/auth/controllers/signup_controller.dart';
+import 'package:ai_forma/routes/routes_name.dart';
 import 'package:flutter/material.dart';
 import 'package:ai_forma/core/icons/app_icons.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
@@ -8,22 +9,14 @@ import 'package:ai_forma/core/widgets/app_icon.dart';
 import 'package:ai_forma/core/widgets/app_text_field.dart';
 import 'package:ai_forma/core/widgets/primary_button.dart';
 import 'package:ai_forma/features/auth/constants/auth_strings.dart';
-import 'package:ai_forma/features/auth/view/utils/auth_navigation.dart';
-import 'package:ai_forma/features/auth/view/pages/verify_email_view.dart';
 import 'package:ai_forma/features/auth/view/widgets/auth_brand_title.dart';
 import 'package:ai_forma/features/auth/view/widgets/auth_flow_header.dart';
 import 'package:ai_forma/features/auth/view/widgets/auth_footer_link.dart';
 import 'package:ai_forma/features/auth/view/widgets/password_requirements.dart';
+import 'package:get/get.dart';
 
-class SignupView extends StatefulWidget {
+class SignupView extends GetView<SignupController> {
   const SignupView({super.key});
-
-  @override
-  State<SignupView> createState() => _SignupViewState();
-}
-
-class _SignupViewState extends State<SignupView> {
-  bool _obscurePassword = true;
 
   @override
   Widget build(BuildContext context) {
@@ -51,61 +44,96 @@ class _SignupViewState extends State<SignupView> {
                 child: SingleChildScrollView(
                   child: Column(
                     children: [
-                      const AppTextField(
-                        label: AuthStrings.fullNameLabel,
-                        hint: AuthStrings.fullNameHint,
+                      Obx(
+                        () => AppTextField(
+                          controller: controller.fullNameController,
+                          label: AuthStrings.fullNameLabel,
+                          hint: AuthStrings.fullNameHint,
+                          errorText: controller.nameError.value,
+                        ),
                       ),
                       const SizedBox(height: 16),
-                      const AppTextField(
-                        label: AuthStrings.emailLabel,
-                        hint: AuthStrings.emailHint,
+                      Obx(
+                        () => AppTextField(
+                          controller: controller.emailController,
+                          label: AuthStrings.emailLabel,
+                          hint: AuthStrings.emailHint,
+                          errorText: controller.emailError.value,
+                        ),
                       ),
                       const SizedBox(height: 16),
-                      AppTextField(
-                        label: AuthStrings.passwordLabel,
-                        hint: AuthStrings.passwordHint,
-                        obscureText: _obscurePassword,
-                        suffixIcon: IconButton(
-                          onPressed: () {
-                            setState(() {
-                              _obscurePassword = !_obscurePassword;
-                            });
-                          },
-                          icon: AppIcon(
-                            icon: _obscurePassword
-                                ? AppIcons.eye
-                                : AppIcons.eyeOff,
-                            size: 22,
-                            color: AppColors.textSecondary,
+                      Obx(
+                        () => AppTextField(
+                          controller: controller.passwordController,
+                          label: AuthStrings.passwordLabel,
+                          hint: AuthStrings.passwordHint,
+                          obscureText: controller.isPasswordObsecure.value,
+                          suffixIcon: IconButton(
+                            onPressed: () {
+                              controller.isPasswordObsecure.value =
+                                  !controller.isPasswordObsecure.value;
+                            },
+                            icon: AppIcon(
+                              icon: controller.isPasswordObsecure.value
+                                  ? AppIcons.eye
+                                  : AppIcons.eyeOff,
+                              size: 22,
+                              color: AppColors.textSecondary,
+                            ),
                           ),
                         ),
                       ),
                       const SizedBox(height: 16),
+                      //API / general error banner above password requirements
+                      Obx(() {
+                        final msg = controller.errorMessage.value;
+                        if (msg.isEmpty) return const SizedBox.shrink();
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Icon(Icons.error_outline_rounded,
+                                  size: 15, color: Colors.red.shade400),
+                              const SizedBox(width: 6),
+                              Expanded(
+                                child: Text(
+                                  msg,
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: Colors.red.shade400,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }),
                       const PasswordRequirements(),
                     ],
                   ),
                 ),
               ),
               const SizedBox(height: 16),
-              PrimaryButton(
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute<void>(
-                      builder: (_) => const VerifyEmailView(),
-                    ),
-                  );
-                },
-                label: AuthStrings.createAccountButton,
+              Obx(
+                () => PrimaryButton(
+                  isLoading: controller.isLoading.value,
+                  onPressed: controller.isPasswordValid
+                      ? () => controller.signUp()
+                      : null,
+                  label: AuthStrings.createAccountButton,
+                ),
               ),
               const SizedBox(height: 16),
               AuthFooterLink(
                 prefix: AuthStrings.alreadyHaveAccount,
                 linkText: AuthStrings.logIn,
-                onLinkTap: () => navigateToLogin(context),
+                onLinkTap: () => Get.toNamed(RoutesName.login),
               ),
               Platform.isAndroid
                   ? const SizedBox(height: 26)
-                  : SizedBox.shrink(),
+                  : const SizedBox.shrink(),
             ],
           ),
         ),

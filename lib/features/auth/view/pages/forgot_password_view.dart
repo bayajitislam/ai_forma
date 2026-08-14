@@ -9,8 +9,21 @@ import 'package:ai_forma/features/auth/constants/auth_strings.dart';
 import 'package:ai_forma/features/auth/view/pages/reset_code_view.dart';
 import 'package:ai_forma/features/auth/view/widgets/auth_header.dart';
 
-class ForgotPasswordView extends StatelessWidget {
+class ForgotPasswordView extends StatefulWidget {
   const ForgotPasswordView({super.key});
+
+  @override
+  State<ForgotPasswordView> createState() => _ForgotPasswordViewState();
+}
+
+class _ForgotPasswordViewState extends State<ForgotPasswordView> {
+  final TextEditingController emailController = TextEditingController();
+
+  @override
+  void dispose() {
+    emailController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +47,8 @@ class ForgotPasswordView extends StatelessWidget {
                 style: AppTextStyles.authBody,
               ),
               const SizedBox(height: 32),
-              const AppTextField(
+              AppTextField(
+                controller: emailController,
                 label: AuthStrings.emailLabel,
                 hint: AuthStrings.emailHint,
               ),
@@ -61,7 +75,7 @@ class ForgotPasswordView extends StatelessWidget {
               ),
               Platform.isAndroid
                   ? const SizedBox(height: 26)
-                  : SizedBox.shrink(),
+                  : const SizedBox.shrink(),
             ],
           ),
         ),
@@ -69,3 +83,4 @@ class ForgotPasswordView extends StatelessWidget {
     );
   }
 }
+

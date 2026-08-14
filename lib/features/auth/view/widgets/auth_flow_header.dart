@@ -4,42 +4,47 @@ import 'package:ai_forma/core/theme/app_colors.dart';
 import 'package:ai_forma/core/widgets/app_brand_text.dart';
 import 'package:ai_forma/core/widgets/app_icon.dart';
 import 'package:ai_forma/core/widgets/app_progress_bar.dart';
+import 'package:get/get.dart';
 
 class AuthFlowHeader extends StatelessWidget {
-  final bool showBackButton;
   const AuthFlowHeader({
     super.key,
     required this.currentStep,
     this.showBackButton = true,
   });
 
+  final bool showBackButton;
   final int currentStep;
 
   @override
   Widget build(BuildContext context) {
+    // Only show back button if explicitly requested AND Navigator stack actually can pop
+    final canGoBack = showBackButton && Navigator.canPop(context);
+
     return Column(
       children: [
-        Stack(
-          alignment: Alignment.center,
-          children: [
-            showBackButton
-                ? Align(
-                    alignment: Alignment.centerLeft,
-                    child: GestureDetector(
-                      onTap: () => Navigator.maybePop(context),
-                      child: const AppIcon(
-                        icon: AppIcons.back,
-                        size: 28,
-                        color: AppColors.textPrimary,
-                      ),
+        SizedBox(
+          height: 32,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              const Center(
+                child: AppBrandText(height: 22, width: 150),
+              ),
+              if (canGoBack)
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: GestureDetector(
+                    onTap: () => Get.back(),
+                    child: const AppIcon(
+                      icon: AppIcons.back,
+                      size: 28,
+                      color: AppColors.textPrimary,
                     ),
-                  )
-                : SizedBox.shrink(),
-            Align(
-              alignment: Alignment.center,
-              child: const AppBrandText(height: 22, width: 150),
-            ),
-          ],
+                  ),
+                ),
+            ],
+          ),
         ),
         const SizedBox(height: 16),
         Padding(

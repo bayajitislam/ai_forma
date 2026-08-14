@@ -1,3 +1,4 @@
+import 'package:ai_forma/routes/routes_name.dart';
 import 'package:flutter/material.dart';
 import 'package:ai_forma/core/icons/app_icons.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
@@ -8,9 +9,10 @@ import 'package:ai_forma/core/widgets/primary_button.dart';
 import 'package:ai_forma/features/auth/constants/auth_strings.dart';
 import 'package:ai_forma/features/assessment/view/pages/gender_view.dart';
 import 'package:ai_forma/features/auth/view/pages/forgot_password_view.dart';
-import 'package:ai_forma/features/auth/view/pages/signup_view.dart';
 import 'package:ai_forma/features/auth/view/widgets/auth_footer_link.dart';
 import 'package:ai_forma/features/auth/view/widgets/auth_header.dart';
+import 'package:get/get_navigation/src/extension_navigation.dart';
+import 'package:get/state_manager.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
@@ -21,6 +23,16 @@ class LoginView extends StatefulWidget {
 
 class _LoginViewState extends State<LoginView> {
   bool _obscurePassword = true;
+
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,12 +56,14 @@ class _LoginViewState extends State<LoginView> {
                 style: AppTextStyles.authBody,
               ),
               const SizedBox(height: 32),
-              const AppTextField(
+              AppTextField(
+                controller: _emailController,
                 label: AuthStrings.emailLabel,
                 hint: AuthStrings.emailHint,
               ),
               const SizedBox(height: 16),
               AppTextField(
+                controller: _passwordController,
                 label: AuthStrings.passwordLabel,
                 hint: AuthStrings.passwordHint,
                 obscureText: _obscurePassword,
@@ -87,9 +101,7 @@ class _LoginViewState extends State<LoginView> {
               PrimaryButton(
                 onPressed: () {
                   Navigator.of(context).pushReplacement(
-                    MaterialPageRoute<void>(
-                      builder: (_) => const GenderView(),
-                    ),
+                    MaterialPageRoute<void>(builder: (_) => const GenderView()),
                   );
                 },
                 label: AuthStrings.loginButton,
@@ -98,13 +110,7 @@ class _LoginViewState extends State<LoginView> {
               AuthFooterLink(
                 prefix: AuthStrings.noAccount,
                 linkText: AuthStrings.signUp,
-                onLinkTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute<void>(
-                      builder: (_) => const SignupView(),
-                    ),
-                  );
-                },
+                onLinkTap: () => Get.toNamed(RoutesName.signup),
               ),
               const SizedBox(height: 16),
             ],

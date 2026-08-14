@@ -1,3 +1,4 @@
+import 'package:ai_forma/routes/routes_name.dart';
 import 'package:flutter/material.dart';
 import 'package:ai_forma/core/icons/app_icons.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
@@ -5,8 +6,8 @@ import 'package:ai_forma/core/theme/app_text_styles.dart';
 import 'package:ai_forma/core/widgets/app_icon.dart';
 import 'package:ai_forma/core/widgets/app_secondary_button.dart';
 import 'package:ai_forma/features/auth/constants/auth_strings.dart';
-import 'package:ai_forma/features/auth/view/utils/auth_navigation.dart';
 import 'package:ai_forma/features/auth/view/widgets/auth_header.dart';
+import 'package:get/get.dart';
 
 class ResetPasswordSuccessView extends StatelessWidget {
   const ResetPasswordSuccessView({super.key});
@@ -47,7 +48,7 @@ class ResetPasswordSuccessView extends StatelessWidget {
               ),
               const Spacer(),
               AppSecondaryButton(
-                onPressed: () => navigateToLogin(context),
+                onPressed: () => Get.toNamed(RoutesName.login),
                 label: AuthStrings.backToLogIn,
               ),
               const SizedBox(height: 32),

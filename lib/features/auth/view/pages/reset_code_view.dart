@@ -82,7 +82,7 @@ class ResetCodeView extends StatelessWidget {
               ),
               Platform.isAndroid
                   ? const SizedBox(height: 26)
-                  : SizedBox.shrink(),
+                  : const SizedBox.shrink(),
             ],
           ),
         ),

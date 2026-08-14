@@ -7,9 +7,14 @@ class VerificationCodeInput extends StatefulWidget {
   const VerificationCodeInput({
     super.key,
     this.length = 6,
+    this.onChanged,
+    this.onCompleted,
   });
 
   final int length;
+  final ValueChanged<String>?
+  onChanged; // called on every keystroke with full code so far
+  final ValueChanged<String>? onCompleted; // called when all digits are filled
 
   @override
   State<VerificationCodeInput> createState() => _VerificationCodeInputState();
@@ -22,10 +27,7 @@ class _VerificationCodeInputState extends State<VerificationCodeInput> {
   @override
   void initState() {
     super.initState();
-    _controllers = List.generate(
-      widget.length,
-      (_) => TextEditingController(),
-    );
+    _controllers = List.generate(widget.length, (_) => TextEditingController());
     _focusNodes = List.generate(widget.length, (_) => FocusNode());
   }
 
@@ -43,6 +45,12 @@ class _VerificationCodeInputState extends State<VerificationCodeInput> {
   void _onChanged(int index, String value) {
     if (value.isNotEmpty && index < widget.length - 1) {
       _focusNodes[index + 1].requestFocus();
+    }
+    // Build the current code from all boxes
+    final code = _controllers.map((c) => c.text).join();
+    widget.onChanged?.call(code);
+    if (code.length == widget.length) {
+      widget.onCompleted?.call(code);
     }
   }
 
@@ -68,9 +76,7 @@ class _VerificationCodeInputState extends State<VerificationCodeInput> {
         return Expanded(
           child: Container(
             height: 52,
-            margin: EdgeInsets.only(
-              right: index < widget.length - 1 ? 8 : 0,
-            ),
+            margin: EdgeInsets.only(right: index < widget.length - 1 ? 8 : 0),
             child: Focus(
               onKeyEvent: (node, event) => _onKeyEvent(index, event),
               child: TextField(
@@ -80,9 +86,7 @@ class _VerificationCodeInputState extends State<VerificationCodeInput> {
                 textAlign: TextAlign.center,
                 style: AppTextStyles.codeInput,
                 maxLength: 1,
-                inputFormatters: [
-                  FilteringTextInputFormatter.digitsOnly,
-                ],
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                 decoration: InputDecoration(
                   counterText: '',
                   filled: true,

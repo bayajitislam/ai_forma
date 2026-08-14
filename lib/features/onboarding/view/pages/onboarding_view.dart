@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:ai_forma/routes/routes_name.dart';
 import 'package:flutter/material.dart';
 import 'package:ai_forma/core/constants/app_strings.dart';
 import 'package:ai_forma/core/icons/app_icons.dart';
@@ -8,9 +9,10 @@ import 'package:ai_forma/core/theme/app_text_styles.dart';
 import 'package:ai_forma/core/widgets/app_brand_text.dart';
 import 'package:ai_forma/core/widgets/primary_button.dart';
 import 'package:ai_forma/features/onboarding/constants/onboarding_strings.dart';
-import 'package:ai_forma/features/onboarding/view/pages/privacy_onboarding_view.dart';
 import 'package:ai_forma/features/onboarding/view/widgets/onboarding_feature_item.dart';
 import 'package:ai_forma/features/onboarding/view/widgets/onboarding_header.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'package:get/get_navigation/src/extension_navigation.dart';
 
 class OnboardingView extends StatelessWidget {
   const OnboardingView({super.key});
@@ -81,13 +83,7 @@ class OnboardingView extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               PrimaryButton(
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute<void>(
-                      builder: (_) => const PrivacyOnboardingView(),
-                    ),
-                  );
-                },
+                onPressed: () => Get.toNamed(RoutesName.privacyOnboarding),
                 label: AppStrings.continueButton,
               ),
               Platform.isAndroid

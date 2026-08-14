@@ -1,18 +1,19 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:ai_forma/core/icons/app_icons.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
 import 'package:ai_forma/core/theme/app_text_styles.dart';
 import 'package:ai_forma/core/widgets/app_icon.dart';
+import 'package:ai_forma/core/icons/app_icons.dart';
 import 'package:ai_forma/core/widgets/primary_button.dart';
 import 'package:ai_forma/features/auth/constants/auth_strings.dart';
-import 'package:ai_forma/features/auth/view/pages/signup_success_view.dart';
+import 'package:ai_forma/features/auth/controllers/verify_email_controller.dart';
 import 'package:ai_forma/features/auth/view/widgets/auth_flow_header.dart';
 import 'package:ai_forma/features/auth/view/widgets/auth_footer_link.dart';
 import 'package:ai_forma/features/auth/view/widgets/verification_code_input.dart';
+import 'package:get/get.dart';
 
-class VerifyEmailView extends StatelessWidget {
+class VerifyEmailView extends GetView<VerifyEmailController> {
   const VerifyEmailView({super.key});
 
   @override
@@ -51,7 +52,7 @@ class VerifyEmailView extends StatelessWidget {
                       style: AppTextStyles.authBody,
                     ),
                     TextSpan(
-                      text: AuthStrings.emailHint,
+                      text: controller.email,
                       style: AppTextStyles.authBody.copyWith(
                         color: AppColors.textPrimary,
                         fontWeight: FontWeight.w500,
@@ -62,27 +63,99 @@ class VerifyEmailView extends StatelessWidget {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 32),
-              const VerificationCodeInput(),
-              const Spacer(),
-              PrimaryButton(
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute<void>(
-                      builder: (_) => const SignupSuccessView(),
-                    ),
-                  );
-                },
-                label: AuthStrings.verifyEmailButton,
+              //Code input — passes each change to the controller
+              VerificationCodeInput(
+                onChanged: controller.onCodeChanged,
               ),
               const SizedBox(height: 16),
-              AuthFooterLink(
-                prefix: AuthStrings.didNotReceive,
-                linkText: AuthStrings.resendCode,
-                onLinkTap: () {},
+              //Inline error message
+              Obx(() {
+                final err = controller.errorMessage.value;
+                if (err.isNotEmpty) {
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 4),
+                    child: Row(
+                      children: [
+                        Icon(Icons.error_outline_rounded,
+                            size: 14, color: Colors.red.shade400),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            err,
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Colors.red.shade400,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
+                final succ = controller.successMessage.value;
+                if (succ.isNotEmpty) {
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 4),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.check_circle_outline_rounded,
+                            size: 14, color: AppColors.brandTealDark),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            succ,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              color: AppColors.brandTealDark,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
+                return const SizedBox.shrink();
+              }),
+              const Spacer(),
+              //Verify button — disabled while loading
+              Obx(
+                () => PrimaryButton(
+                  isLoading: controller.isLoading.value,
+                  onPressed: controller.isLoading.value
+                      ? null
+                      : () => controller.verifyEmail(),
+                  label: AuthStrings.verifyEmailButton,
+                ),
               ),
+              const SizedBox(height: 16),
+              //Resend code footer link with 2-minute countdown timer
+              Obx(() {
+                final canResend = controller.canResend;
+                final isResending = controller.isResendLoading.value;
+                final timerText = controller.timerString;
+
+                String linkLabel;
+                if (isResending) {
+                  linkLabel = 'Resending...';
+                } else if (!canResend) {
+                  linkLabel = '${AuthStrings.resendCode} ($timerText)';
+                } else {
+                  linkLabel = AuthStrings.resendCode;
+                }
+
+                return AuthFooterLink(
+                  prefix: AuthStrings.didNotReceive,
+                  linkText: linkLabel,
+                  onLinkTap: canResend ? () => controller.resendCode() : null,
+                );
+              }),
               Platform.isAndroid
                   ? const SizedBox(height: 26)
-                  : SizedBox.shrink(),
+                  : const SizedBox.shrink(),
             ],
           ),
         ),

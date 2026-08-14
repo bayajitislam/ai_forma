@@ -1,9 +1,15 @@
+import 'package:ai_forma/core/network/dio_client.dart';
+import 'package:ai_forma/routes/app_routes.dart';
+import 'package:ai_forma/routes/routes_name.dart';
 import 'package:flutter/material.dart';
 import 'package:ai_forma/core/constants/app_strings.dart';
 import 'package:ai_forma/core/theme/app_theme.dart';
-import 'package:ai_forma/features/splash/view/pages/splash_view.dart';
+import 'package:get/get.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  Get.put(DioClient());
+
   runApp(const AiFormaApp());
 }
 
@@ -12,11 +18,12 @@ class AiFormaApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return GetMaterialApp(
       title: AppStrings.appName,
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
-      home: const SplashView(),
+      initialRoute: RoutesName.splash,
+      getPages: AppRoutes.pages,
     );
   }
 }
