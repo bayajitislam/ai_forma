@@ -1,15 +1,17 @@
 import 'dart:io';
 
+import 'package:ai_forma/features/onboarding_assessment/controllers/assessment_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:ai_forma/core/constants/app_strings.dart';
 import 'package:ai_forma/core/icons/app_icons.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
 import 'package:ai_forma/core/theme/app_text_styles.dart';
 import 'package:ai_forma/core/widgets/primary_button.dart';
-import 'package:ai_forma/features/assessment/constants/assessment_strings.dart';
-import 'package:ai_forma/features/assessment/view/pages/activity_view.dart';
-import 'package:ai_forma/features/assessment/view/widgets/assessment_flow_header.dart';
-import 'package:ai_forma/features/assessment/view/widgets/assessment_radio_tile.dart';
+import 'package:ai_forma/features/onboarding_assessment/constants/assessment_strings.dart';
+import 'package:ai_forma/features/onboarding_assessment/view/pages/activity_view.dart';
+import 'package:ai_forma/features/onboarding_assessment/view/widgets/assessment_flow_header.dart';
+import 'package:ai_forma/features/onboarding_assessment/view/widgets/assessment_radio_tile.dart';
+import 'package:get/get.dart';
 
 enum SleepOption { poor, average, good, excellent }
 
@@ -23,10 +25,29 @@ class SleepView extends StatefulWidget {
 class _SleepViewState extends State<SleepView> {
   SleepOption _selected = SleepOption.average;
 
+  @override
+  void initState() {
+    super.initState();
+    _saveToController(_selected);
+  }
+
+  void _saveToController(SleepOption option) {
+    if (Get.isRegistered<AssessmentController>()) {
+      Get.find<AssessmentController>().setAnswer('sleep', option.name);
+    }
+  }
+
+  void _onOptionSelected(SleepOption option) {
+    setState(() => _selected = option);
+    _saveToController(option);
+  }
+
   void _goToNext() {
-    Navigator.of(
-      context,
-    ).push(MaterialPageRoute<void>(builder: (_) => const ActivityView()));
+    _saveToController(_selected);
+    if (Get.isRegistered<AssessmentController>()) {
+      Get.find<AssessmentController>().nextStep();
+    }
+    Get.to(() => const ActivityView());
   }
 
   @override
@@ -60,7 +81,7 @@ class _SleepViewState extends State<SleepView> {
                       title: AssessmentStrings.sleepPoor,
                       subtitle: AssessmentStrings.sleepPoorSubtitle,
                       isSelected: _selected == SleepOption.poor,
-                      onTap: () => setState(() => _selected = SleepOption.poor),
+                      onTap: () => _onOptionSelected(SleepOption.poor),
                     ),
                     const SizedBox(height: 12),
                     AssessmentRadioTile(
@@ -68,8 +89,7 @@ class _SleepViewState extends State<SleepView> {
                       title: AssessmentStrings.sleepAverage,
                       subtitle: AssessmentStrings.sleepAverageSubtitle,
                       isSelected: _selected == SleepOption.average,
-                      onTap: () =>
-                          setState(() => _selected = SleepOption.average),
+                      onTap: () => _onOptionSelected(SleepOption.average),
                     ),
                     const SizedBox(height: 12),
                     AssessmentRadioTile(
@@ -77,7 +97,7 @@ class _SleepViewState extends State<SleepView> {
                       title: AssessmentStrings.sleepGood,
                       subtitle: AssessmentStrings.sleepGoodSubtitle,
                       isSelected: _selected == SleepOption.good,
-                      onTap: () => setState(() => _selected = SleepOption.good),
+                      onTap: () => _onOptionSelected(SleepOption.good),
                     ),
                     const SizedBox(height: 12),
                     AssessmentRadioTile(
@@ -85,8 +105,7 @@ class _SleepViewState extends State<SleepView> {
                       title: AssessmentStrings.sleepExcellent,
                       subtitle: AssessmentStrings.sleepExcellentSubtitle,
                       isSelected: _selected == SleepOption.excellent,
-                      onTap: () =>
-                          setState(() => _selected = SleepOption.excellent),
+                      onTap: () => _onOptionSelected(SleepOption.excellent),
                     ),
                   ],
                 ),
@@ -94,7 +113,7 @@ class _SleepViewState extends State<SleepView> {
               PrimaryButton(onPressed: _goToNext, label: AppStrings.nextButton),
               Platform.isAndroid
                   ? const SizedBox(height: 26)
-                  : SizedBox.shrink(),
+                  : const SizedBox.shrink(),
             ],
           ),
         ),

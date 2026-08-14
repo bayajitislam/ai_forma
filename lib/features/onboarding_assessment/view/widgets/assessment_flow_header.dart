@@ -4,7 +4,7 @@ import 'package:ai_forma/core/theme/app_colors.dart';
 import 'package:ai_forma/core/widgets/app_brand_text.dart';
 import 'package:ai_forma/core/widgets/app_icon.dart';
 import 'package:ai_forma/core/widgets/app_progress_bar.dart';
-import 'package:ai_forma/features/assessment/constants/assessment_strings.dart';
+import 'package:ai_forma/features/onboarding_assessment/constants/assessment_strings.dart';
 
 class AssessmentFlowHeader extends StatelessWidget {
   const AssessmentFlowHeader({

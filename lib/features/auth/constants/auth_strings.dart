@@ -54,4 +54,11 @@ abstract final class AuthStrings {
   static const String resetSuccessTitle = 'Password Reset Successful';
   static const String resetSuccessSubtitle =
       'Your password has been updated successfully.\nYou can now log in using your new password.';
+
+  static const String createNewPasswordTitle = 'Create New Password';
+  static const String createNewPasswordSubtitle =
+      'Your new password must be different from previously used passwords.';
+  static const String confirmPasswordLabel = 'Confirm Password';
+  static const String confirmPasswordHint = '••••••••';
+  static const String resetPasswordButton = 'Reset Password';
 }

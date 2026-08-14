@@ -1,14 +1,16 @@
 import 'dart:io';
 
+import 'package:ai_forma/features/onboarding_assessment/controllers/assessment_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:ai_forma/core/constants/app_strings.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
 import 'package:ai_forma/core/theme/app_text_styles.dart';
 import 'package:ai_forma/core/widgets/primary_button.dart';
-import 'package:ai_forma/features/assessment/constants/assessment_strings.dart';
-import 'package:ai_forma/features/assessment/view/pages/objective_view.dart';
-import 'package:ai_forma/features/assessment/view/widgets/assessment_flow_header.dart';
-import 'package:ai_forma/features/assessment/view/widgets/weight_selector.dart';
+import 'package:ai_forma/features/onboarding_assessment/constants/assessment_strings.dart';
+import 'package:ai_forma/features/onboarding_assessment/view/pages/objective_view.dart';
+import 'package:ai_forma/features/onboarding_assessment/view/widgets/assessment_flow_header.dart';
+import 'package:ai_forma/features/onboarding_assessment/view/widgets/weight_selector.dart';
+import 'package:get/get.dart';
 
 class WeightView extends StatefulWidget {
   const WeightView({super.key});
@@ -19,6 +21,22 @@ class WeightView extends StatefulWidget {
 
 class _WeightViewState extends State<WeightView> {
   double _selectedWeightKg = AssessmentStrings.defaultWeightKg.toDouble();
+
+  @override
+  void initState() {
+    super.initState();
+    _saveToController();
+  }
+
+  void _saveToController() {
+    if (Get.isRegistered<AssessmentController>()) {
+      Get.find<AssessmentController>().setUnitAnswer(
+        'weight',
+        _selectedWeightKg,
+        'kg',
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -46,17 +64,20 @@ class _WeightViewState extends State<WeightView> {
               Center(
                 child: WeightSelector(
                   initialWeightKg: _selectedWeightKg,
-                  onChanged: (val) => _selectedWeightKg = val,
+                  onChanged: (val) {
+                    _selectedWeightKg = val;
+                    _saveToController();
+                  },
                 ),
               ),
               const Spacer(),
               PrimaryButton(
                 onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute<void>(
-                      builder: (_) => const ObjectiveView(),
-                    ),
-                  );
+                  _saveToController();
+                  if (Get.isRegistered<AssessmentController>()) {
+                    Get.find<AssessmentController>().nextStep();
+                  }
+                  Get.to(() => const ObjectiveView());
                 },
                 label: AppStrings.nextButton,
               ),

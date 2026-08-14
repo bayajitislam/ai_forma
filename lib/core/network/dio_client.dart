@@ -1,4 +1,5 @@
 import 'package:ai_forma/core/constants/api_endpoint.dart';
+import 'package:ai_forma/core/network/auth_interceptor.dart';
 import 'package:ai_forma/core/network/logger_interceptor.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -16,7 +17,10 @@ class DioClient {
         connectTimeout: const Duration(seconds: 120),
       ),
     );
-    _dio.interceptors.add(LoggerInterceptor());
+    _dio.interceptors.addAll([
+      AuthInterceptor(),
+      LoggerInterceptor(),
+    ]);
   }
 
   late final Dio _dio;

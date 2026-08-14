@@ -1,4 +1,5 @@
-
+import 'package:ai_forma/core/storage/auth_storage.dart';
+import 'package:ai_forma/routes/routes_name.dart';
 import 'package:flutter/material.dart';
 import 'package:ai_forma/core/constants/app_images.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
@@ -7,9 +8,17 @@ import 'package:ai_forma/core/theme/app_text_styles.dart';
 import 'package:ai_forma/core/widgets/primary_button.dart';
 import 'package:ai_forma/features/check_in/constants/check_in_strings.dart';
 import 'package:ai_forma/features/check_in/view/widgets/check_in_header.dart';
+import 'package:get/get.dart';
 
 class AnalysisCompleteView extends StatelessWidget {
   const AnalysisCompleteView({super.key});
+
+  Future<void> _onViewResults() async {
+    // Mark 1st Check-In as completed locally
+    await AuthStorage.setFirstCheckInCompleted(true);
+    // Navigate to AppShell and clear check-in flow from stack
+    Get.offAllNamed(RoutesName.appShell);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +29,7 @@ class AnalysisCompleteView extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Column(
             children: [
-              const CheckInHeader(isTitle: true, title: CheckInStrings.result,),
+              const CheckInHeader(isTitle: true, title: CheckInStrings.result),
               Expanded(
                 child: SingleChildScrollView(
                   child: Column(
@@ -110,9 +119,7 @@ class AnalysisCompleteView extends StatelessWidget {
                 ),
               ),
               PrimaryButton(
-                onPressed: () {
-                  Navigator.of(context).popUntil((route) => route.isFirst);
-                },
+                onPressed: _onViewResults,
                 label: CheckInStrings.viewResults,
               ),
               const SizedBox(height: 16),

@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
 import 'package:ai_forma/core/widgets/primary_button.dart';
-import 'package:ai_forma/features/assessment/constants/assessment_strings.dart';
-import 'package:ai_forma/features/assessment/view/widgets/weight_selector.dart';
+import 'package:ai_forma/features/onboarding_assessment/constants/assessment_strings.dart';
+import 'package:ai_forma/features/onboarding_assessment/view/widgets/weight_selector.dart';
 import 'package:ai_forma/features/dashboard/controllers/weight_controller.dart';
 import 'package:ai_forma/core/models/weight_record.dart';
 

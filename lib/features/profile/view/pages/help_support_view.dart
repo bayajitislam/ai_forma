@@ -1,11 +1,27 @@
+import 'package:ai_forma/core/storage/auth_storage.dart';
+import 'package:ai_forma/features/auth/controllers/user_controller.dart';
+import 'package:ai_forma/routes/routes_name.dart';
 import 'package:flutter/material.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
 import 'package:ai_forma/core/widgets/primary_button.dart';
 import 'package:ai_forma/features/profile/view/pages/community_chat_view.dart';
 import 'package:ai_forma/features/profile/view/pages/report_bug_view.dart';
+import 'package:get/get.dart';
 
 class HelpSupportView extends StatelessWidget {
   const HelpSupportView({super.key});
+
+  Future<void> _handleLogout(BuildContext context) async {
+    // Clear user session from SharedPreferences & global UserController state
+    if (Get.isRegistered<UserController>()) {
+      await Get.find<UserController>().logout();
+    } else {
+      await AuthStorage.clearSession();
+    }
+
+    // Clear navigation stack and go to Login view
+    Get.offAllNamed(RoutesName.login);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -82,9 +98,7 @@ class HelpSupportView extends StatelessWidget {
               ),
               const SizedBox(height: 24),
               PrimaryButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
+                onPressed: () => _handleLogout(context),
                 label: 'LOGOUT',
               ),
               const SizedBox(height: 16),

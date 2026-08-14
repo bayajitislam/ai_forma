@@ -1,3 +1,4 @@
+import 'package:ai_forma/core/storage/auth_storage.dart';
 import 'package:ai_forma/routes/routes_name.dart';
 import 'package:flutter/material.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
@@ -15,12 +16,31 @@ class _SplashViewState extends State<SplashView> {
   @override
   void initState() {
     super.initState();
-    Future.delayed(const Duration(seconds: 2), _goToOnboarding);
+    Future.delayed(const Duration(seconds: 2), _checkAuthAndNavigate);
   }
 
-  void _goToOnboarding() {
+  Future<void> _checkAuthAndNavigate() async {
     if (!mounted) return;
-    Get.toNamed(RoutesName.onboarding);
+
+    final token = await AuthStorage.getAccessToken();
+    final user = await AuthStorage.getUser();
+    final isFirstCheckInDone = await AuthStorage.isFirstCheckInCompleted();
+
+    if (token != null && token.isNotEmpty && user != null) {
+      if (!user.onboardingCompleted) {
+        // 1. Logged in but assessment not completed -> Go to Assessment
+        Get.offAllNamed(RoutesName.gender);
+      } else if (!isFirstCheckInDone) {
+        // 2. Logged in & assessment completed, BUT 1st Check-In NOT completed -> Go to Check-In Intro
+        Get.offAllNamed(RoutesName.checkInIntro);
+      } else {
+        // 3. Both assessment & 1st Check-In completed -> Go to AppShell
+        Get.offAllNamed(RoutesName.appShell);
+      }
+    } else {
+      // Not logged in -> Go to Onboarding
+      Get.offAllNamed(RoutesName.onboarding);
+    }
   }
 
   @override

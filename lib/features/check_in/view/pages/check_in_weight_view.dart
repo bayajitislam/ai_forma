@@ -4,8 +4,8 @@ import 'package:ai_forma/core/constants/app_strings.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
 import 'package:ai_forma/core/theme/app_text_styles.dart';
 import 'package:ai_forma/core/widgets/primary_button.dart';
-import 'package:ai_forma/features/assessment/constants/assessment_strings.dart';
-import 'package:ai_forma/features/assessment/view/widgets/weight_selector.dart';
+import 'package:ai_forma/features/onboarding_assessment/constants/assessment_strings.dart';
+import 'package:ai_forma/features/onboarding_assessment/view/widgets/weight_selector.dart';
 import 'package:ai_forma/features/check_in/constants/check_in_strings.dart';
 import 'package:ai_forma/features/check_in/view/widgets/check_in_header.dart';
 

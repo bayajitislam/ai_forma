@@ -1,15 +1,17 @@
 import 'dart:io';
 
+import 'package:ai_forma/features/onboarding_assessment/controllers/assessment_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:ai_forma/core/constants/app_strings.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
 import 'package:ai_forma/core/theme/app_text_styles.dart';
 import 'package:ai_forma/core/widgets/primary_button.dart';
-import 'package:ai_forma/features/assessment/constants/assessment_strings.dart';
-import 'package:ai_forma/features/assessment/view/pages/weight_view.dart';
-import 'package:ai_forma/features/assessment/view/widgets/assessment_flow_header.dart';
-import 'package:ai_forma/features/assessment/view/widgets/assessment_unit_toggle.dart';
-import 'package:ai_forma/features/assessment/view/widgets/measurement_wheel_picker.dart';
+import 'package:ai_forma/features/onboarding_assessment/constants/assessment_strings.dart';
+import 'package:ai_forma/features/onboarding_assessment/view/pages/weight_view.dart';
+import 'package:ai_forma/features/onboarding_assessment/view/widgets/assessment_flow_header.dart';
+import 'package:ai_forma/features/onboarding_assessment/view/widgets/assessment_unit_toggle.dart';
+import 'package:ai_forma/features/onboarding_assessment/view/widgets/measurement_wheel_picker.dart';
+import 'package:get/get.dart';
 
 class HeightView extends StatefulWidget {
   const HeightView({super.key});
@@ -25,10 +27,32 @@ class _HeightViewState extends State<HeightView> {
 
   bool get _isCm => _unitIndex == 0;
 
-  void _onUnitChanged(int index) {
-    if (index == _unitIndex) {
-      return;
+  @override
+  void initState() {
+    super.initState();
+    _saveToController();
+  }
+
+  void _saveToController() {
+    if (Get.isRegistered<AssessmentController>()) {
+      if (_isCm) {
+        Get.find<AssessmentController>().setUnitAnswer(
+          'height',
+          _heightCm,
+          'cm',
+        );
+      } else {
+        Get.find<AssessmentController>().setUnitAnswer(
+          'height',
+          (_heightInches / 12).roundToDouble(),
+          'ft',
+        );
+      }
     }
+  }
+
+  void _onUnitChanged(int index) {
+    if (index == _unitIndex) return;
 
     setState(() {
       if (index == 0) {
@@ -38,6 +62,7 @@ class _HeightViewState extends State<HeightView> {
       }
       _unitIndex = index;
     });
+    _saveToController();
   }
 
   int _cmToInches(int cm) => (cm / 2.54).round().clamp(
@@ -96,7 +121,10 @@ class _HeightViewState extends State<HeightView> {
                         maxValue: AssessmentStrings.maxHeightCm,
                         initialValue: _heightCm,
                         unit: AssessmentStrings.heightUnitCm,
-                        onChanged: (value) => _heightCm = value,
+                        onChanged: (value) {
+                          _heightCm = value;
+                          _saveToController();
+                        },
                       )
                     : MeasurementWheelPicker(
                         key: const ValueKey('height-ft'),
@@ -104,21 +132,26 @@ class _HeightViewState extends State<HeightView> {
                         maxValue: AssessmentStrings.maxHeightInches,
                         initialValue: _heightInches,
                         labelBuilder: _formatFeetInches,
-                        onChanged: (value) => _heightInches = value,
+                        onChanged: (value) {
+                          _heightInches = value;
+                          _saveToController();
+                        },
                       ),
               ),
               const Spacer(),
               PrimaryButton(
                 onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute<void>(builder: (_) => const WeightView()),
-                  );
+                  _saveToController();
+                  if (Get.isRegistered<AssessmentController>()) {
+                    Get.find<AssessmentController>().nextStep();
+                  }
+                  Get.to(() => const WeightView());
                 },
                 label: AppStrings.nextButton,
               ),
               Platform.isAndroid
                   ? const SizedBox(height: 26)
-                  : SizedBox.shrink(),
+                  : const SizedBox.shrink(),
             ],
           ),
         ),

@@ -1,16 +1,17 @@
 import 'dart:io';
 
+import 'package:ai_forma/features/onboarding_assessment/controllers/assessment_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:ai_forma/core/constants/app_strings.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
 import 'package:ai_forma/core/theme/app_text_styles.dart';
 import 'package:ai_forma/core/widgets/primary_button.dart';
-import 'package:ai_forma/features/assessment/constants/assessment_strings.dart';
-import 'package:ai_forma/features/assessment/view/widgets/assessment_checkbox_tile.dart';
-import 'package:ai_forma/features/assessment/view/widgets/assessment_flow_header.dart';
-import 'package:ai_forma/features/shell/view/utils/shell_navigation.dart';
+import 'package:ai_forma/features/onboarding_assessment/constants/assessment_strings.dart';
+import 'package:ai_forma/features/onboarding_assessment/view/widgets/assessment_checkbox_tile.dart';
+import 'package:ai_forma/features/onboarding_assessment/view/widgets/assessment_flow_header.dart';
+import 'package:get/get.dart';
 
-enum SupplementOption { protein, creatine, preWorkout,fatBurner,  vitamins, omega3, other }
+enum SupplementOption { protein, creatine, preWorkout, fatBurner, vitamins, omega3, other }
 
 class SupplementsView extends StatefulWidget {
   const SupplementsView({super.key});
@@ -20,7 +21,45 @@ class SupplementsView extends StatefulWidget {
 }
 
 class _SupplementsViewState extends State<SupplementsView> {
-  final Set<SupplementOption> _selected = {};
+  final Set<SupplementOption> _selected = {SupplementOption.protein, SupplementOption.creatine};
+
+  @override
+  void initState() {
+    super.initState();
+    _saveToController();
+  }
+
+  void _saveToController() {
+    if (Get.isRegistered<AssessmentController>()) {
+      final List<String> list = [];
+      for (final option in _selected) {
+        switch (option) {
+          case SupplementOption.protein:
+            list.add('protein_powder');
+            break;
+          case SupplementOption.creatine:
+            list.add('creatine');
+            break;
+          case SupplementOption.preWorkout:
+            list.add('pre_workout');
+            break;
+          case SupplementOption.fatBurner:
+            list.add('fat_burner');
+            break;
+          case SupplementOption.vitamins:
+            list.add('vitamins_minerals');
+            break;
+          case SupplementOption.omega3:
+            list.add('omega_3');
+            break;
+          case SupplementOption.other:
+            list.add('other');
+            break;
+        }
+      }
+      Get.find<AssessmentController>().setAnswer('supplements', list);
+    }
+  }
 
   void _toggle(SupplementOption option) {
     setState(() {
@@ -30,6 +69,14 @@ class _SupplementsViewState extends State<SupplementsView> {
         _selected.add(option);
       }
     });
+    _saveToController();
+  }
+
+  Future<void> _onSubmit() async {
+    _saveToController();
+    if (Get.isRegistered<AssessmentController>()) {
+      await Get.find<AssessmentController>().submitOnboarding();
+    }
   }
 
   @override
@@ -43,7 +90,7 @@ class _SupplementsViewState extends State<SupplementsView> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 8),
-              const AssessmentFlowHeader(currentStep: 15),
+              const AssessmentFlowHeader(currentStep: 11),
               const SizedBox(height: 32),
               const Text(
                 AssessmentStrings.supplementsTitle,
@@ -100,13 +147,19 @@ class _SupplementsViewState extends State<SupplementsView> {
                   ],
                 ),
               ),
-              PrimaryButton(
-                onPressed: () => navigateToAppShell(context),
-                label: AppStrings.nextButton,
-              ),
+              Obx(() {
+                final isSubmitting = Get.isRegistered<AssessmentController>()
+                    ? Get.find<AssessmentController>().isSubmitting.value
+                    : false;
+                return PrimaryButton(
+                  isLoading: isSubmitting,
+                  onPressed: isSubmitting ? null : _onSubmit,
+                  label: AppStrings.nextButton,
+                );
+              }),
               Platform.isAndroid
                   ? const SizedBox(height: 26)
-                  : SizedBox.shrink(),
+                  : const SizedBox.shrink(),
             ],
           ),
         ),

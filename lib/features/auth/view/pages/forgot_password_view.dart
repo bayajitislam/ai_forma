@@ -6,24 +6,12 @@ import 'package:ai_forma/core/theme/app_text_styles.dart';
 import 'package:ai_forma/core/widgets/app_text_field.dart';
 import 'package:ai_forma/core/widgets/primary_button.dart';
 import 'package:ai_forma/features/auth/constants/auth_strings.dart';
-import 'package:ai_forma/features/auth/view/pages/reset_code_view.dart';
+import 'package:ai_forma/features/auth/controllers/forgot_password_controller.dart';
 import 'package:ai_forma/features/auth/view/widgets/auth_header.dart';
+import 'package:get/get.dart';
 
-class ForgotPasswordView extends StatefulWidget {
+class ForgotPasswordView extends GetView<ForgotPasswordController> {
   const ForgotPasswordView({super.key});
-
-  @override
-  State<ForgotPasswordView> createState() => _ForgotPasswordViewState();
-}
-
-class _ForgotPasswordViewState extends State<ForgotPasswordView> {
-  final TextEditingController emailController = TextEditingController();
-
-  @override
-  void dispose() {
-    emailController.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +19,7 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
       backgroundColor: AppColors.onboardingBackground,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -47,26 +35,54 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
                 style: AppTextStyles.authBody,
               ),
               const SizedBox(height: 32),
-              AppTextField(
-                controller: emailController,
-                label: AuthStrings.emailLabel,
-                hint: AuthStrings.emailHint,
+              Obx(
+                () => AppTextField(
+                  controller: controller.emailController,
+                  label: AuthStrings.emailLabel,
+                  hint: AuthStrings.emailHint,
+                  errorText: controller.emailError.value,
+                ),
               ),
+              const SizedBox(height: 16),
+              // API Error Banner
+              Obx(() {
+                final err = controller.errorMessage.value;
+                if (err.isEmpty) return const SizedBox.shrink();
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Row(
+                    children: [
+                      Icon(Icons.error_outline_rounded,
+                          size: 14, color: Colors.red.shade400),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          err,
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.red.shade400,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }),
               const Spacer(),
-              PrimaryButton(
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute<void>(
-                      builder: (_) => const ResetCodeView(),
-                    ),
-                  );
-                },
-                label: AuthStrings.sendResetCodeButton,
+              Obx(
+                () => PrimaryButton(
+                  isLoading: controller.isLoading.value,
+                  onPressed: controller.isLoading.value
+                      ? null
+                      : () => controller.sendResetCode(),
+                  label: AuthStrings.sendResetCodeButton,
+                ),
               ),
               const SizedBox(height: 16),
               Center(
                 child: GestureDetector(
-                  onTap: () => Navigator.maybePop(context),
+                  onTap: () => Get.back(),
                   child: const Text(
                     AuthStrings.backToLogIn,
                     style: AppTextStyles.authBody,
@@ -83,4 +99,3 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
     );
   }
 }
-

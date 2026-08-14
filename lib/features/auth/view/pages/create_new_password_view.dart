@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:ai_forma/core/icons/app_icons.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
 import 'package:ai_forma/core/theme/app_text_styles.dart';
@@ -5,15 +7,13 @@ import 'package:ai_forma/core/widgets/app_icon.dart';
 import 'package:ai_forma/core/widgets/app_text_field.dart';
 import 'package:ai_forma/core/widgets/primary_button.dart';
 import 'package:ai_forma/features/auth/constants/auth_strings.dart';
-import 'package:ai_forma/features/auth/controllers/login_controller.dart';
-import 'package:ai_forma/features/auth/view/widgets/auth_footer_link.dart';
+import 'package:ai_forma/features/auth/controllers/forgot_password_controller.dart';
 import 'package:ai_forma/features/auth/view/widgets/auth_header.dart';
-import 'package:ai_forma/routes/routes_name.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-class LoginView extends GetView<LoginController> {
-  const LoginView({super.key});
+class CreateNewPasswordView extends GetView<ForgotPasswordController> {
+  const CreateNewPasswordView({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -28,27 +28,18 @@ class LoginView extends GetView<LoginController> {
               const AuthHeader(),
               const SizedBox(height: 32),
               const Text(
-                AuthStrings.loginTitle,
+                AuthStrings.createNewPasswordTitle,
                 style: AppTextStyles.authSectionTitle,
               ),
               const SizedBox(height: 8),
               const Text(
-                AuthStrings.loginSubtitle,
+                AuthStrings.createNewPasswordSubtitle,
                 style: AppTextStyles.authBody,
               ),
               const SizedBox(height: 32),
               Obx(
                 () => AppTextField(
-                  controller: controller.emailController,
-                  label: AuthStrings.emailLabel,
-                  hint: AuthStrings.emailHint,
-                  errorText: controller.emailError.value,
-                ),
-              ),
-              const SizedBox(height: 16),
-              Obx(
-                () => AppTextField(
-                  controller: controller.passwordController,
+                  controller: controller.newPasswordController,
                   label: AuthStrings.passwordLabel,
                   hint: AuthStrings.passwordHint,
                   obscureText: controller.isPasswordObsecure.value,
@@ -68,16 +59,25 @@ class LoginView extends GetView<LoginController> {
                   ),
                 ),
               ),
-              const SizedBox(height: 8),
-              Align(
-                alignment: Alignment.centerRight,
-                child: GestureDetector(
-                  onTap: () {
-                    Get.toNamed(RoutesName.forgotPassword);
-                  },
-                  child: const Text(
-                    AuthStrings.forgotPassword,
-                    style: AppTextStyles.authLink,
+              const SizedBox(height: 16),
+              Obx(
+                () => AppTextField(
+                  controller: controller.confirmPasswordController,
+                  label: AuthStrings.confirmPasswordLabel,
+                  hint: AuthStrings.confirmPasswordHint,
+                  obscureText: controller.isConfirmObsecure.value,
+                  suffixIcon: IconButton(
+                    onPressed: () {
+                      controller.isConfirmObsecure.value =
+                          !controller.isConfirmObsecure.value;
+                    },
+                    icon: AppIcon(
+                      icon: controller.isConfirmObsecure.value
+                          ? AppIcons.eye
+                          : AppIcons.eyeOff,
+                      size: 22,
+                      color: AppColors.textSecondary,
+                    ),
                   ),
                 ),
               ),
@@ -90,8 +90,11 @@ class LoginView extends GetView<LoginController> {
                   padding: const EdgeInsets.only(bottom: 8),
                   child: Row(
                     children: [
-                      Icon(Icons.error_outline_rounded,
-                          size: 14, color: Colors.red.shade400),
+                      Icon(
+                        Icons.error_outline_rounded,
+                        size: 14,
+                        color: Colors.red.shade400,
+                      ),
                       const SizedBox(width: 6),
                       Expanded(
                         child: Text(
@@ -113,17 +116,14 @@ class LoginView extends GetView<LoginController> {
                   isLoading: controller.isLoading.value,
                   onPressed: controller.isLoading.value
                       ? null
-                      : () => controller.login(),
-                  label: AuthStrings.loginButton,
+                      : () => controller.submitNewPassword(),
+                  label: AuthStrings.resetPasswordButton,
                 ),
               ),
               const SizedBox(height: 16),
-              AuthFooterLink(
-                prefix: AuthStrings.noAccount,
-                linkText: AuthStrings.signUp,
-                onLinkTap: () => Get.toNamed(RoutesName.signup),
-              ),
-              const SizedBox(height: 16),
+              Platform.isAndroid
+                  ? const SizedBox(height: 26)
+                  : const SizedBox.shrink(),
             ],
           ),
         ),

@@ -6,12 +6,12 @@ import 'package:ai_forma/core/icons/app_icons.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
 import 'package:ai_forma/core/theme/app_text_styles.dart';
 import 'package:ai_forma/core/widgets/primary_button.dart';
-import 'package:ai_forma/features/assessment/constants/assessment_strings.dart';
-import 'package:ai_forma/features/assessment/view/pages/nutrition_preferences_view.dart';
-import 'package:ai_forma/features/assessment/view/widgets/assessment_flow_header.dart';
-import 'package:ai_forma/features/assessment/view/widgets/assessment_grid_option_tile.dart';
-import 'package:ai_forma/features/assessment/view/widgets/assessment_info_banner.dart';
-import 'package:ai_forma/features/assessment/view/widgets/assessment_selection_badge.dart';
+import 'package:ai_forma/features/onboarding_assessment/constants/assessment_strings.dart';
+import 'package:ai_forma/features/onboarding_assessment/view/pages/nutrition_preferences_view.dart';
+import 'package:ai_forma/features/onboarding_assessment/view/widgets/assessment_flow_header.dart';
+import 'package:ai_forma/features/onboarding_assessment/view/widgets/assessment_grid_option_tile.dart';
+import 'package:ai_forma/features/onboarding_assessment/view/widgets/assessment_info_banner.dart';
+import 'package:ai_forma/features/onboarding_assessment/view/widgets/assessment_selection_badge.dart';
 
 enum NutritionDifficultyOption {
   portionControl,

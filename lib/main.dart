@@ -1,4 +1,5 @@
 import 'package:ai_forma/core/network/dio_client.dart';
+import 'package:ai_forma/features/auth/controllers/user_controller.dart';
 import 'package:ai_forma/routes/app_routes.dart';
 import 'package:ai_forma/routes/routes_name.dart';
 import 'package:flutter/material.dart';
@@ -9,6 +10,7 @@ import 'package:get/get.dart';
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   Get.put(DioClient());
+  Get.put(UserController(Get.find<DioClient>()), permanent: true);
 
   runApp(const AiFormaApp());
 }

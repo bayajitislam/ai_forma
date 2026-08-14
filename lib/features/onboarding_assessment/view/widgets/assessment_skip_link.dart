@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ai_forma/core/theme/app_text_styles.dart';
-import 'package:ai_forma/features/assessment/constants/assessment_strings.dart';
+import 'package:ai_forma/features/onboarding_assessment/constants/assessment_strings.dart';
 
 class AssessmentSkipLink extends StatelessWidget {
   const AssessmentSkipLink({
