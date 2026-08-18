@@ -1,5 +1,6 @@
 class ApiEndpoint {
-  static const String baseUrl = 'https://aiformapi.dsrt321.online';
+  // static const String baseUrl = 'https://aiformapi.dsrt321.online';
+  static const String baseUrl = 'http://10.10.26.245:8000';
 
   //auth
   static const String login = '/api/auth/login/';
@@ -7,6 +8,7 @@ class ApiEndpoint {
   static const String verifyEmail = '/api/auth/verify-email/';
   static const String resendOtp = '/api/auth/resend-otp/';
   static const String me = '/api/auth/me/';
+  static const String tokenRefresh = '/api/auth/token/refresh/';
 
   //password reset
   static const String forgotPassword = '/api/auth/password/forgot/';
@@ -16,4 +18,7 @@ class ApiEndpoint {
   //onboarding assessment
   static const String onboardingSchema = '/api/onboarding/schema/';
   static const String onboardingComplete = '/api/onboarding/complete/';
+
+  //scans & check-in
+  static const String validateImages = '/api/scans/validate-images/';
 }

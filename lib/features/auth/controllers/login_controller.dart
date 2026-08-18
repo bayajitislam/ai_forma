@@ -90,12 +90,10 @@ class LoginController extends GetxController {
 
         isLoading(false);
 
-        // Check if onboarding and 1st check-in are completed
-        final isFirstCheckInDone = await AuthStorage.isFirstCheckInCompleted();
-
+        // Check remote onboarding and initial scan completion statuses
         if (!loginResponse.user.onboardingCompleted) {
           Get.offAllNamed(RoutesName.gender);
-        } else if (!isFirstCheckInDone) {
+        } else if (!loginResponse.user.initialScanCompleted) {
           Get.offAllNamed(RoutesName.checkInIntro);
         } else {
           Get.offAllNamed(RoutesName.appShell);

@@ -17,6 +17,8 @@ class UserModel {
   final String? gender;
   final bool isEmailVerified;
   final bool onboardingCompleted;
+  final bool initialScanCompleted;
+  final String? nextStep;
 
   UserModel({
     required this.id,
@@ -25,6 +27,8 @@ class UserModel {
     this.gender,
     required this.isEmailVerified,
     required this.onboardingCompleted,
+    required this.initialScanCompleted,
+    this.nextStep,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -35,6 +39,8 @@ class UserModel {
       gender: json['gender'],
       isEmailVerified: json['is_email_verified'] ?? false,
       onboardingCompleted: json['onboarding_completed'] ?? false,
+      initialScanCompleted: json['initial_scan_completed'] ?? false,
+      nextStep: json['next_step']?.toString(),
     );
   }
 
@@ -45,6 +51,8 @@ class UserModel {
         'gender': gender,
         'is_email_verified': isEmailVerified,
         'onboarding_completed': onboardingCompleted,
+        'initial_scan_completed': initialScanCompleted,
+        'next_step': nextStep,
       };
 }
 

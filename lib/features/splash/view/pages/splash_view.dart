@@ -24,17 +24,16 @@ class _SplashViewState extends State<SplashView> {
 
     final token = await AuthStorage.getAccessToken();
     final user = await AuthStorage.getUser();
-    final isFirstCheckInDone = await AuthStorage.isFirstCheckInCompleted();
 
     if (token != null && token.isNotEmpty && user != null) {
       if (!user.onboardingCompleted) {
         // 1. Logged in but assessment not completed -> Go to Assessment
         Get.offAllNamed(RoutesName.gender);
-      } else if (!isFirstCheckInDone) {
-        // 2. Logged in & assessment completed, BUT 1st Check-In NOT completed -> Go to Check-In Intro
+      } else if (!user.initialScanCompleted) {
+        // 2. Logged in & assessment completed, BUT initial scan NOT completed -> Go to Check-In Intro
         Get.offAllNamed(RoutesName.checkInIntro);
       } else {
-        // 3. Both assessment & 1st Check-In completed -> Go to AppShell
+        // 3. Both assessment & initial scan completed -> Go to AppShell
         Get.offAllNamed(RoutesName.appShell);
       }
     } else {

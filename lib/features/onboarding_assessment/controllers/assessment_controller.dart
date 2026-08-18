@@ -164,6 +164,8 @@ class AssessmentController extends GetxController {
             gender: user.gender ?? payload['gender']?.toString(),
             isEmailVerified: user.isEmailVerified,
             onboardingCompleted: true,
+            initialScanCompleted: user.initialScanCompleted,
+            nextStep: user.nextStep,
           );
           await AuthStorage.saveUser(updatedUser);
 
