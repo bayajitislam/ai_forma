@@ -17,11 +17,11 @@ class CheckInIntroView extends StatelessWidget {
       backgroundColor: AppColors.onboardingBackground,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const CheckInHeader(),
+              const CheckInHeader(showLogout: true),
               const SizedBox(height: 24),
               const Text(
                 CheckInStrings.introTitle,

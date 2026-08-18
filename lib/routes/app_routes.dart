@@ -12,6 +12,7 @@ import 'package:ai_forma/features/auth/view/pages/reset_password_success_view.da
 import 'package:ai_forma/features/auth/view/pages/signup_success_view.dart';
 import 'package:ai_forma/features/auth/view/pages/signup_view.dart';
 import 'package:ai_forma/features/auth/view/pages/verify_email_view.dart';
+import 'package:ai_forma/features/check_in/bindings/check_in_binding.dart';
 import 'package:ai_forma/features/check_in/view/pages/check_in_intro_view.dart';
 import 'package:ai_forma/features/onboarding/view/pages/onboarding_view.dart';
 import 'package:ai_forma/features/onboarding/view/pages/privacy_onboarding_view.dart';
@@ -80,6 +81,7 @@ class AppRoutes {
     GetPage(
       name: RoutesName.checkInIntro,
       page: () => const CheckInIntroView(),
+      binding: CheckInBinding(),
     ),
 
     //Shell

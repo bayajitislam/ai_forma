@@ -73,26 +73,45 @@ class _AlignmentGuidePainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
       ..color = AppColors.brandTeal
-      ..strokeWidth = 2
+      ..strokeWidth = 2.5
       ..style = PaintingStyle.stroke;
 
     const dashHeight = 6;
     const dashSpace = 4;
     double y = 0;
-    while (y < size.height) {
+
+    final centerX = size.width / 2;
+
+    // Dashed vertical guide line
+    while (y < size.height - 12) {
       canvas.drawLine(
-        Offset(size.width / 2, y),
-        Offset(size.width / 2, y + dashHeight),
+        Offset(centerX, y),
+        Offset(centerX, y + dashHeight),
         paint,
       );
       y += dashHeight + dashSpace;
     }
 
-    final dotPaint = Paint()
+    // Floor Stand marker at the bottom
+    final floorPaint = Paint()
       ..color = AppColors.brandTeal
       ..style = PaintingStyle.fill;
-    canvas.drawCircle(Offset(size.width / 2, 0), 4, dotPaint);
-    canvas.drawCircle(Offset(size.width / 2, size.height), 4, dotPaint);
+
+    canvas.drawLine(
+      Offset(centerX - 12, size.height),
+      Offset(centerX + 12, size.height),
+      Paint()
+        ..color = AppColors.brandTeal
+        ..strokeWidth = 3
+        ..strokeCap = StrokeCap.round,
+    );
+
+    final path = Path()
+      ..moveTo(centerX, size.height - 10)
+      ..lineTo(centerX - 7, size.height)
+      ..lineTo(centerX + 7, size.height)
+      ..close();
+    canvas.drawPath(path, floorPaint);
   }
 
   @override
@@ -104,28 +123,32 @@ class CameraViewfinderOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Container(
-        width: 220,
-        height: 380,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: AppColors.brandTealDark, width: 2),
-        ),
-        child: Center(
+    return Stack(
+      children: [
+        // Outer rounded frame border
+        Positioned.fill(
           child: Container(
-            width: 80,
-            height: 260,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(40),
+              borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: AppColors.onPrimary.withValues(alpha: 0.6),
-                width: 2,
+                color: Colors.white.withValues(alpha: 0.35),
+                width: 1.5,
               ),
             ),
           ),
         ),
-      ),
+
+        // Vertical Dashed Alignment Guide Line on bottom-right (matching reference design)
+        Positioned(
+          right: 32,
+          bottom: 36,
+          height: 180,
+          width: 28,
+          child: CustomPaint(
+            painter: _AlignmentGuidePainter(),
+          ),
+        ),
+      ],
     );
   }
 }
