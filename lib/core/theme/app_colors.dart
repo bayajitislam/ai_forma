@@ -8,6 +8,7 @@ abstract final class AppColors {
   static const Color onBackground = Color(0xFFFFFFFF);
   static const Color onSurface = Color(0xFF1A1A1A);
   static const Color accent = Color(0xFF4DB6AC);
+  static const Color transparent = Color(0x00000000);
 
   static const Color brandTeal = Color(0xFF00B5AD);
   static const Color brandTealDark = Color(0xFF14968D);

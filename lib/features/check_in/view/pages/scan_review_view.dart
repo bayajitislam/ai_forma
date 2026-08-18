@@ -338,7 +338,7 @@ class _ScanReviewViewState extends State<ScanReviewView> {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: AppColors.inputBorder,
+                  color: AppColors.transparent,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: file != null
@@ -385,33 +385,33 @@ class _ScanReviewViewState extends State<ScanReviewView> {
                 const Icon(Icons.check_circle_outline, color: AppColors.textSecondary, size: 24),
             ],
           ),
-          if (hasError) ...[
-            const SizedBox(height: 8),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              decoration: BoxDecoration(
-                color: Colors.red.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.info_outline, size: 14, color: Colors.redAccent),
-                  const SizedBox(width: 6),
-                  Expanded(
-                    child: Text(
-                      checkDetail.displayReason,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: Colors.redAccent,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
+          // if (hasError) ...[
+          //   const SizedBox(height: 8),
+          //   Container(
+          //     width: double.infinity,
+          //     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          //     decoration: BoxDecoration(
+          //       color: Colors.red.withValues(alpha: 0.1),
+          //       borderRadius: BorderRadius.circular(8),
+          //     ),
+          //     child: Row(
+          //       children: [
+          //         const Icon(Icons.info_outline, size: 14, color: Colors.redAccent),
+          //         const SizedBox(width: 6),
+          //         Expanded(
+          //           child: Text(
+          //             checkDetail.displayReason,
+          //             style: const TextStyle(
+          //               fontSize: 12,
+          //               color: Colors.redAccent,
+          //               fontWeight: FontWeight.w500,
+          //             ),
+          //           ),
+          //         ),
+          //       ],
+          //     ),
+          //   ),
+          // ],
         ],
       ),
     );
