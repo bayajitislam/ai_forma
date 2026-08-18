@@ -20,112 +20,132 @@ class LoginView extends GetView<LoginController> {
     return Scaffold(
       backgroundColor: AppColors.onboardingBackground,
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const AuthHeader(),
-              const SizedBox(height: 32),
-              const Text(
-                AuthStrings.loginTitle,
-                style: AppTextStyles.authSectionTitle,
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                AuthStrings.loginSubtitle,
-                style: AppTextStyles.authBody,
-              ),
-              const SizedBox(height: 32),
-              Obx(
-                () => AppTextField(
-                  controller: controller.emailController,
-                  label: AuthStrings.emailLabel,
-                  hint: AuthStrings.emailHint,
-                  errorText: controller.emailError.value,
-                ),
-              ),
-              const SizedBox(height: 16),
-              Obx(
-                () => AppTextField(
-                  controller: controller.passwordController,
-                  label: AuthStrings.passwordLabel,
-                  hint: AuthStrings.passwordHint,
-                  obscureText: controller.isPasswordObsecure.value,
-                  errorText: controller.passwordError.value,
-                  suffixIcon: IconButton(
-                    onPressed: () {
-                      controller.isPasswordObsecure.value =
-                          !controller.isPasswordObsecure.value;
-                    },
-                    icon: AppIcon(
-                      icon: controller.isPasswordObsecure.value
-                          ? AppIcons.eye
-                          : AppIcons.eyeOff,
-                      size: 22,
-                      color: AppColors.textSecondary,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                child: IntrinsicHeight(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const AuthHeader(),
+                        const SizedBox(height: 32),
+                        const Text(
+                          AuthStrings.loginTitle,
+                          style: AppTextStyles.authSectionTitle,
+                        ),
+                        const SizedBox(height: 8),
+                        const Text(
+                          AuthStrings.loginSubtitle,
+                          style: AppTextStyles.authBody,
+                        ),
+                        const SizedBox(height: 32),
+                        Obx(
+                          () => AppTextField(
+                            controller: controller.emailController,
+                            label: AuthStrings.emailLabel,
+                            hint: AuthStrings.emailHint,
+                            keyboardType: TextInputType.emailAddress,
+                            textInputAction: TextInputAction.next,
+                            errorText: controller.emailError.value,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        Obx(
+                          () => AppTextField(
+                            controller: controller.passwordController,
+                            label: AuthStrings.passwordLabel,
+                            hint: AuthStrings.passwordHint,
+                            textInputAction: TextInputAction.done,
+                            onSubmitted: (_) {
+                              if (!controller.isLoading.value) {
+                                controller.login();
+                              }
+                            },
+                            obscureText: controller.isPasswordObsecure.value,
+                            errorText: controller.passwordError.value,
+                            suffixIcon: IconButton(
+                              onPressed: () {
+                                controller.isPasswordObsecure.value =
+                                    !controller.isPasswordObsecure.value;
+                              },
+                              icon: AppIcon(
+                                icon: controller.isPasswordObsecure.value
+                                    ? AppIcons.eye
+                                    : AppIcons.eyeOff,
+                                size: 22,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: GestureDetector(
+                            onTap: () {
+                              Get.toNamed(RoutesName.forgotPassword);
+                            },
+                            child: const Text(
+                              AuthStrings.forgotPassword,
+                              style: AppTextStyles.authLink,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        // API Error Banner
+                        Obx(() {
+                          final err = controller.errorMessage.value;
+                          if (err.isEmpty) return const SizedBox.shrink();
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 8),
+                            child: Row(
+                              children: [
+                                Icon(Icons.error_outline_rounded,
+                                    size: 14, color: Colors.red.shade400),
+                                const SizedBox(width: 6),
+                                Expanded(
+                                  child: Text(
+                                    err,
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      color: Colors.red.shade400,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }),
+                        const Spacer(),
+                        Obx(
+                          () => PrimaryButton(
+                            isLoading: controller.isLoading.value,
+                            onPressed: controller.isLoading.value
+                                ? null
+                                : () => controller.login(),
+                            label: AuthStrings.loginButton,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        AuthFooterLink(
+                          prefix: AuthStrings.noAccount,
+                          linkText: AuthStrings.signUp,
+                          onLinkTap: () => Get.toNamed(RoutesName.signup),
+                        ),
+                        const SizedBox(height: 16),
+                      ],
                     ),
                   ),
                 ),
               ),
-              const SizedBox(height: 8),
-              Align(
-                alignment: Alignment.centerRight,
-                child: GestureDetector(
-                  onTap: () {
-                    Get.toNamed(RoutesName.forgotPassword);
-                  },
-                  child: const Text(
-                    AuthStrings.forgotPassword,
-                    style: AppTextStyles.authLink,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              // API Error Banner
-              Obx(() {
-                final err = controller.errorMessage.value;
-                if (err.isEmpty) return const SizedBox.shrink();
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: Row(
-                    children: [
-                      Icon(Icons.error_outline_rounded,
-                          size: 14, color: Colors.red.shade400),
-                      const SizedBox(width: 6),
-                      Expanded(
-                        child: Text(
-                          err,
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: Colors.red.shade400,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              }),
-              const Spacer(),
-              Obx(
-                () => PrimaryButton(
-                  isLoading: controller.isLoading.value,
-                  onPressed: controller.isLoading.value
-                      ? null
-                      : () => controller.login(),
-                  label: AuthStrings.loginButton,
-                ),
-              ),
-              const SizedBox(height: 16),
-              AuthFooterLink(
-                prefix: AuthStrings.noAccount,
-                linkText: AuthStrings.signUp,
-                onLinkTap: () => Get.toNamed(RoutesName.signup),
-              ),
-              const SizedBox(height: 16),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );

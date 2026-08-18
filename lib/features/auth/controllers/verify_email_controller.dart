@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:ai_forma/features/auth/models/verify_email_model.dart';
 import 'package:ai_forma/features/auth/repositories/verify_email_repository.dart';
 import 'package:ai_forma/routes/routes_name.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class VerifyEmailController extends GetxController {
@@ -82,6 +83,7 @@ class VerifyEmailController extends GetxController {
 
   //Verify the email
   Future<void> verifyEmail() async {
+    FocusManager.instance.primaryFocus?.unfocus();
     if (!_validate()) return;
 
     //Spinner Show

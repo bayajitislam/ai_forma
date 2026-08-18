@@ -97,6 +97,7 @@ class SignupController extends GetxController {
 
   //Sign up
   Future<void> signUp() async {
+    FocusManager.instance.primaryFocus?.unfocus();
     //Run validation first — stop if anything is invalid
     if (!_validate()) return;
 

@@ -8,9 +8,16 @@ class LoggerInterceptor extends Interceptor {
     DevLog.error(
       'STATUSCODE: ${err.response?.statusCode} \n'
       'STATUSMESSAGE: ${err.response?.statusMessage} \n'
-      'Error type: ${err.error} \n '
-      'Error message: ${err.message}',
+      'URL: ${err.requestOptions.uri} \n'
+      'Error type: ${err.error} \n'
+      'Error message: ${err.message} \n'
+      'RESPONSE DATA: ${err.response?.data}',
     ); //Debug log
+    if (err.response?.data != null) {
+      try {
+        DevLog.json(err.response?.data);
+      } catch (_) {}
+    }
     handler.next(err); //Continue with the Error
   }
 

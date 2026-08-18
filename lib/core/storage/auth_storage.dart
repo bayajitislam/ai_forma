@@ -25,6 +25,18 @@ class AuthStorage {
     await prefs.setString(_keyUserData, jsonEncode(user.toJson()));
   }
 
+  /// Update saved access token and optional refresh token
+  static Future<void> updateTokens({
+    required String access,
+    String? refresh,
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_keyAccessToken, access);
+    if (refresh != null && refresh.isNotEmpty) {
+      await prefs.setString(_keyRefreshToken, refresh);
+    }
+  }
+
   /// Save first check-in completion status
   static Future<void> setFirstCheckInCompleted(bool completed) async {
     final prefs = await SharedPreferences.getInstance();

@@ -23,119 +23,135 @@ class SignupView extends GetView<SignupController> {
     return Scaffold(
       backgroundColor: AppColors.onboardingBackground,
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const AuthFlowHeader(currentStep: 1),
-              const SizedBox(height: 24),
-              const AuthBrandTitle(
-                prefix: AuthStrings.signupTitlePrefix,
-                suffix: AuthStrings.signupTitleSuffix,
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                AuthStrings.signupSubtitle,
-                style: AppTextStyles.authBody,
-              ),
-              const SizedBox(height: 24),
-              Expanded(
-                child: SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      Obx(
-                        () => AppTextField(
-                          controller: controller.fullNameController,
-                          label: AuthStrings.fullNameLabel,
-                          hint: AuthStrings.fullNameHint,
-                          errorText: controller.nameError.value,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                child: IntrinsicHeight(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const AuthFlowHeader(currentStep: 1),
+                        const SizedBox(height: 24),
+                        const AuthBrandTitle(
+                          prefix: AuthStrings.signupTitlePrefix,
+                          suffix: AuthStrings.signupTitleSuffix,
                         ),
-                      ),
-                      const SizedBox(height: 16),
-                      Obx(
-                        () => AppTextField(
-                          controller: controller.emailController,
-                          label: AuthStrings.emailLabel,
-                          hint: AuthStrings.emailHint,
-                          errorText: controller.emailError.value,
+                        const SizedBox(height: 8),
+                        const Text(
+                          AuthStrings.signupSubtitle,
+                          style: AppTextStyles.authBody,
                         ),
-                      ),
-                      const SizedBox(height: 16),
-                      Obx(
-                        () => AppTextField(
-                          controller: controller.passwordController,
-                          label: AuthStrings.passwordLabel,
-                          hint: AuthStrings.passwordHint,
-                          obscureText: controller.isPasswordObsecure.value,
-                          suffixIcon: IconButton(
-                            onPressed: () {
-                              controller.isPasswordObsecure.value =
-                                  !controller.isPasswordObsecure.value;
+                        const SizedBox(height: 24),
+                        Obx(
+                          () => AppTextField(
+                            controller: controller.fullNameController,
+                            label: AuthStrings.fullNameLabel,
+                            hint: AuthStrings.fullNameHint,
+                            keyboardType: TextInputType.name,
+                            textInputAction: TextInputAction.next,
+                            errorText: controller.nameError.value,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        Obx(
+                          () => AppTextField(
+                            controller: controller.emailController,
+                            label: AuthStrings.emailLabel,
+                            hint: AuthStrings.emailHint,
+                            keyboardType: TextInputType.emailAddress,
+                            textInputAction: TextInputAction.next,
+                            errorText: controller.emailError.value,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        Obx(
+                          () => AppTextField(
+                            controller: controller.passwordController,
+                            label: AuthStrings.passwordLabel,
+                            hint: AuthStrings.passwordHint,
+                            textInputAction: TextInputAction.done,
+                            onSubmitted: (_) {
+                              if (controller.isPasswordValid &&
+                                  !controller.isLoading.value) {
+                                controller.signUp();
+                              }
                             },
-                            icon: AppIcon(
-                              icon: controller.isPasswordObsecure.value
-                                  ? AppIcons.eye
-                                  : AppIcons.eyeOff,
-                              size: 22,
-                              color: AppColors.textSecondary,
+                            obscureText: controller.isPasswordObsecure.value,
+                            suffixIcon: IconButton(
+                              onPressed: () {
+                                controller.isPasswordObsecure.value =
+                                    !controller.isPasswordObsecure.value;
+                              },
+                              icon: AppIcon(
+                                icon: controller.isPasswordObsecure.value
+                                    ? AppIcons.eye
+                                    : AppIcons.eyeOff,
+                                size: 22,
+                                color: AppColors.textSecondary,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 16),
-                      //API / general error banner above password requirements
-                      Obx(() {
-                        final msg = controller.errorMessage.value;
-                        if (msg.isEmpty) return const SizedBox.shrink();
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 12),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Icon(Icons.error_outline_rounded,
-                                  size: 15, color: Colors.red.shade400),
-                              const SizedBox(width: 6),
-                              Expanded(
-                                child: Text(
-                                  msg,
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    color: Colors.red.shade400,
-                                    fontWeight: FontWeight.w500,
+                        const SizedBox(height: 16),
+                        //API / general error banner above password requirements
+                        Obx(() {
+                          final msg = controller.errorMessage.value;
+                          if (msg.isEmpty) return const SizedBox.shrink();
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Icon(Icons.error_outline_rounded,
+                                    size: 15, color: Colors.red.shade400),
+                                const SizedBox(width: 6),
+                                Expanded(
+                                  child: Text(
+                                    msg,
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      color: Colors.red.shade400,
+                                      fontWeight: FontWeight.w500,
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
+                          );
+                        }),
+                        const PasswordRequirements(),
+                        const Spacer(),
+                        const SizedBox(height: 16),
+                        Obx(
+                          () => PrimaryButton(
+                            isLoading: controller.isLoading.value,
+                            onPressed: controller.isPasswordValid
+                                ? () => controller.signUp()
+                                : null,
+                            label: AuthStrings.createAccountButton,
                           ),
-                        );
-                      }),
-                      const PasswordRequirements(),
-                    ],
+                        ),
+                        const SizedBox(height: 16),
+                        AuthFooterLink(
+                          prefix: AuthStrings.alreadyHaveAccount,
+                          linkText: AuthStrings.logIn,
+                          onLinkTap: () => Get.toNamed(RoutesName.login),
+                        ),
+                        Platform.isAndroid
+                            ? const SizedBox(height: 26)
+                            : const SizedBox(height: 16),
+                      ],
+                    ),
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
-              Obx(
-                () => PrimaryButton(
-                  isLoading: controller.isLoading.value,
-                  onPressed: controller.isPasswordValid
-                      ? () => controller.signUp()
-                      : null,
-                  label: AuthStrings.createAccountButton,
-                ),
-              ),
-              const SizedBox(height: 16),
-              AuthFooterLink(
-                prefix: AuthStrings.alreadyHaveAccount,
-                linkText: AuthStrings.logIn,
-                onLinkTap: () => Get.toNamed(RoutesName.login),
-              ),
-              Platform.isAndroid
-                  ? const SizedBox(height: 26)
-                  : const SizedBox.shrink(),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );

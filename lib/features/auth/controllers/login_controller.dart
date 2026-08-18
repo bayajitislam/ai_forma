@@ -59,6 +59,7 @@ class LoginController extends GetxController {
 
   // Login action
   Future<void> login() async {
+    FocusManager.instance.primaryFocus?.unfocus();
     if (!_validate()) return;
 
     isLoading(true);

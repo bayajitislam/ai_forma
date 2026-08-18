@@ -18,82 +18,101 @@ class ForgotPasswordView extends GetView<ForgotPasswordController> {
     return Scaffold(
       backgroundColor: AppColors.onboardingBackground,
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const AuthHeader(),
-              const SizedBox(height: 32),
-              const Text(
-                AuthStrings.forgotPasswordTitle,
-                style: AppTextStyles.authSectionTitle,
-              ),
-              const SizedBox(height: 12),
-              const Text(
-                AuthStrings.forgotPasswordSubtitle,
-                style: AppTextStyles.authBody,
-              ),
-              const SizedBox(height: 32),
-              Obx(
-                () => AppTextField(
-                  controller: controller.emailController,
-                  label: AuthStrings.emailLabel,
-                  hint: AuthStrings.emailHint,
-                  errorText: controller.emailError.value,
-                ),
-              ),
-              const SizedBox(height: 16),
-              // API Error Banner
-              Obx(() {
-                final err = controller.errorMessage.value;
-                if (err.isEmpty) return const SizedBox.shrink();
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: Row(
-                    children: [
-                      Icon(Icons.error_outline_rounded,
-                          size: 14, color: Colors.red.shade400),
-                      const SizedBox(width: 6),
-                      Expanded(
-                        child: Text(
-                          err,
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: Colors.red.shade400,
-                            fontWeight: FontWeight.w500,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                child: IntrinsicHeight(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const AuthHeader(),
+                        const SizedBox(height: 32),
+                        const Text(
+                          AuthStrings.forgotPasswordTitle,
+                          style: AppTextStyles.authSectionTitle,
+                        ),
+                        const SizedBox(height: 12),
+                        const Text(
+                          AuthStrings.forgotPasswordSubtitle,
+                          style: AppTextStyles.authBody,
+                        ),
+                        const SizedBox(height: 32),
+                        Obx(
+                          () => AppTextField(
+                            controller: controller.emailController,
+                            label: AuthStrings.emailLabel,
+                            hint: AuthStrings.emailHint,
+                            keyboardType: TextInputType.emailAddress,
+                            textInputAction: TextInputAction.done,
+                            onSubmitted: (_) {
+                              if (!controller.isLoading.value) {
+                                controller.sendResetCode();
+                              }
+                            },
+                            errorText: controller.emailError.value,
                           ),
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: 16),
+                        // API Error Banner
+                        Obx(() {
+                          final err = controller.errorMessage.value;
+                          if (err.isEmpty) return const SizedBox.shrink();
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 8),
+                            child: Row(
+                              children: [
+                                Icon(Icons.error_outline_rounded,
+                                    size: 14, color: Colors.red.shade400),
+                                const SizedBox(width: 6),
+                                Expanded(
+                                  child: Text(
+                                    err,
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      color: Colors.red.shade400,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }),
+                        const Spacer(),
+                        Obx(
+                          () => PrimaryButton(
+                            isLoading: controller.isLoading.value,
+                            onPressed: controller.isLoading.value
+                                ? null
+                                : () => controller.sendResetCode(),
+                            label: AuthStrings.sendResetCodeButton,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        Center(
+                          child: GestureDetector(
+                            onTap: () => Get.back(),
+                            child: const Text(
+                              AuthStrings.backToLogIn,
+                              style: AppTextStyles.authBody,
+                            ),
+                          ),
+                        ),
+                        Platform.isAndroid
+                            ? const SizedBox(height: 26)
+                            : const SizedBox(height: 16),
+                      ],
+                    ),
                   ),
-                );
-              }),
-              const Spacer(),
-              Obx(
-                () => PrimaryButton(
-                  isLoading: controller.isLoading.value,
-                  onPressed: controller.isLoading.value
-                      ? null
-                      : () => controller.sendResetCode(),
-                  label: AuthStrings.sendResetCodeButton,
                 ),
               ),
-              const SizedBox(height: 16),
-              Center(
-                child: GestureDetector(
-                  onTap: () => Get.back(),
-                  child: const Text(
-                    AuthStrings.backToLogIn,
-                    style: AppTextStyles.authBody,
-                  ),
-                ),
-              ),
-              Platform.isAndroid
-                  ? const SizedBox(height: 26)
-                  : const SizedBox.shrink(),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );

@@ -107,6 +107,7 @@ class ForgotPasswordController extends GetxController {
 
   /// Step 1: Send reset code to email (POST /api/auth/password/forgot/)
   Future<void> sendResetCode() async {
+    FocusManager.instance.primaryFocus?.unfocus();
     if (!_validateEmail()) return;
 
     isLoading(true);
@@ -153,6 +154,7 @@ class ForgotPasswordController extends GetxController {
 
   /// Step 2: Verify 6-digit code (POST /api/auth/password/verify-code/)
   Future<void> verifyCode() async {
+    FocusManager.instance.primaryFocus?.unfocus();
     errorMessage('');
 
     if (_code.length < 6) {
@@ -219,6 +221,7 @@ class ForgotPasswordController extends GetxController {
 
   /// Step 3: Submit new password (POST /api/auth/password/reset/)
   Future<void> submitNewPassword() async {
+    FocusManager.instance.primaryFocus?.unfocus();
     if (!_validatePassword()) return;
 
     isLoading(true);
