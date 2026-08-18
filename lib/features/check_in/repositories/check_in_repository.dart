@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:ai_forma/core/constants/api_endpoint.dart';
 import 'package:ai_forma/core/network/dio_client.dart';
-import 'package:ai_forma/failure/failure.dart';
+import 'package:ai_forma/core/failure/failure.dart';
 import 'package:ai_forma/features/check_in/models/scan_validation_model.dart';
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';

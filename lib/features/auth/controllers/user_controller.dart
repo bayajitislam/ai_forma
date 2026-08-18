@@ -1,7 +1,7 @@
 import 'package:ai_forma/core/constants/api_endpoint.dart';
 import 'package:ai_forma/core/network/dio_client.dart';
 import 'package:ai_forma/core/storage/auth_storage.dart';
-import 'package:ai_forma/failure/failure.dart';
+import 'package:ai_forma/core/failure/failure.dart';
 import 'package:ai_forma/features/auth/models/login_model.dart';
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
