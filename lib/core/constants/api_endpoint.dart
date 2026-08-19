@@ -23,4 +23,5 @@ class ApiEndpoint {
   static const String validateImages = '/api/scans/validate-images/';
   static const String createScan = '/api/scans/';
   static const String weeklyCheckin = '/api/checkins/weekly/';
+  static const String latestScan = '/api/scans/latest/';
 }

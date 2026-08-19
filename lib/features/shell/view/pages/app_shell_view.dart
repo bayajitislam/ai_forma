@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:ai_forma/features/insights/bindings/insights_binding.dart';
+import 'package:ai_forma/features/insights/controllers/insights_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
 import 'package:ai_forma/core/widgets/app_navbar.dart';
@@ -7,11 +9,8 @@ import 'package:ai_forma/features/dashboard/view/pages/dashboard_view.dart';
 import 'package:ai_forma/features/check_in/view/pages/check_in_home_view.dart';
 import 'package:ai_forma/features/insights/view/pages/insights_view.dart';
 import 'package:ai_forma/features/shell/view/widgets/app_shell_header.dart';
-
 import 'package:ai_forma/features/timeline/view/pages/timeline_view.dart';
-
 import 'package:ai_forma/features/profile/view/pages/profile_view.dart';
-
 import 'package:get/get.dart';
 
 class AppShellView extends StatefulWidget {
@@ -25,6 +24,9 @@ class AppShellView extends StatefulWidget {
 class _AppShellViewState extends State<AppShellView> {
   late AppNavItem _selectedItem;
 
+  // Tracks whether we've already triggered the first fetch for Insights.
+  bool _insightsFetched = false;
+
   @override
   void initState() {
     super.initState();
@@ -32,10 +34,27 @@ class _AppShellViewState extends State<AppShellView> {
     if (Get.arguments is AppNavItem) {
       _selectedItem = Get.arguments as AppNavItem;
     }
+
+    // Always register the InsightsController eagerly so InsightsView
+    // can always find it on its first build (IndexedStack builds all children).
+    // No API call happens here — fetchLatestScan is triggered manually below.
+    InsightsBinding().dependencies();
+
+    // If app deep-links directly to Insights tab, fetch immediately.
+    if (_selectedItem == AppNavItem.insights) {
+      _triggerInsightsFetch();
+    }
   }
 
-  //create a method that will navigate to the insights tab
+  /// Triggers fetchLatestScan only once per shell lifetime.
+  void _triggerInsightsFetch() {
+    if (_insightsFetched) return;
+    _insightsFetched = true;
+    Get.find<InsightsController>().fetchLatestScan();
+  }
+
   void navigateToInsights() {
+    _triggerInsightsFetch();
     setState(() {
       _selectedItem = AppNavItem.insights;
     });
@@ -82,7 +101,18 @@ class _AppShellViewState extends State<AppShellView> {
           padding: EdgeInsets.fromLTRB(20, 0, 20, isAndroid ? 16 : 0),
           child: AppNavbar(
             selectedItem: _selectedItem,
-            onItemSelected: (item) => setState(() => _selectedItem = item),
+            onItemSelected: (item) {
+              if (item == AppNavItem.insights) {
+                if (_selectedItem == AppNavItem.insights) {
+                  // User tapped Insights tab again while already on it → refresh
+                  Get.find<InsightsController>().fetchLatestScan();
+                } else {
+                  // First time navigating to Insights → trigger initial fetch
+                  _triggerInsightsFetch();
+                }
+              }
+              setState(() => _selectedItem = item);
+            },
           ),
         ),
       ),
