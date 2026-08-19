@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
+import 'package:ai_forma/features/auth/controllers/user_controller.dart';
+import 'package:ai_forma/features/check_in/controllers/check_in_controller.dart';
+import 'package:ai_forma/features/check_in/view/pages/camera_position_view.dart';
 import 'package:ai_forma/features/check_in/view/pages/check_in_intro_view.dart';
 import 'package:ai_forma/features/dashboard/controllers/daily_brief_controller.dart';
 
@@ -8,9 +11,27 @@ class WeeklyScanCard extends StatelessWidget {
   const WeeklyScanCard({super.key});
 
   void _beginScan(BuildContext context) {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(builder: (_) => const CheckInIntroView()),
-    );
+    final user = Get.isRegistered<UserController>()
+        ? Get.find<UserController>().currentUser.value
+        : null;
+
+    final isInitialScanCompleted = user?.initialScanCompleted ?? false;
+
+    if (isInitialScanCompleted) {
+      if (Get.isRegistered<CheckInController>()) {
+        Get.find<CheckInController>().isWeeklyCheckIn(true);
+      }
+      Navigator.of(context).push(
+        MaterialPageRoute<void>(builder: (_) => const CameraPositionView()),
+      );
+    } else {
+      if (Get.isRegistered<CheckInController>()) {
+        Get.find<CheckInController>().isWeeklyCheckIn(false);
+      }
+      Navigator.of(context).push(
+        MaterialPageRoute<void>(builder: (_) => const CheckInIntroView()),
+      );
+    }
   }
 
   @override

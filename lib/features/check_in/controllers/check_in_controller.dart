@@ -9,11 +9,16 @@ import 'package:flutter_devlog/flutter_devlog.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 
+import 'package:ai_forma/features/auth/controllers/user_controller.dart';
+
 class CheckInController extends GetxController {
   final CheckInRepository repository;
   CheckInController({required this.repository});
 
   final ImagePicker _picker = ImagePicker();
+
+  // Flag to force Weekly Check-In endpoint (POST /api/checkins/weekly/)
+  final RxBool isWeeklyCheckIn = false.obs;
 
   // Check-In Day Preference
   final RxString selectedCheckDay = 'Sun'.obs;
@@ -277,7 +282,7 @@ class CheckInController extends GetxController {
     null,
   );
 
-  /// Call POST /api/scans/ with 3 captured files and timezone
+  /// Call POST /api/scans/ or POST /api/checkins/weekly/ with 3 captured files and timezone
   Future<bool> submitScan({String? timezone}) async {
     if (frontImage.value == null ||
         sideImage.value == null ||
@@ -291,12 +296,23 @@ class CheckInController extends GetxController {
     isSubmittingScan(true);
     errorMessage('');
 
-    final result = await repository.createScan(
-      frontImage: frontImage.value!,
-      sideImage: sideImage.value!,
-      backImage: backImage.value!,
-      timezone: timezone,
-    );
+    final bool isWeekly = isWeeklyCheckIn.value ||
+        (Get.isRegistered<UserController>() &&
+            Get.find<UserController>().currentUser.value?.initialScanCompleted == true);
+
+    final result = isWeekly
+        ? await repository.createWeeklyCheckin(
+            frontImage: frontImage.value!,
+            sideImage: sideImage.value!,
+            backImage: backImage.value!,
+            timezone: timezone,
+          )
+        : await repository.createScan(
+            frontImage: frontImage.value!,
+            sideImage: sideImage.value!,
+            backImage: backImage.value!,
+            timezone: timezone,
+          );
 
     return result.fold(
       (failure) {

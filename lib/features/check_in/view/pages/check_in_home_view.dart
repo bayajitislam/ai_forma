@@ -10,14 +10,35 @@ import 'package:ai_forma/features/check_in/view/pages/check_in_intro_view.dart';
 import 'package:ai_forma/features/check_in/view/widgets/check_in_streak_card.dart';
 import 'package:ai_forma/features/check_in/view/widgets/choose_check_in_day_bottom_sheet.dart';
 
+import 'package:ai_forma/features/auth/controllers/user_controller.dart';
+import 'package:ai_forma/features/check_in/view/pages/camera_position_view.dart';
+
 class CheckInHomeView extends StatelessWidget {
   final void Function()? goInsightPage;
   const CheckInHomeView({super.key, required this.goInsightPage});
 
   void _beginScan(BuildContext context) {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(builder: (_) => const CheckInIntroView()),
-    );
+    final user = Get.isRegistered<UserController>()
+        ? Get.find<UserController>().currentUser.value
+        : null;
+
+    final isInitialScanCompleted = user?.initialScanCompleted ?? false;
+
+    if (isInitialScanCompleted) {
+      if (Get.isRegistered<CheckInController>()) {
+        Get.find<CheckInController>().isWeeklyCheckIn(true);
+      }
+      Navigator.of(context).push(
+        MaterialPageRoute<void>(builder: (_) => const CameraPositionView()),
+      );
+    } else {
+      if (Get.isRegistered<CheckInController>()) {
+        Get.find<CheckInController>().isWeeklyCheckIn(false);
+      }
+      Navigator.of(context).push(
+        MaterialPageRoute<void>(builder: (_) => const CheckInIntroView()),
+      );
+    }
   }
 
   @override
