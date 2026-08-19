@@ -1,4 +1,7 @@
+import 'package:ai_forma/core/network/dio_client.dart';
 import 'package:ai_forma/core/storage/auth_storage.dart';
+import 'package:ai_forma/features/auth/controllers/user_controller.dart';
+import 'package:ai_forma/features/auth/models/login_model.dart';
 import 'package:ai_forma/routes/routes_name.dart';
 import 'package:flutter/material.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
@@ -23,13 +26,32 @@ class _SplashViewState extends State<SplashView> {
     if (!mounted) return;
 
     final token = await AuthStorage.getAccessToken();
-    final user = await AuthStorage.getUser();
+    UserModel? user;
+
+    if (token != null && token.isNotEmpty) {
+      // Always call GET /api/auth/me/ on app open to fetch the latest user flags
+      final UserController userController = Get.isRegistered<UserController>()
+          ? Get.find<UserController>()
+          : Get.put(UserController(DioClient()));
+
+      final res = await userController.fetchProfile();
+      await res.fold(
+        (_) async {
+          user = await AuthStorage.getUser();
+        },
+        (latestUser) async {
+          user = latestUser;
+        },
+      );
+    }
+
+    if (!mounted) return;
 
     if (token != null && token.isNotEmpty && user != null) {
-      if (!user.onboardingCompleted) {
+      if (!user!.onboardingCompleted) {
         // 1. Logged in but assessment not completed -> Go to Assessment
         Get.offAllNamed(RoutesName.gender);
-      } else if (!user.initialScanCompleted) {
+      } else if (!user!.initialScanCompleted) {
         // 2. Logged in & assessment completed, BUT initial scan NOT completed -> Go to Check-In Intro
         Get.offAllNamed(RoutesName.checkInIntro);
       } else {

@@ -15,6 +15,8 @@ import 'package:ai_forma/features/check_in/view/widgets/check_in_header.dart';
 import 'package:ai_forma/features/check_in/view/widgets/check_in_widgets.dart';
 import 'package:get/get.dart';
 
+import 'package:ai_forma/features/check_in/view/pages/analysing_view.dart';
+
 class ScanReviewView extends StatefulWidget {
   const ScanReviewView({super.key});
 
@@ -42,7 +44,7 @@ class _ScanReviewViewState extends State<ScanReviewView> {
 
   void _onLooksGood(CheckInController controller) {
     if (controller.validationResult.value?.allValid == true) {
-      Get.to(() => const CheckInWeightView());
+      Get.off(() => const AnalysingView());
     }
   }
 

@@ -12,15 +12,27 @@ import 'package:ai_forma/features/timeline/view/pages/timeline_view.dart';
 
 import 'package:ai_forma/features/profile/view/pages/profile_view.dart';
 
+import 'package:get/get.dart';
+
 class AppShellView extends StatefulWidget {
-  const AppShellView({super.key});
+  final AppNavItem initialTab;
+  const AppShellView({super.key, this.initialTab = AppNavItem.home});
 
   @override
   State<AppShellView> createState() => _AppShellViewState();
 }
 
 class _AppShellViewState extends State<AppShellView> {
-  AppNavItem _selectedItem = AppNavItem.home;
+  late AppNavItem _selectedItem;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedItem = widget.initialTab;
+    if (Get.arguments is AppNavItem) {
+      _selectedItem = Get.arguments as AppNavItem;
+    }
+  }
 
   //create a method that will navigate to the insights tab
   void navigateToInsights() {

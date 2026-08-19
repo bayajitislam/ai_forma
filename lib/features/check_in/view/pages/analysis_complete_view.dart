@@ -1,189 +1,131 @@
-import 'package:ai_forma/core/storage/auth_storage.dart';
-import 'package:ai_forma/routes/routes_name.dart';
 import 'package:flutter/material.dart';
-import 'package:ai_forma/core/constants/app_images.dart';
+import 'package:ai_forma/core/storage/auth_storage.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
-import 'package:ai_forma/core/theme/app_fonts.dart';
 import 'package:ai_forma/core/theme/app_text_styles.dart';
+import 'package:ai_forma/core/widgets/app_navbar.dart';
 import 'package:ai_forma/core/widgets/primary_button.dart';
 import 'package:ai_forma/features/check_in/constants/check_in_strings.dart';
+import 'package:ai_forma/features/check_in/controllers/check_in_controller.dart';
 import 'package:ai_forma/features/check_in/view/widgets/check_in_header.dart';
+import 'package:ai_forma/features/shell/view/pages/app_shell_view.dart';
 import 'package:get/get.dart';
+import 'package:lottie/lottie.dart';
 
-class AnalysisCompleteView extends StatelessWidget {
+class AnalysisCompleteView extends StatefulWidget {
   const AnalysisCompleteView({super.key});
 
-  Future<void> _onViewResults() async {
+  @override
+  State<AnalysisCompleteView> createState() => _AnalysisCompleteViewState();
+}
+
+class _AnalysisCompleteViewState extends State<AnalysisCompleteView> {
+  @override
+  void initState() {
+    super.initState();
+    // Dispose CheckInController and release memory/camera resources when reaching this view
+    if (Get.isRegistered<CheckInController>()) {
+      Get.delete<CheckInController>();
+    }
+  }
+
+  Future<void> _navigateToAppShell() async {
     // Mark 1st Check-In as completed locally
     await AuthStorage.setFirstCheckInCompleted(true);
-    // Navigate to AppShell and clear check-in flow from stack
-    Get.offAllNamed(RoutesName.appShell);
+    // Navigate to AppShell with Insights tab active
+    Get.offAll(() => const AppShellView(initialTab: AppNavItem.insights));
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.onboardingBackground,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: Column(
-            children: [
-              const CheckInHeader(isTitle: true, title: CheckInStrings.result),
-              Expanded(
-                child: SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      const SizedBox(height: 12),
-                      Container(
-                        width: 202,
-                        height: 336,
-                        decoration: BoxDecoration(
-                          color: AppColors.insightChartBackground,
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: AppColors.cardBorder),
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(20),
-                          child: Image.asset(
-                            AppImages.frontView,
-                            fit: BoxFit.contain,
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+        await _navigateToAppShell();
+      },
+      child: Scaffold(
+        backgroundColor: AppColors.onboardingBackground,
+        body: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Column(
+              children: [
+                const CheckInHeader(isTitle: true, title: CheckInStrings.result),
+                Expanded(
+                  child: Center(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const SizedBox(height: 20),
+                          // Lottie Success Animation
+                          SizedBox(
+                            width: 300,
+                            height: 300,
+                            child: Lottie.asset(
+                              'assets/lottie/Security.json',
+                              width: 300,
+                              height: 300,
+                              repeat: true,
+                            ),
                           ),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 24,
-                        ),
-                        decoration: BoxDecoration(
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppColors.brandTealLight.withValues(
-                                alpha: 0.07,
-                              ),
-                              blurRadius: 20,
-                              offset: const Offset(0, 4),
+                          const SizedBox(height: 24),
+
+                          // Title & Subtitle Card
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 28,
                             ),
-                          ],
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Column(
-                          children: [
-                            Text(
-                              CheckInStrings.completeTitle,
-                              style: AppTextStyles.authSectionTitle.copyWith(
-                                fontSize: 26,
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            const Text(
-                              CheckInStrings.completeSubtitle,
-                              textAlign: TextAlign.center,
-                              style: AppTextStyles.authBody,
-                            ),
-                            const SizedBox(height: 36),
-                            const Row(
-                              children: [
-                                Expanded(
-                                  child: _StatColumn(
-                                    label: CheckInStrings.checkInLabel,
-                                    value: CheckInStrings.checkInNumber,
+                            decoration: BoxDecoration(
+                              color: AppColors.surface,
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(color: AppColors.cardBorder),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppColors.brandTealLight.withValues(
+                                    alpha: 0.05,
                                   ),
-                                ),
-                                Expanded(
-                                  child: _StatColumn(
-                                    label: CheckInStrings.currentStreakLabel,
-                                    value: CheckInStrings.streakNumber,
-                                    suffix: CheckInStrings.streakUnit,
-                                  ),
-                                ),
-                                Expanded(
-                                  child: _StatColumn(
-                                    label: CheckInStrings.momentumLabel,
-                                    value: CheckInStrings.momentumValue,
-                                    suffix: CheckInStrings.momentumSuffix,
-                                    highlight: true,
-                                  ),
+                                  blurRadius: 20,
+                                  offset: const Offset(0, 4),
                                 ),
                               ],
                             ),
-                          ],
-                        ),
+                            child: Column(
+                              children: [
+                                Text(
+                                  CheckInStrings.completeTitle,
+                                  textAlign: TextAlign.center,
+                                  style: AppTextStyles.authSectionTitle.copyWith(
+                                    fontSize: 24,
+                                  ),
+                                ),
+                                const SizedBox(height: 14),
+                                const Text(
+                                  CheckInStrings.completeSubtitle,
+                                  textAlign: TextAlign.center,
+                                  style: AppTextStyles.authBody,
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                        ],
                       ),
-                      const SizedBox(height: 40),
-                    ],
+                    ),
                   ),
                 ),
-              ),
-              PrimaryButton(
-                onPressed: _onViewResults,
-                label: CheckInStrings.viewResults,
-              ),
-              const SizedBox(height: 16),
-            ],
+                PrimaryButton(
+                  onPressed: _navigateToAppShell,
+                  label: CheckInStrings.viewResults,
+                ),
+                const SizedBox(height: 16),
+              ],
+            ),
           ),
         ),
       ),
-    );
-  }
-}
-
-class _StatColumn extends StatelessWidget {
-  const _StatColumn({
-    required this.label,
-    required this.value,
-    this.suffix,
-    this.highlight = false,
-  });
-
-  final String label;
-  final String value;
-  final String? suffix;
-  final bool highlight;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Text(
-          label,
-          textAlign: TextAlign.center,
-          style: AppTextStyles.dashboardMetricLabel,
-        ),
-        const SizedBox(height: 6),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.baseline,
-          textBaseline: TextBaseline.alphabetic,
-          children: [
-            Text(
-              value,
-              style: TextStyle(
-                fontFamily: AppFonts.family,
-                fontSize: 22,
-                fontWeight: FontWeight.w700,
-                color: highlight ? AppColors.brandTeal : AppColors.textPrimary,
-              ),
-            ),
-            if (suffix != null)
-              Text(
-                suffix!,
-                style: TextStyle(
-                  fontFamily: AppFonts.family,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: highlight
-                      ? AppColors.textSecondary
-                      : AppColors.textPrimary,
-                ),
-              ),
-          ],
-        ),
-      ],
     );
   }
 }

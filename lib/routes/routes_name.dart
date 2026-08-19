@@ -17,6 +17,8 @@ class RoutesName {
   static const String gender = '/gender';
   //CheckIn
   static const String checkInIntro = '/check_in_intro';
+  static const String analysing = '/analysing';
+  static const String analysisComplete = '/analysis_complete';
   //Shell
   static const String appShell = '/app_shell';
 }

@@ -150,18 +150,30 @@ class _MeasurementRowState extends State<MeasurementRow> {
   }
 }
 
+enum StepStatus { pending, loading, complete }
+
 class AnalysisStepItem extends StatelessWidget {
   const AnalysisStepItem({
     super.key,
     required this.label,
-    required this.isComplete,
-  });
+    this.status = StepStatus.pending,
+    bool? isComplete,
+  }) : _isCompleteLegacy = isComplete;
 
   final String label;
-  final bool isComplete;
+  final StepStatus status;
+  final bool? _isCompleteLegacy;
 
   @override
   Widget build(BuildContext context) {
+    final legacy = _isCompleteLegacy;
+    final effectiveStatus = legacy != null
+        ? (legacy ? StepStatus.complete : StepStatus.pending)
+        : status;
+
+    final isComplete = effectiveStatus == StepStatus.complete;
+    final isLoading = effectiveStatus == StepStatus.loading;
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10),
       child: Row(
@@ -169,11 +181,14 @@ class AnalysisStepItem extends StatelessWidget {
           Container(
             width: 24,
             height: 24,
+            alignment: Alignment.center,
             decoration: BoxDecoration(
               color: isComplete ? AppColors.brandTeal : Colors.transparent,
               shape: BoxShape.circle,
               border: Border.all(
-                color: isComplete ? AppColors.brandTeal : AppColors.cardBorder,
+                color: isComplete || isLoading
+                    ? AppColors.brandTeal
+                    : AppColors.cardBorder,
                 width: 1.5,
               ),
             ),
@@ -183,7 +198,16 @@ class AnalysisStepItem extends StatelessWidget {
                     size: 14,
                     color: AppColors.onPrimary,
                   )
-                : null,
+                : isLoading
+                    ? const SizedBox(
+                        width: 12,
+                        height: 12,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: AppColors.brandTeal,
+                        ),
+                      )
+                    : null,
           ),
           const SizedBox(width: 14),
           Text(
@@ -192,7 +216,7 @@ class AnalysisStepItem extends StatelessWidget {
               fontFamily: AppFonts.family,
               fontSize: 15,
               fontWeight: FontWeight.w500,
-              color: isComplete
+              color: isComplete || isLoading
                   ? AppColors.textPrimary
                   : AppColors.textSecondary,
             ),

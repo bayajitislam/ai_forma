@@ -47,10 +47,19 @@ class UserController extends GetxController {
         ),
       );
 
-      if (response.statusCode == 200 && response.data['user'] != null) {
-        final updatedUser = UserModel.fromJson(
-          response.data['user'] as Map<String, dynamic>,
-        );
+      Map<String, dynamic>? userMap;
+      if (response.data is Map<String, dynamic>) {
+        final map = response.data as Map<String, dynamic>;
+        if (map['user'] is Map<String, dynamic>) {
+          userMap = map['user'] as Map<String, dynamic>;
+        } else {
+          userMap = map;
+        }
+      }
+
+      if ((response.statusCode == 200 || response.statusCode == 201) &&
+          userMap != null) {
+        final updatedUser = UserModel.fromJson(userMap);
 
         // Update reactive state
         currentUser.value = updatedUser;

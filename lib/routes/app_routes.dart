@@ -13,6 +13,8 @@ import 'package:ai_forma/features/auth/view/pages/signup_success_view.dart';
 import 'package:ai_forma/features/auth/view/pages/signup_view.dart';
 import 'package:ai_forma/features/auth/view/pages/verify_email_view.dart';
 import 'package:ai_forma/features/check_in/bindings/check_in_binding.dart';
+import 'package:ai_forma/features/check_in/view/pages/analysing_view.dart';
+import 'package:ai_forma/features/check_in/view/pages/analysis_complete_view.dart';
 import 'package:ai_forma/features/check_in/view/pages/check_in_intro_view.dart';
 import 'package:ai_forma/features/onboarding/view/pages/onboarding_view.dart';
 import 'package:ai_forma/features/onboarding/view/pages/privacy_onboarding_view.dart';
@@ -82,6 +84,14 @@ class AppRoutes {
       name: RoutesName.checkInIntro,
       page: () => const CheckInIntroView(),
       binding: CheckInBinding(),
+    ),
+    GetPage(
+      name: RoutesName.analysing,
+      page: () => const AnalysingView(),
+    ),
+    GetPage(
+      name: RoutesName.analysisComplete,
+      page: () => const AnalysisCompleteView(),
     ),
 
     //Shell

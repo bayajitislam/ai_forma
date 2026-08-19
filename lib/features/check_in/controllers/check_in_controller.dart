@@ -101,7 +101,8 @@ class CheckInController extends GetxController {
   /// Toggle between front and back cameras
   Future<void> toggleCamera() async {
     if (availableCameraList.length < 2) return;
-    selectedCameraIndex = (selectedCameraIndex + 1) % availableCameraList.length;
+    selectedCameraIndex =
+        (selectedCameraIndex + 1) % availableCameraList.length;
     await _initCameraController(availableCameraList[selectedCameraIndex]);
   }
 
@@ -160,11 +161,7 @@ class CheckInController extends GetxController {
         break;
     }
 
-    AppBottomSheet.show(
-      context: context,
-      title: title,
-      bulletPoints: points,
-    );
+    AppBottomSheet.show(context: context, title: title, bulletPoints: points);
   }
 
   /// Take photo for the active pose ('Front', 'Side', or 'Back')
@@ -242,8 +239,12 @@ class CheckInController extends GetxController {
 
   /// Call POST /api/scans/validate-images/ with 3 captured files
   Future<bool> validateImages() async {
-    if (frontImage.value == null || sideImage.value == null || backImage.value == null) {
-      errorMessage('Please capture front, side, and back photos before validating.');
+    if (frontImage.value == null ||
+        sideImage.value == null ||
+        backImage.value == null) {
+      errorMessage(
+        'Please capture front, side, and back photos before validating.',
+      );
       return false;
     }
 
@@ -266,6 +267,47 @@ class CheckInController extends GetxController {
         validationResult.value = res;
         isValidating(false);
         return res.allValid;
+      },
+    );
+  }
+
+  // Scan Analysis Submission State
+  final RxBool isSubmittingScan = false.obs;
+  final Rx<Map<String, dynamic>?> scanResultData = Rx<Map<String, dynamic>?>(
+    null,
+  );
+
+  /// Call POST /api/scans/ with 3 captured files and timezone
+  Future<bool> submitScan({String? timezone}) async {
+    if (frontImage.value == null ||
+        sideImage.value == null ||
+        backImage.value == null) {
+      errorMessage(
+        'Please capture front, side, and back photos before submitting.',
+      );
+      return false;
+    }
+
+    isSubmittingScan(true);
+    errorMessage('');
+
+    final result = await repository.createScan(
+      frontImage: frontImage.value!,
+      sideImage: sideImage.value!,
+      backImage: backImage.value!,
+      timezone: timezone,
+    );
+
+    return result.fold(
+      (failure) {
+        errorMessage(failure.message);
+        isSubmittingScan(false);
+        return false;
+      },
+      (data) {
+        scanResultData.value = data;
+        isSubmittingScan(false);
+        return true;
       },
     );
   }
