@@ -14,10 +14,52 @@ class InsightTrendChart extends StatelessWidget {
   final List<String> labels;
   final bool trendUp;
 
+  static String formatDateLabel(String rawDate) {
+    final parsed = DateTime.tryParse(rawDate);
+    if (parsed == null) return rawDate;
+
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+
+    final monthStr = months[parsed.month - 1];
+    return '$monthStr ${parsed.day}';
+  }
+
+  static String formatYValue(double val) {
+    if (val == val.toInt()) {
+      return val.toInt().toString();
+    }
+    return val.toStringAsFixed(1);
+  }
+
   @override
   Widget build(BuildContext context) {
+    final double maxVal = dataPoints.isNotEmpty
+        ? dataPoints.reduce((a, b) => a > b ? a : b)
+        : 0;
+    final double minVal = dataPoints.isNotEmpty
+        ? dataPoints.reduce((a, b) => a < b ? a : b)
+        : 0;
+    final double midVal = (maxVal + minVal) / 2;
+
+    final String maxStr = formatYValue(maxVal);
+    final String midStr = formatYValue(midVal);
+    final String minStr = formatYValue(minVal);
+
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 20, 16, 12),
+      padding: const EdgeInsets.fromLTRB(12, 16, 16, 12),
       decoration: BoxDecoration(
         color: AppColors.insightChartBackground,
         borderRadius: BorderRadius.circular(14),
@@ -25,31 +67,98 @@ class InsightTrendChart extends StatelessWidget {
       ),
       child: Column(
         children: [
-          SizedBox(
-            height: 120,
-            width: double.infinity,
-            child: CustomPaint(
-              painter: _TrendChartPainter(
-                dataPoints: dataPoints,
-                trendUp: trendUp,
-              ),
-            ),
-          ),
-          const SizedBox(height: 8),
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: labels
-                .map(
-                  (label) => Text(
-                    label,
-                    style: const TextStyle(
-                      fontFamily: AppFonts.family,
-                      fontSize: 11,
-                      color: AppColors.textSecondary,
+            children: [
+              // Y-axis labels column
+              SizedBox(
+                height: 120,
+                width: 26,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: dataPoints.length <= 1
+                      ? [
+                          const Spacer(),
+                          Text(
+                            dataPoints.isNotEmpty
+                                ? formatYValue(dataPoints.first)
+                                : '',
+                            style: const TextStyle(
+                              fontFamily: AppFonts.family,
+                              fontSize: 10,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                          const Spacer(),
+                        ]
+                      : [
+                          Text(
+                            maxStr,
+                            style: const TextStyle(
+                              fontFamily: AppFonts.family,
+                              fontSize: 10,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                          Text(
+                            midStr,
+                            style: const TextStyle(
+                              fontFamily: AppFonts.family,
+                              fontSize: 10,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                          Text(
+                            minStr,
+                            style: const TextStyle(
+                              fontFamily: AppFonts.family,
+                              fontSize: 10,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                        ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              // Chart area
+              Expanded(
+                child: SizedBox(
+                  height: 120,
+                  child: CustomPaint(
+                    painter: _TrendChartPainter(
+                      dataPoints: dataPoints,
+                      trendUp: trendUp,
                     ),
                   ),
-                )
-                .toList(),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          // X-axis date labels
+          Row(
+            children: [
+              const SizedBox(width: 44), // Y-axis offset alignment (36 + 8)
+              Expanded(
+                child: Row(
+                  mainAxisAlignment: labels.length == 1
+                      ? MainAxisAlignment.center
+                      : MainAxisAlignment.spaceBetween,
+                  children: labels
+                      .map(
+                        (label) => Text(
+                          formatDateLabel(label),
+                          style: const TextStyle(
+                            fontFamily: AppFonts.family,
+                            fontSize: 11,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      )
+                      .toList(),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -58,18 +167,73 @@ class InsightTrendChart extends StatelessWidget {
 }
 
 class _TrendChartPainter extends CustomPainter {
-  _TrendChartPainter({
-    required this.dataPoints,
-    required this.trendUp,
-  });
+  _TrendChartPainter({required this.dataPoints, required this.trendUp});
 
   final List<double> dataPoints;
   final bool trendUp;
 
   @override
   void paint(Canvas canvas, Size size) {
-    if (dataPoints.length < 2) return;
+    if (dataPoints.isEmpty) return;
 
+    final gridPaint = Paint()
+      ..color = AppColors.cardBorder
+      ..strokeWidth = 1.0
+      ..style = PaintingStyle.stroke;
+
+    final dotPaint = Paint()
+      ..color = AppColors.brandTealDark
+      ..style = PaintingStyle.fill;
+
+    // Single data point: Draw a horizontal line and a centered point
+    if (dataPoints.length == 1) {
+      final centerY = size.height / 2;
+      final centerX = size.width / 2;
+
+      final linePaint = Paint()
+        ..color = AppColors.brandTealDark.withValues(alpha: 0.3)
+        ..strokeWidth = 2.0
+        ..style = PaintingStyle.stroke
+        ..strokeCap = StrokeCap.round;
+
+      canvas.drawLine(
+        Offset(0, centerY),
+        Offset(size.width, centerY),
+        linePaint,
+      );
+
+      final centerPoint = Offset(centerX, centerY);
+      canvas.drawCircle(centerPoint, 5, dotPaint);
+      canvas.drawCircle(
+        centerPoint,
+        5,
+        Paint()
+          ..color = AppColors.surface
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 2,
+      );
+      canvas.drawCircle(centerPoint, 6, dotPaint);
+      return;
+    }
+
+    // Grid lines for multi-point chart
+    canvas.drawLine(
+      Offset(0, size.height * 0.1),
+      Offset(size.width, size.height * 0.1),
+      gridPaint,
+    );
+    canvas.drawLine(
+      Offset(0, size.height * 0.5),
+      Offset(size.width, size.height * 0.5),
+      gridPaint,
+    );
+    canvas.drawLine(
+      Offset(0, size.height * 0.9),
+      Offset(size.width, size.height * 0.9),
+      gridPaint,
+    );
+
+    // Multiple data points: Draw trend line and points
     final min = dataPoints.reduce((a, b) => a < b ? a : b);
     final max = dataPoints.reduce((a, b) => a > b ? a : b);
     final range = max - min == 0 ? 1.0 : max - min;
@@ -96,10 +260,6 @@ class _TrendChartPainter extends CustomPainter {
       path.lineTo(points[i].dx, points[i].dy);
     }
     canvas.drawPath(path, linePaint);
-
-    final dotPaint = Paint()
-      ..color = AppColors.brandTealDark
-      ..style = PaintingStyle.fill;
 
     for (final point in points) {
       canvas.drawCircle(point, 5, dotPaint);

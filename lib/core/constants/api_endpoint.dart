@@ -24,4 +24,5 @@ class ApiEndpoint {
   static const String createScan = '/api/scans/';
   static const String weeklyCheckin = '/api/checkins/weekly/';
   static const String latestScan = '/api/scans/latest/';
+  static const String muscleGrowthInsight = '/api/insights/muscle-growth/';
 }
