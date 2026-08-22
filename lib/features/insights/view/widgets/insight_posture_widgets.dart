@@ -11,16 +11,33 @@ class InsightPostureComparison extends StatelessWidget {
     super.key,
     required this.beforeLabel,
     required this.afterLabel,
+    this.beforeImageUrl,
+    this.beforeThumbUrl,
+    this.afterImageUrl,
+    this.afterThumbUrl,
+    this.onRefreshRequested,
   });
 
   final String beforeLabel;
   final String afterLabel;
+  final String? beforeImageUrl;
+  final String? beforeThumbUrl;
+  final String? afterImageUrl;
+  final String? afterThumbUrl;
+  final VoidCallback? onRefreshRequested;
 
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Expanded(child: _ComparisonCard(label: beforeLabel)),
+        Expanded(
+          child: _ComparisonCard(
+            label: beforeLabel,
+            imageUrl: beforeImageUrl,
+            thumbUrl: beforeThumbUrl,
+            onRefreshRequested: onRefreshRequested,
+          ),
+        ),
         const Padding(
           padding: EdgeInsets.symmetric(horizontal: 8),
           child: AppIcon(
@@ -29,48 +46,124 @@ class InsightPostureComparison extends StatelessWidget {
             color: AppColors.brandTealDark,
           ),
         ),
-        Expanded(child: _ComparisonCard(label: afterLabel)),
+        Expanded(
+          child: _ComparisonCard(
+            label: afterLabel,
+            imageUrl: afterImageUrl,
+            thumbUrl: afterThumbUrl,
+            onRefreshRequested: onRefreshRequested,
+          ),
+        ),
       ],
     );
   }
 }
 
 class _ComparisonCard extends StatelessWidget {
-  const _ComparisonCard({required this.label});
+  const _ComparisonCard({
+    required this.label,
+    this.imageUrl,
+    this.thumbUrl,
+    this.onRefreshRequested,
+  });
 
   final String label;
+  final String? imageUrl;
+  final String? thumbUrl;
+  final VoidCallback? onRefreshRequested;
 
   @override
   Widget build(BuildContext context) {
+    // Prefer imageUrl for full posture detail display, fallback to thumbUrl
+    final primaryUrl = (imageUrl?.isNotEmpty ?? false)
+        ? imageUrl
+        : ((thumbUrl?.isNotEmpty ?? false) ? thumbUrl : null);
+
+    final fallbackUrl =
+        (imageUrl?.isNotEmpty ?? false) && (thumbUrl?.isNotEmpty ?? false)
+        ? thumbUrl
+        : null;
+
     return Column(
       children: [
-        Container(
-          height: 180,
-          width: 96,
-          decoration: BoxDecoration(
-            color: AppColors.insightChartBackground,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: AppColors.cardBorder),
-            boxShadow: const [
-              BoxShadow(
-                color: AppColors.cardShadow,
-                blurRadius: 8,
-                offset: Offset(0, 2),
-              ),
-            ],
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(14),
-            child: Image.asset(
-              AppImages.frontView,
-              fit: BoxFit.cover,
-              width: double.infinity,
+        GestureDetector(
+          onTap: primaryUrl != null ? onRefreshRequested : null,
+          child: Container(
+            height: 180,
+            width: 96,
+            decoration: BoxDecoration(
+              color: AppColors.insightChartBackground,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: AppColors.cardBorder),
+              boxShadow: const [
+                BoxShadow(
+                  color: AppColors.cardShadow,
+                  blurRadius: 8,
+                  offset: Offset(0, 2),
+                ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(14),
+              child: primaryUrl != null
+                  ? Image.network(
+                      primaryUrl,
+                      fit: BoxFit.contain,
+                      width: double.infinity,
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return const Center(
+                          child: SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: AppColors.brandTeal,
+                            ),
+                          ),
+                        );
+                      },
+                      errorBuilder: (context, error, stackTrace) {
+                        debugPrint('S3 Image load error ($primaryUrl): $error');
+                        if (fallbackUrl != null) {
+                          return Image.network(
+                            fallbackUrl,
+                            fit: BoxFit.contain,
+                            width: double.infinity,
+                            loadingBuilder: (context, child, loadingProgress) {
+                              if (loadingProgress == null) return child;
+                              return const Center(
+                                child: SizedBox(
+                                  width: 24,
+                                  height: 24,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: AppColors.brandTeal,
+                                  ),
+                                ),
+                              );
+                            },
+                            errorBuilder: (context, error, stackTrace) {
+                              debugPrint(
+                                'S3 Fallback Image error ($fallbackUrl): $error',
+                              );
+                              return _buildFallbackImage();
+                            },
+                          );
+                        }
+                        return _buildFallbackImage();
+                      },
+                    )
+                  : _buildFallbackImage(),
             ),
           ),
         ),
         const SizedBox(height: 8),
         Text(
           label,
+          textAlign: TextAlign.center,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
           style: const TextStyle(
             fontFamily: AppFonts.family,
             fontSize: 12,
@@ -78,6 +171,14 @@ class _ComparisonCard extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildFallbackImage() {
+    return Image.asset(
+      AppImages.frontView,
+      fit: BoxFit.contain,
+      width: double.infinity,
     );
   }
 }
@@ -100,8 +201,7 @@ class InsightStatusList extends StatelessWidget {
       child: Column(
         children: [
           for (var i = 0; i < items.length; i++) ...[
-            if (i > 0)
-              const Divider(height: 1, color: AppColors.cardBorder),
+            if (i > 0) const Divider(height: 1, color: AppColors.cardBorder),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               child: Row(
@@ -133,10 +233,10 @@ class InsightStatusList extends StatelessWidget {
   }
 
   Color _toneColor(InsightStatusTone tone) => switch (tone) {
-        InsightStatusTone.positive => AppColors.brandTealDark,
-        InsightStatusTone.warning => AppColors.insightWarning,
-        InsightStatusTone.neutral => AppColors.textSecondary,
-      };
+    InsightStatusTone.positive => AppColors.brandTealDark,
+    InsightStatusTone.warning => AppColors.insightWarning,
+    InsightStatusTone.neutral => AppColors.textSecondary,
+  };
 }
 
 class InsightStatusItem {

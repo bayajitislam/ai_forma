@@ -1,6 +1,7 @@
 class ApiEndpoint {
   // static const String baseUrl = 'https://aiformapi.dsrt321.online';
   static const String baseUrl = 'http://10.10.26.245:8000';
+  
 
   //auth
   static const String login = '/api/auth/login/';
@@ -25,4 +26,6 @@ class ApiEndpoint {
   static const String weeklyCheckin = '/api/checkins/weekly/';
   static const String latestScan = '/api/scans/latest/';
   static const String muscleGrowthInsight = '/api/insights/muscle-growth/';
+  static const String fatLossInsight = '/api/insights/fat-loss/';
+  static const String postureInsight = '/api/insights/posture/';
 }

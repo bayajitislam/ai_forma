@@ -1,5 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:ai_forma/core/network/dio_client.dart';
+import 'package:ai_forma/core/theme/app_colors.dart';
+import 'package:ai_forma/core/widgets/app_network_error_widget.dart';
 import 'package:ai_forma/features/insights/constants/insights_strings.dart';
+import 'package:ai_forma/features/insights/controllers/posture_controller.dart';
+import 'package:ai_forma/features/insights/repositories/insights_repository.dart';
 import 'package:ai_forma/features/insights/view/widgets/insight_analysis_section.dart';
 import 'package:ai_forma/features/insights/view/widgets/insight_metric_scaffold.dart';
 import 'package:ai_forma/features/insights/view/widgets/insight_posture_widgets.dart';
@@ -8,63 +14,173 @@ import 'package:ai_forma/features/insights/view/widgets/insight_score_section.da
 class PostureAnalysisView extends StatelessWidget {
   const PostureAnalysisView({super.key});
 
+  InsightStatusTone _mapTone(String? toneStr) {
+    switch (toneStr?.toLowerCase()) {
+      case 'positive':
+        return InsightStatusTone.positive;
+      case 'warning':
+        return InsightStatusTone.warning;
+      default:
+        return InsightStatusTone.neutral;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return InsightMetricScaffold(
-      title: InsightsStrings.postureAnalysis,
-      children: [
-        const InsightScoreSection(
-          scoreLabel: InsightsStrings.postureScoreLabel,
-          score: 72,
-          badge: InsightsStrings.needsAttention,
-          badgeType: InsightScoreBadgeType.warning,
-          summary: InsightsStrings.postureSummary,
-        ),
-        const SizedBox(height: 20),
-        const InsightPostureComparison(
-          beforeLabel: InsightsStrings.postureBefore,
-          afterLabel: InsightsStrings.postureAfter,
-        ),
-        const SizedBox(height: 16),
-        const InsightStatusList(
-          items: [
-            InsightStatusItem(
-              label: InsightsStrings.headPosition,
-              status: InsightsStrings.headPositionStatus,
-              tone: InsightStatusTone.positive,
+    final controller = Get.isRegistered<PostureController>()
+        ? Get.find<PostureController>()
+        : Get.put(
+            PostureController(
+              repository: InsightsRepository(
+                Get.isRegistered<DioClient>()
+                    ? Get.find<DioClient>()
+                    : DioClient(),
+              ),
             ),
-            InsightStatusItem(
-              label: InsightsStrings.shoulderPosition,
-              status: InsightsStrings.shoulderPositionStatus,
-              tone: InsightStatusTone.warning,
+          );
+
+    return Obx(() {
+      final isLoading = controller.isLoading.value;
+      final error = controller.errorMessage.value;
+      final data = controller.detail.value;
+
+      if (isLoading) {
+        return const Scaffold(
+          backgroundColor: AppColors.surface,
+          body: Center(
+            child: CircularProgressIndicator(color: AppColors.brandTeal),
+          ),
+        );
+      }
+
+      if (error.isNotEmpty && data == null) {
+        return Scaffold(
+          backgroundColor: AppColors.surface,
+          body: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+              child: AppNetworkErrorWidget(
+                onRetry: controller.fetchDetail,
+                message: error,
+              ),
             ),
-            InsightStatusItem(
-              label: InsightsStrings.spinalPosition,
-              status: InsightsStrings.spinalPositionStatus,
-              tone: InsightStatusTone.positive,
-            ),
-            InsightStatusItem(
-              label: InsightsStrings.pelvicTilt,
-              status: InsightsStrings.pelvicTiltStatus,
-              tone: InsightStatusTone.neutral,
-            ),
-          ],
-        ),
-        const SizedBox(height: 24),
-        const InsightAnalysisSection(
-          detected: InsightsStrings.postureDetected,
-          why: InsightsStrings.postureWhy,
-          nextSteps: InsightsStrings.postureNextSteps,
-        ),
-        const SizedBox(height: 16),
-        const InsightPrioritiesCard(
-          priorities: [
-            InsightsStrings.posturePriority1,
-            InsightsStrings.posturePriority2,
-            InsightsStrings.posturePriority3,
-          ],
-        ),
-      ],
-    );
+          ),
+        );
+      }
+
+      // Map values with fallback defaults
+      final score = data?.score ?? 70;
+      final badgeText = (data?.status.isNotEmpty ?? false)
+          ? data!.status
+          : InsightsStrings.progressingWell;
+      final badgeType = (data?.statusTone.toLowerCase() == 'warning')
+          ? InsightScoreBadgeType.warning
+          : InsightScoreBadgeType.positive;
+      final summaryText = (data?.summary.isNotEmpty ?? false)
+          ? data!.summary
+          : InsightsStrings.postureSummary;
+
+      // Comparison images & labels
+      final beforeItem = data?.comparison?.before;
+      final afterItem = data?.comparison?.after;
+
+      final beforeLabel = (beforeItem?.label.isNotEmpty ?? false)
+          ? beforeItem!.label
+          : InsightsStrings.postureBefore;
+      final afterLabel = (afterItem?.label.isNotEmpty ?? false)
+          ? afterItem!.label
+          : InsightsStrings.postureAfter;
+
+      // Alignment status items
+      final headLabel = data?.alignment?.headPosition?.label;
+      final headTone = data?.alignment?.headPosition?.tone;
+
+      final shoulderLabel = data?.alignment?.shoulderPosition?.label;
+      final shoulderTone = data?.alignment?.shoulderPosition?.tone;
+
+      final spinalLabel = data?.alignment?.spinalPosition?.label;
+      final spinalTone = data?.alignment?.spinalPosition?.tone;
+
+      final pelvicLabel = data?.alignment?.pelvicTilt?.label;
+      final pelvicTone = data?.alignment?.pelvicTilt?.tone;
+
+      // Analysis
+      final detectedText = (data?.analysis?.detected.isNotEmpty ?? false)
+          ? data!.analysis!.detected
+          : InsightsStrings.postureDetected;
+      final whyText = (data?.analysis?.why.isNotEmpty ?? false)
+          ? data!.analysis!.why
+          : InsightsStrings.postureWhy;
+      final nextStepText = (data?.analysis?.nextStep.isNotEmpty ?? false)
+          ? data!.analysis!.nextStep
+          : InsightsStrings.postureNextSteps;
+
+      // Priorities
+      final prioritiesList = (data?.weeklyPriorities.isNotEmpty ?? false)
+          ? data!.weeklyPriorities.map((e) => e.text).toList()
+          : <String>[
+              InsightsStrings.posturePriority1,
+              InsightsStrings.posturePriority2,
+              InsightsStrings.posturePriority3,
+            ];
+
+      return InsightMetricScaffold(
+        title: InsightsStrings.postureAnalysis,
+        children: [
+          InsightScoreSection(
+            scoreLabel: InsightsStrings.postureScoreLabel,
+            score: score,
+            badge: badgeText,
+            badgeType: badgeType,
+            summary: summaryText,
+          ),
+          const SizedBox(height: 20),
+          InsightPostureComparison(
+            beforeLabel: beforeLabel,
+            beforeImageUrl: beforeItem?.imageUrl,
+            beforeThumbUrl: beforeItem?.thumbUrl,
+            afterLabel: afterLabel,
+            afterImageUrl: afterItem?.imageUrl,
+            afterThumbUrl: afterItem?.thumbUrl,
+            onRefreshRequested: controller.fetchDetail,
+          ),
+          const SizedBox(height: 16),
+          InsightStatusList(
+            items: [
+              InsightStatusItem(
+                label: InsightsStrings.headPosition,
+                status: headLabel ?? InsightsStrings.headPositionStatus,
+                tone: _mapTone(headTone ?? 'positive'),
+              ),
+              InsightStatusItem(
+                label: InsightsStrings.shoulderPosition,
+                status: shoulderLabel ?? InsightsStrings.shoulderPositionStatus,
+                tone: _mapTone(shoulderTone ?? 'positive'),
+              ),
+              InsightStatusItem(
+                label: InsightsStrings.spinalPosition,
+                status: spinalLabel ?? InsightsStrings.spinalPositionStatus,
+                tone: _mapTone(spinalTone ?? 'positive'),
+              ),
+              InsightStatusItem(
+                label: InsightsStrings.pelvicTilt,
+                status: pelvicLabel ?? InsightsStrings.pelvicTiltStatus,
+                tone: _mapTone(pelvicTone ?? 'positive'),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          InsightAnalysisSection(
+            detected: detectedText,
+            why: whyText,
+            nextSteps: nextStepText,
+          ),
+          const SizedBox(height: 16),
+          InsightPrioritiesCard(
+            priorities: prioritiesList,
+          ),
+        ],
+      );
+    });
   }
 }
