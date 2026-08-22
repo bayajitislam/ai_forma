@@ -3,18 +3,22 @@ import 'package:ai_forma/core/theme/app_colors.dart';
 import 'package:ai_forma/core/theme/app_text_styles.dart';
 import 'package:ai_forma/core/widgets/app_icon.dart';
 import 'package:ai_forma/core/icons/app_icons.dart';
+import 'package:ai_forma/core/constants/app_images.dart';
+import 'package:ai_forma/core/widgets/app_shimmer.dart';
 
 class CompareScanCard extends StatelessWidget {
   const CompareScanCard({
     super.key,
-    required this.imageAsset,
+    this.imageAsset,
+    this.imageUrl,
     required this.date,
     required this.subtitle,
     required this.isSelected,
     required this.onTap,
   });
 
-  final String imageAsset;
+  final String? imageAsset;
+  final String? imageUrl;
   final String date;
   final String subtitle;
   final bool isSelected;
@@ -33,9 +37,7 @@ class CompareScanCard extends StatelessWidget {
               : AppColors.surface,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: isSelected
-                ? AppColors.brandTealDark
-                : AppColors.cardBorder,
+            color: isSelected ? AppColors.brandTealDark : AppColors.cardBorder,
             width: isSelected ? 1.5 : 1,
           ),
         ),
@@ -47,10 +49,19 @@ class CompareScanCard extends StatelessWidget {
                 width: 48,
                 height: 64,
                 color: AppColors.insightChartBackground,
-                child: Image.asset(
-                  imageAsset,
-                  fit: BoxFit.cover,
-                ),
+                child: (imageUrl != null && imageUrl!.isNotEmpty)
+                    ? AppShimmerImage(
+                        imageUrl: imageUrl!,
+                        fit: BoxFit.contain,
+                        errorWidget: Image.asset(
+                          imageAsset ?? AppImages.frontView,
+                          fit: BoxFit.cover,
+                        ),
+                      )
+                    : Image.asset(
+                        imageAsset ?? AppImages.frontView,
+                        fit: BoxFit.cover,
+                      ),
               ),
             ),
             const SizedBox(width: 14),
@@ -64,8 +75,10 @@ class CompareScanCard extends StatelessWidget {
                       fontWeight: FontWeight.w700,
                     ),
                   ),
-                  const SizedBox(height: 2),
-                  Text(subtitle, style: AppTextStyles.featureDescription),
+                  if (subtitle.isNotEmpty) ...[
+                    const SizedBox(height: 2),
+                    Text(subtitle, style: AppTextStyles.featureDescription),
+                  ],
                 ],
               ),
             ),

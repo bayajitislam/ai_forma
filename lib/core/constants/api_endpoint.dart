@@ -39,4 +39,8 @@ class ApiEndpoint {
   static const String timelineTrends = '/api/timeline/trends/';
   static const String timelineHistory = '/api/timeline/history/';
   static String timelineScanDetail(String id) => '/api/timeline/scans/$id/';
+
+  //scans & compare
+  static const String scansList = '/api/scans/';
+  static const String compareScans = '/api/scans/compare/';
 }

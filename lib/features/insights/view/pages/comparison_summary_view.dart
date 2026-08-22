@@ -1,5 +1,3 @@
-import 'package:ai_forma/core/widgets/primary_button.dart';
-import 'package:ai_forma/features/shell/view/utils/shell_navigation.dart';
 import 'package:flutter/material.dart';
 import 'package:ai_forma/core/constants/app_images.dart';
 import 'package:ai_forma/core/icons/app_icons.dart';
@@ -7,9 +5,13 @@ import 'package:ai_forma/core/theme/app_colors.dart';
 import 'package:ai_forma/core/theme/app_fonts.dart';
 import 'package:ai_forma/core/theme/app_text_styles.dart';
 import 'package:ai_forma/core/widgets/app_icon.dart';
+import 'package:ai_forma/core/widgets/app_shimmer.dart';
+import 'package:ai_forma/core/widgets/primary_button.dart';
 import 'package:ai_forma/features/check_in/view/widgets/check_in_header.dart';
 import 'package:ai_forma/features/insights/constants/insights_strings.dart';
+import 'package:ai_forma/features/insights/models/compare_result_model.dart';
 import 'package:ai_forma/features/insights/view/pages/visual_scan_view.dart';
+import 'package:ai_forma/features/shell/view/utils/shell_navigation.dart';
 
 class ComparisonScanData {
   const ComparisonScanData({required this.shortDate, required this.imageAsset});
@@ -21,6 +23,7 @@ class ComparisonScanData {
 class ComparisonSummaryView extends StatelessWidget {
   const ComparisonSummaryView({
     super.key,
+    this.result,
     this.thenScan = const ComparisonScanData(
       shortDate: InsightsStrings.scanShortMay4,
       imageAsset: AppImages.frontView,
@@ -31,19 +34,46 @@ class ComparisonSummaryView extends StatelessWidget {
     ),
   });
 
+  final CompareResultResponseModel? result;
   final ComparisonScanData thenScan;
   final ComparisonScanData nowScan;
 
+  String _formatDelta(String? rawVal, String suffix) {
+    if (rawVal == null || rawVal.isEmpty) return '--';
+    final numVal = double.tryParse(rawVal);
+    if (numVal != null && numVal > 0 && !rawVal.startsWith('+')) {
+      return '+$rawVal$suffix';
+    }
+    return '$rawVal$suffix';
+  }
+
   @override
   Widget build(BuildContext context) {
+    final titleText = (result?.title.isNotEmpty ?? false)
+        ? result!.title
+        : InsightsStrings.comparisonTitle(
+            thenScan.shortDate,
+            nowScan.shortDate,
+          );
+
+    final thenDate = result?.then?.scanDate ?? thenScan.shortDate;
+    final thenImageUrl = result?.then?.frontImageUrl ?? result?.then?.frontThumbUrl;
+
+    final nowDate = result?.now?.scanDate ?? nowScan.shortDate;
+    final nowImageUrl = result?.now?.frontImageUrl ?? result?.now?.frontThumbUrl;
+
+    final bodyFatChangeStr = _formatDelta(result?.deltas?.bodyFatPercent, '%');
+    final muscleChangeStr = _formatDelta(result?.deltas?.muscleMassKg, ' kg');
+    final weightChangeStr = _formatDelta(result?.deltas?.weightKg, ' kg');
+
     return Scaffold(
       backgroundColor: AppColors.surface,
       body: SafeArea(
         child: Column(
           children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: const CheckInHeader(),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20),
+              child: CheckInHeader(),
             ),
             Expanded(
               child: SingleChildScrollView(
@@ -55,10 +85,7 @@ class ComparisonSummaryView extends StatelessWidget {
                       children: [
                         Expanded(
                           child: Text(
-                            InsightsStrings.comparisonTitle(
-                              thenScan.shortDate,
-                              nowScan.shortDate,
-                            ),
+                            titleText,
                             style: AppTextStyles.authSectionTitle.copyWith(
                               fontSize: 22,
                             ),
@@ -80,8 +107,9 @@ class ComparisonSummaryView extends StatelessWidget {
                       children: [
                         Expanded(
                           child: _ComparisonImageCard(
+                            imageUrl: thenImageUrl,
                             imageAsset: thenScan.imageAsset,
-                            date: thenScan.shortDate,
+                            date: thenDate,
                             label: InsightsStrings.comparisonThen,
                           ),
                         ),
@@ -109,8 +137,9 @@ class ComparisonSummaryView extends StatelessWidget {
                         ),
                         Expanded(
                           child: _ComparisonImageCard(
+                            imageUrl: nowImageUrl,
                             imageAsset: nowScan.imageAsset,
-                            date: nowScan.shortDate,
+                            date: nowDate,
                             label: InsightsStrings.comparisonNow,
                           ),
                         ),
@@ -124,19 +153,19 @@ class ComparisonSummaryView extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    const _ComparisonMetricRow(
+                    _ComparisonMetricRow(
                       label: InsightsStrings.comparisonBodyFat,
-                      value: InsightsStrings.comparisonBodyFatChange,
+                      value: bodyFatChangeStr,
                     ),
                     const Divider(height: 1, color: AppColors.cardBorder),
-                    const _ComparisonMetricRow(
+                    _ComparisonMetricRow(
                       label: InsightsStrings.comparisonMuscleMass,
-                      value: InsightsStrings.comparisonMuscleMassChange,
+                      value: muscleChangeStr,
                     ),
                     const Divider(height: 1, color: AppColors.cardBorder),
-                    const _ComparisonMetricRow(
+                    _ComparisonMetricRow(
                       label: InsightsStrings.comparisonWeight,
-                      value: InsightsStrings.comparisonWeightChange,
+                      value: weightChangeStr,
                     ),
                   ],
                 ),
@@ -166,11 +195,13 @@ class ComparisonSummaryView extends StatelessWidget {
 
 class _ComparisonImageCard extends StatelessWidget {
   const _ComparisonImageCard({
+    this.imageUrl,
     required this.imageAsset,
     required this.date,
     required this.label,
   });
 
+  final String? imageUrl;
   final String imageAsset;
   final String date;
   final String label;
@@ -191,7 +222,16 @@ class _ComparisonImageCard extends StatelessWidget {
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(8, 12, 8, 0),
-                  child: Image.asset(imageAsset, fit: BoxFit.contain),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: (imageUrl != null && imageUrl!.isNotEmpty)
+                        ? AppShimmerImage(
+                            imageUrl: imageUrl!,
+                            fit: BoxFit.contain,
+                            errorWidget: Image.asset(imageAsset, fit: BoxFit.contain),
+                          )
+                        : Image.asset(imageAsset, fit: BoxFit.contain),
+                  ),
                 ),
               ),
               Padding(
@@ -215,7 +255,7 @@ class _ComparisonImageCard extends StatelessWidget {
           style: const TextStyle(
             fontFamily: AppFonts.family,
             fontSize: 15,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.bold,
             color: AppColors.textPrimary,
           ),
         ),
