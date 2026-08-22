@@ -5,71 +5,152 @@ import 'package:ai_forma/core/theme/app_fonts.dart';
 import 'package:ai_forma/features/insights/constants/insights_strings.dart';
 
 class InsightSymmetryBodyMap extends StatelessWidget {
-  const InsightSymmetryBodyMap({super.key});
+  const InsightSymmetryBodyMap({
+    super.key,
+    this.imageUrl,
+    this.thumbUrl,
+    this.onRefreshRequested,
+  });
+
+  final String? imageUrl;
+  final String? thumbUrl;
+  final VoidCallback? onRefreshRequested;
 
   @override
   Widget build(BuildContext context) {
+    final primaryUrl = (imageUrl?.isNotEmpty ?? false)
+        ? imageUrl
+        : ((thumbUrl?.isNotEmpty ?? false) ? thumbUrl : null);
+
+    final fallbackUrl = (imageUrl?.isNotEmpty ?? false) &&
+            (thumbUrl?.isNotEmpty ?? false)
+        ? thumbUrl
+        : null;
+
     return Column(
       children: [
-        Container(
-          height: 288,
-          width: 176,
-          decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: AppColors.cardBorder),
-            boxShadow: const [
-              BoxShadow(
-                color: AppColors.cardShadow,
-                blurRadius: 8,
-                offset: Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(14),
-                child: Image.asset(
-                  AppImages.frontView,
-                  fit: BoxFit.cover,
-                  height: 288,
-                  width: 176,
+        GestureDetector(
+          onTap: primaryUrl != null ? onRefreshRequested : null,
+          child: Container(
+            height: 288,
+            width: 176,
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: AppColors.cardBorder),
+              boxShadow: const [
+                BoxShadow(
+                  color: AppColors.cardShadow,
+                  blurRadius: 8,
+                  offset: Offset(0, 2),
                 ),
-              ),
-              Positioned.fill(
-                child: CustomPaint(
-                  painter: _SymmetryLinePainter(),
+              ],
+            ),
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(14),
+                  child: primaryUrl != null
+                      ? Image.network(
+                          primaryUrl,
+                          fit: BoxFit.contain,
+                          height: 288,
+                          width: 176,
+                          loadingBuilder: (context, child, loadingProgress) {
+                            if (loadingProgress == null) return child;
+                            return const Center(
+                              child: SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: AppColors.brandTeal,
+                                ),
+                              ),
+                            );
+                          },
+                          errorBuilder: (context, error, stackTrace) {
+                            debugPrint(
+                              'S3 Symmetry Image error ($primaryUrl): $error',
+                            );
+                            if (fallbackUrl != null) {
+                              return Image.network(
+                                fallbackUrl,
+                                fit: BoxFit.contain,
+                                height: 288,
+                                width: 176,
+                                loadingBuilder:
+                                    (context, child, loadingProgress) {
+                                  if (loadingProgress == null) return child;
+                                  return const Center(
+                                    child: SizedBox(
+                                      width: 24,
+                                      height: 24,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: AppColors.brandTeal,
+                                      ),
+                                    ),
+                                  );
+                                },
+                                errorBuilder: (context, error, stackTrace) =>
+                                    Image.asset(
+                                  AppImages.frontView,
+                                  fit: BoxFit.cover,
+                                  height: 288,
+                                  width: 176,
+                                ),
+                              );
+                            }
+                            return Image.asset(
+                              AppImages.frontView,
+                              fit: BoxFit.cover,
+                              height: 288,
+                              width: 176,
+                            );
+                          },
+                        )
+                      : Image.asset(
+                          AppImages.frontView,
+                          fit: BoxFit.cover,
+                          height: 288,
+                          width: 176,
+                        ),
                 ),
-              ),
-              const Positioned(
-                left: 16,
-                bottom: 12,
-                child: Text(
-                  InsightsStrings.symmetryLeft,
-                  style: TextStyle(
-                    fontFamily: AppFonts.family,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textSecondary,
+                Positioned.fill(
+                  child: CustomPaint(
+                    painter: _SymmetryLinePainter(),
                   ),
                 ),
-              ),
-              const Positioned(
-                right: 16,
-                bottom: 12,
-                child: Text(
-                  InsightsStrings.symmetryRight,
-                  style: TextStyle(
-                    fontFamily: AppFonts.family,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textSecondary,
+                const Positioned(
+                  left: 16,
+                  bottom: 12,
+                  child: Text(
+                    InsightsStrings.symmetryLeft,
+                    style: TextStyle(
+                      fontFamily: AppFonts.family,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textSecondary,
+                    ),
                   ),
                 ),
-              ),
-            ],
+                const Positioned(
+                  right: 16,
+                  bottom: 12,
+                  child: Text(
+                    InsightsStrings.symmetryRight,
+                    style: TextStyle(
+                      fontFamily: AppFonts.family,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
         const SizedBox(height: 14),

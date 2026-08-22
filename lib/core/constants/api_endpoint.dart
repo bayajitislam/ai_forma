@@ -28,4 +28,6 @@ class ApiEndpoint {
   static const String muscleGrowthInsight = '/api/insights/muscle-growth/';
   static const String fatLossInsight = '/api/insights/fat-loss/';
   static const String postureInsight = '/api/insights/posture/';
+  static const String symmetryInsight = '/api/insights/symmetry/';
+  static const String consistencyInsight = '/api/insights/consistency/';
 }

@@ -9,8 +9,8 @@ import 'package:ai_forma/core/widgets/app_icon.dart';
 class InsightConsistencyGrid extends StatelessWidget {
   const InsightConsistencyGrid({
     super.key,
-    this.completedCount = 12,
-    this.totalCount = 16,
+    this.completedCount = 1,
+    this.totalCount = 8,
   });
 
   final int completedCount;
@@ -32,7 +32,7 @@ class InsightConsistencyGrid extends StatelessWidget {
         crossAxisSpacing: _gap,
         childAspectRatio: 1,
       ),
-      itemCount: totalCount,
+      itemCount: totalCount > 0 ? totalCount : 8,
       itemBuilder: (context, index) {
         final isComplete = index < completedCount;
         return Container(
@@ -58,7 +58,16 @@ class InsightConsistencyGrid extends StatelessWidget {
 }
 
 class InsightConsistencyStatsCard extends StatelessWidget {
-  const InsightConsistencyStatsCard({super.key});
+  const InsightConsistencyStatsCard({
+    super.key,
+    this.currentStreak = '1 weeks',
+    this.onTimeRate = '100%',
+    this.momentumGained = 'N/A',
+  });
+
+  final String currentStreak;
+  final String onTimeRate;
+  final String momentumGained;
 
   @override
   Widget build(BuildContext context) {
@@ -80,17 +89,17 @@ class InsightConsistencyStatsCard extends StatelessWidget {
         children: [
           _StatRow(
             label: InsightsStrings.currentStreak,
-            value: '12 weeks',
+            value: currentStreak,
           ),
-          Divider(height: 1, color: AppColors.cardBorder),
+          const Divider(height: 1, color: AppColors.cardBorder),
           _StatRow(
             label: InsightsStrings.onTimeRate,
-            value: '92%',
+            value: onTimeRate,
           ),
-          Divider(height: 1, color: AppColors.cardBorder),
+          const Divider(height: 1, color: AppColors.cardBorder),
           _StatRow(
             label: InsightsStrings.momentumGained,
-            value: '+18 pts',
+            value: momentumGained,
           ),
         ],
       ),
@@ -107,7 +116,7 @@ class _StatRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: 14),
+      padding: const EdgeInsets.symmetric(vertical: 14),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
