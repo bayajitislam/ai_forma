@@ -1,7 +1,9 @@
 import 'dart:io';
 
+import 'package:ai_forma/core/widgets/app_icon.dart';
 import 'package:ai_forma/features/insights/bindings/insights_binding.dart';
 import 'package:ai_forma/features/insights/controllers/insights_controller.dart';
+import 'package:ai_forma/features/profile/view/pages/report_bug_view.dart';
 import 'package:flutter/material.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
 import 'package:ai_forma/core/widgets/app_navbar.dart';
@@ -12,6 +14,7 @@ import 'package:ai_forma/features/shell/view/widgets/app_shell_header.dart';
 import 'package:ai_forma/features/timeline/view/pages/timeline_view.dart';
 import 'package:ai_forma/features/profile/view/pages/profile_view.dart';
 import 'package:get/get.dart';
+import 'package:remixicon/remixicon.dart';
 
 class AppShellView extends StatefulWidget {
   final AppNavItem initialTab;
@@ -94,6 +97,20 @@ class _AppShellViewState extends State<AppShellView> {
               ),
             ),
           ],
+        ),
+      ),
+      floatingActionButton: Padding(
+        padding: EdgeInsets.only(bottom: isAndroid ? 72 : 56),
+        child: FloatingActionButton.small(
+          onPressed: () => Get.to(() => const ReportBugView()),
+          backgroundColor: AppColors.brandTeal,
+          elevation: 4,
+          shape: const CircleBorder(),
+          child: const AppIcon(
+            icon: Remix.bug_line,
+            size: 20,
+            color: Colors.white,
+          ),
         ),
       ),
       bottomNavigationBar: SafeArea(

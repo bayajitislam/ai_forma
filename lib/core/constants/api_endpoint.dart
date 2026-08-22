@@ -30,4 +30,7 @@ class ApiEndpoint {
   static const String postureInsight = '/api/insights/posture/';
   static const String symmetryInsight = '/api/insights/symmetry/';
   static const String consistencyInsight = '/api/insights/consistency/';
+
+  //bug reports
+  static const String bugReports = '/api/bug-reports/';
 }

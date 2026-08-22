@@ -1,6 +1,12 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:ai_forma/core/network/dio_client.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
 import 'package:ai_forma/core/widgets/primary_button.dart';
+import 'package:ai_forma/features/profile/repositories/bug_report_repository.dart';
 
 class ReportBugView extends StatefulWidget {
   const ReportBugView({super.key});
@@ -13,11 +19,107 @@ class _ReportBugViewState extends State<ReportBugView> {
   final TextEditingController _issueController = TextEditingController();
   final TextEditingController _activityController = TextEditingController();
 
+  File? _selectedImage;
+  bool _isSubmitting = false;
+
+  late final BugReportRepository _repository;
+
+  @override
+  void initState() {
+    super.initState();
+    _repository = BugReportRepository(
+      Get.isRegistered<DioClient>() ? Get.find<DioClient>() : DioClient(),
+    );
+  }
+
   @override
   void dispose() {
     _issueController.dispose();
     _activityController.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickImage() async {
+    try {
+      final picker = ImagePicker();
+      final pickedFile = await picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 85,
+      );
+      if (pickedFile != null) {
+        setState(() {
+          _selectedImage = File(pickedFile.path);
+        });
+      }
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Could not select image. Please try again.',
+        backgroundColor: Colors.redAccent,
+        colorText: Colors.white,
+      );
+    }
+  }
+
+  void _removeImage() {
+    setState(() {
+      _selectedImage = null;
+    });
+  }
+
+  Future<void> _submitReport() async {
+    final titleText = _issueController.text.trim();
+    final activityText = _activityController.text.trim();
+
+    if (titleText.isEmpty) {
+      Get.snackbar(
+        'Required',
+        'Please describe the issue before submitting.',
+        backgroundColor: Colors.orangeAccent,
+        colorText: Colors.white,
+      );
+      return;
+    }
+
+    final fullDescription = activityText.isNotEmpty
+        ? '$titleText\n\nActivity Details: $activityText'
+        : titleText;
+
+    setState(() {
+      _isSubmitting = true;
+    });
+
+    final result = await _repository.submitBugReport(
+      title: titleText,
+      description: fullDescription,
+      imagePath: _selectedImage?.path,
+    );
+
+    if (!mounted) return;
+
+    setState(() {
+      _isSubmitting = false;
+    });
+
+    result.fold(
+      (failure) {
+        Get.snackbar(
+          'Error',
+          failure.message,
+          backgroundColor: Colors.redAccent,
+          colorText: Colors.white,
+        );
+      },
+      (successData) {
+        Get.snackbar(
+          'Success',
+          'Bug report submitted successfully! Thank you.',
+          backgroundColor: AppColors.brandTeal,
+          colorText: Colors.white,
+        );
+        Navigator.pop(context);
+      },
+    );
   }
 
   @override
@@ -90,49 +192,87 @@ class _ReportBugViewState extends State<ReportBugView> {
                         ),
                       ),
                       const SizedBox(height: 8),
-                      // Attachment card
-                      Container(
-                        width: double.infinity,
-                        height: 96,
-                        decoration: BoxDecoration(
-                          color: AppColors.insightConsistencyIncompleteBg.withValues(alpha: 0.3),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: AppColors.cardBorder.withValues(alpha: 0.5),
-                            width: 1,
-                          ),
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: const [
-                            Icon(
-                              Icons.attachment,
-                              color: AppColors.textSecondary,
-                              size: 22,
+                      // Attachment card / Preview
+                      if (_selectedImage != null)
+                        Stack(
+                          children: [
+                            Container(
+                              width: double.infinity,
+                              height: 160,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(12),
+                                image: DecorationImage(
+                                  image: FileImage(_selectedImage!),
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
                             ),
-                            SizedBox(height: 6),
-                            Text(
-                              'Choose Image',
-                              style: TextStyle(
-                                fontFamily: 'Nunito',
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.textSecondary,
+                            Positioned(
+                              top: 8,
+                              right: 8,
+                              child: GestureDetector(
+                                onTap: _removeImage,
+                                child: Container(
+                                  decoration: const BoxDecoration(
+                                    color: Colors.black54,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  padding: const EdgeInsets.all(4),
+                                  child: const Icon(
+                                    Icons.close,
+                                    color: Colors.white,
+                                    size: 18,
+                                  ),
+                                ),
                               ),
                             ),
                           ],
+                        )
+                      else
+                        GestureDetector(
+                          onTap: _pickImage,
+                          child: Container(
+                            width: double.infinity,
+                            height: 96,
+                            decoration: BoxDecoration(
+                              color: AppColors.insightConsistencyIncompleteBg
+                                  .withValues(alpha: 0.3),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: AppColors.cardBorder.withValues(alpha: 0.5),
+                                width: 1,
+                              ),
+                            ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: const [
+                                Icon(
+                                  Icons.attachment,
+                                  color: AppColors.textSecondary,
+                                  size: 22,
+                                ),
+                                SizedBox(height: 6),
+                                Text(
+                                  'Choose Image',
+                                  style: TextStyle(
+                                    fontFamily: 'Nunito',
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppColors.textSecondary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
-                      ),
                     ],
                   ),
                 ),
               ),
               const SizedBox(height: 24),
               PrimaryButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                label: 'SEND REPORT',
+                onPressed: _isSubmitting ? () {} : _submitReport,
+                label: _isSubmitting ? 'SENDING...' : 'SEND REPORT',
               ),
               const SizedBox(height: 16),
               const Center(
