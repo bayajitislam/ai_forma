@@ -1,3 +1,5 @@
+import 'package:ai_forma/features/timeline/models/timeline_overview_model.dart';
+
 class SymmetryDetailResponseModel {
   final String accessLevel;
   final String scanId;
@@ -32,11 +34,11 @@ class SymmetryDetailResponseModel {
       accessLevel: json['access_level']?.toString() ?? '',
       scanId: json['scan_id']?.toString() ?? '',
       scanDate: json['scan_date']?.toString() ?? '',
-      checkinNumber: (json['checkin_number'] as num?)?.toInt() ?? 0,
+      checkinNumber: safeParseInt(json['checkin_number']) ?? 0,
       window: json['window'] is Map<String, dynamic>
           ? SymmetryWindowModel.fromJson(json['window'] as Map<String, dynamic>)
           : null,
-      score: (json['score'] as num?)?.toInt() ?? 0,
+      score: safeParseInt(json['score']) ?? 0,
       status: json['status']?.toString() ?? '',
       statusTone: json['status_tone']?.toString() ?? '',
       summary: json['summary']?.toString() ?? '',
@@ -73,7 +75,7 @@ class SymmetryWindowModel {
 
   factory SymmetryWindowModel.fromJson(Map<String, dynamic> json) {
     return SymmetryWindowModel(
-      weeks: (json['weeks'] as num?)?.toInt() ?? 0,
+      weeks: safeParseInt(json['weeks']) ?? 0,
       from: json['from']?.toString() ?? '',
       to: json['to']?.toString() ?? '',
     );

@@ -1,3 +1,5 @@
+import 'package:ai_forma/features/timeline/models/timeline_overview_model.dart';
+
 class ConsistencyDetailResponseModel {
   final String accessLevel;
   final String scanId;
@@ -34,13 +36,13 @@ class ConsistencyDetailResponseModel {
       accessLevel: json['access_level']?.toString() ?? '',
       scanId: json['scan_id']?.toString() ?? '',
       scanDate: json['scan_date']?.toString() ?? '',
-      checkinNumber: (json['checkin_number'] as num?)?.toInt() ?? 0,
+      checkinNumber: safeParseInt(json['checkin_number']) ?? 0,
       window: json['window'] is Map<String, dynamic>
           ? ConsistencyWindowModel.fromJson(
               json['window'] as Map<String, dynamic>,
             )
           : null,
-      score: (json['score'] as num?)?.toInt() ?? 0,
+      score: safeParseInt(json['score']) ?? 0,
       status: json['status']?.toString() ?? '',
       statusTone: json['status_tone']?.toString() ?? '',
       summary: json['summary']?.toString() ?? '',
@@ -83,7 +85,7 @@ class ConsistencyWindowModel {
 
   factory ConsistencyWindowModel.fromJson(Map<String, dynamic> json) {
     return ConsistencyWindowModel(
-      weeks: (json['weeks'] as num?)?.toInt() ?? 0,
+      weeks: safeParseInt(json['weeks']) ?? 0,
       from: json['from']?.toString() ?? '',
       to: json['to']?.toString() ?? '',
     );
@@ -139,7 +141,7 @@ class ConsistencyGridItemModel {
   factory ConsistencyGridItemModel.fromJson(Map<String, dynamic> json) {
     return ConsistencyGridItemModel(
       date: json['date']?.toString() ?? '',
-      checkinNumber: (json['checkin_number'] as num?)?.toInt() ?? 0,
+      checkinNumber: safeParseInt(json['checkin_number']) ?? 0,
     );
   }
 }
@@ -157,9 +159,8 @@ class ConsistencyMetricsModel {
 
   factory ConsistencyMetricsModel.fromJson(Map<String, dynamic> json) {
     return ConsistencyMetricsModel(
-      currentStreakWeeks:
-          (json['current_streak_weeks'] as num?)?.toInt() ?? 0,
-      onTimePercent: (json['on_time_percent'] as num?)?.toInt() ?? 0,
+      currentStreakWeeks: safeParseInt(json['current_streak_weeks']) ?? 0,
+      onTimePercent: safeParseInt(json['on_time_percent']) ?? 0,
       momentumGained: json['momentum_gained'],
     );
   }

@@ -2,18 +2,35 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
 import 'package:ai_forma/features/dashboard/controllers/daily_brief_controller.dart';
+import 'package:ai_forma/features/dashboard/controllers/home_controller.dart';
+import 'package:ai_forma/features/dashboard/models/home_response_model.dart';
 import 'package:ai_forma/features/dashboard/view/widgets/answer_daily_brief_bottom_sheet.dart';
 
 class AIDailyBriefCard extends StatelessWidget {
-  const AIDailyBriefCard({super.key});
+  const AIDailyBriefCard({super.key, this.priorityData, this.dailyBriefData});
+
+  final HomeTodayPriorityModel? priorityData;
+  final HomeDailyBriefModel? dailyBriefData;
 
   @override
   Widget build(BuildContext context) {
+    // If backend specifies visible == false, hide the card completely
+    if (dailyBriefData != null && !dailyBriefData!.visible) {
+      return const SizedBox.shrink();
+    }
+
     final controller = DailyBriefController.to;
 
     return Obx(() {
-      final isAnswered = controller.isAnswered.value;
       final daysLeft = controller.daysUntilScan.value;
+      final headingText = dailyBriefData?.heading ?? 'AI DAILY BRIEF';
+      final badgeNum = dailyBriefData?.badge ?? daysLeft;
+      final cardTitle = dailyBriefData?.title ??
+          priorityData?.text ??
+          'How did you sleep most nights this week?';
+      final cardSubtitle = dailyBriefData?.subtitle ??
+          'Your answers help AiFORMA build a more accurate understanding of your recovery before your next scan.';
+      final ctaLabelText = dailyBriefData?.ctaLabel ?? priorityData?.ctaLabel ?? "Answer today's question";
 
       return Container(
         width: double.infinity,
@@ -34,16 +51,16 @@ class AIDailyBriefCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Row(
-                  children: const [
-                    Icon(
+                  children: [
+                    const Icon(
                       Icons.auto_awesome,
                       size: 14,
                       color: AppColors.brandTeal,
                     ),
-                    SizedBox(width: 6),
+                    const SizedBox(width: 6),
                     Text(
-                      'AI DAILY BRIEF',
-                      style: TextStyle(
+                      headingText,
+                      style: const TextStyle(
                         fontFamily: 'Nunito',
                         fontSize: 11,
                         fontWeight: FontWeight.w800,
@@ -63,7 +80,7 @@ class AIDailyBriefCard extends StatelessWidget {
                     ),
                   ),
                   child: Text(
-                    '$daysLeft days until your scan',
+                    '$badgeNum days until your scan',
                     style: const TextStyle(
                       fontFamily: 'Nunito',
                       fontSize: 11,
@@ -81,25 +98,53 @@ class AIDailyBriefCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Expanded(
-                  child: isAnswered
-                      ? _buildAnsweredContent(context, controller)
-                      : _buildUnansweredContent(),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        cardTitle,
+                        style: const TextStyle(
+                          fontFamily: 'Nunito',
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textPrimary,
+                          height: 1.3,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        cardSubtitle,
+                        style: const TextStyle(
+                          fontFamily: 'Nunito',
+                          fontSize: 12,
+                          color: AppColors.textSecondary,
+                          height: 1.35,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
                 const SizedBox(width: 12),
                 _buildRightGraphic(),
               ],
             ),
-            const SizedBox(height: 16),
-
-            // Button / Link Area
-            if (!isAnswered)
+            if (ctaLabelText.isNotEmpty) ...[
+              const SizedBox(height: 16),
               GestureDetector(
                 onTap: () {
                   AnswerDailyBriefBottomSheet.show(
                     context,
-                    initialSelection: controller.selectedSleep.value,
-                    onSaved: (quality) {
-                      controller.saveResponse(quality);
+                    dailyBriefData: dailyBriefData,
+                    onSavedOption: (questionKey, selectedValue) {
+                      if (Get.isRegistered<HomeController>()) {
+                        final prefill = dailyBriefData?.weightKgPrefill;
+                        final weight = prefill != null ? double.tryParse(prefill) : null;
+                        Get.find<HomeController>().submitDailyBriefAnswer(
+                          questionKey: questionKey,
+                          selectedOption: selectedValue,
+                          weightKg: weight,
+                        );
+                      }
                     },
                   );
                 },
@@ -112,18 +157,18 @@ class AIDailyBriefCard extends StatelessWidget {
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    children: const [
+                    children: [
                       Text(
-                        "Answer today's question",
-                        style: TextStyle(
+                        ctaLabelText,
+                        style: const TextStyle(
                           fontFamily: 'Nunito',
                           fontSize: 14,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
                         ),
                       ),
-                      SizedBox(width: 6),
-                      Icon(
+                      const SizedBox(width: 6),
+                      const Icon(
                         Icons.chevron_right,
                         size: 18,
                         color: Colors.white,
@@ -131,118 +176,12 @@ class AIDailyBriefCard extends StatelessWidget {
                     ],
                   ),
                 ),
-              )
-            else
-              GestureDetector(
-                onTap: () {
-                  AnswerDailyBriefBottomSheet.show(
-                    context,
-                    initialSelection: controller.selectedSleep.value,
-                    onSaved: (quality) {
-                      controller.saveResponse(quality);
-                    },
-                  );
-                },
-                child: Row(
-                  children: const [
-                    Icon(
-                      Icons.edit_outlined,
-                      size: 16,
-                      color: AppColors.brandTeal,
-                    ),
-                    SizedBox(width: 6),
-                    Text(
-                      "Change today's answer",
-                      style: TextStyle(
-                        fontFamily: 'Nunito',
-                        fontSize: 13,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.brandTeal,
-                      ),
-                    ),
-                  ],
-                ),
               ),
+            ],
           ],
         ),
       );
     });
-  }
-
-  Widget _buildUnansweredContent() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: const [
-        Text(
-          'How did you sleep most nights this week?',
-          style: TextStyle(
-            fontFamily: 'Nunito',
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: AppColors.textPrimary,
-            height: 1.25,
-          ),
-        ),
-        SizedBox(height: 6),
-        Text(
-          'Your answers help AiFORMA build a more accurate understanding of your recovery before your next scan.',
-          style: TextStyle(
-            fontFamily: 'Nunito',
-            fontSize: 12,
-            color: AppColors.textSecondary,
-            height: 1.35,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildAnsweredContent(
-      BuildContext context, DailyBriefController controller) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Container(
-              width: 22,
-              height: 22,
-              decoration: const BoxDecoration(
-                color: Color(0xFF0C191B),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.check,
-                size: 14,
-                color: Colors.white,
-              ),
-            ),
-            const SizedBox(width: 8),
-            const Expanded(
-              child: Text(
-                'Great sleep this week.',
-                style: TextStyle(
-                  fontFamily: 'Nunito',
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 6),
-        const Text(
-          "Excellent sleep supports recovery, muscle repair and hormone balance. We'll factor this into your upcoming body scan analysis.",
-          style: TextStyle(
-            fontFamily: 'Nunito',
-            fontSize: 12,
-            color: AppColors.textSecondary,
-            height: 1.35,
-          ),
-        ),
-      ],
-    );
   }
 
   Widget _buildRightGraphic() {

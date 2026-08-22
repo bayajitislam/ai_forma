@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:ai_forma/core/widgets/app_icon.dart';
+import 'package:ai_forma/features/dashboard/controllers/home_controller.dart';
 import 'package:ai_forma/features/insights/bindings/insights_binding.dart';
 import 'package:ai_forma/features/insights/controllers/insights_controller.dart';
 import 'package:ai_forma/features/profile/view/pages/report_bug_view.dart';
@@ -132,7 +133,12 @@ class _AppShellViewState extends State<AppShellView> {
           child: AppNavbar(
             selectedItem: _selectedItem,
             onItemSelected: (item) {
-              if (item == AppNavItem.insights) {
+              if (item == AppNavItem.home) {
+                if (_selectedItem == AppNavItem.home &&
+                    Get.isRegistered<HomeController>()) {
+                  Get.find<HomeController>().fetchHomeData(force: true);
+                }
+              } else if (item == AppNavItem.insights) {
                 if (_selectedItem == AppNavItem.insights) {
                   // User tapped Insights tab again while already on it → refresh
                   Get.find<InsightsController>().fetchLatestScan();

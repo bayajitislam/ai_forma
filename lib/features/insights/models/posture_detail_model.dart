@@ -1,3 +1,5 @@
+import 'package:ai_forma/features/timeline/models/timeline_overview_model.dart';
+
 class PostureDetailResponseModel {
   final String accessLevel;
   final String scanId;
@@ -34,11 +36,11 @@ class PostureDetailResponseModel {
       accessLevel: json['access_level']?.toString() ?? '',
       scanId: json['scan_id']?.toString() ?? '',
       scanDate: json['scan_date']?.toString() ?? '',
-      checkinNumber: (json['checkin_number'] as num?)?.toInt() ?? 0,
+      checkinNumber: safeParseInt(json['checkin_number']) ?? 0,
       window: json['window'] is Map<String, dynamic>
           ? PostureWindowModel.fromJson(json['window'] as Map<String, dynamic>)
           : null,
-      score: (json['score'] as num?)?.toInt() ?? 0,
+      score: safeParseInt(json['score']) ?? 0,
       status: json['status']?.toString() ?? '',
       statusTone: json['status_tone']?.toString() ?? '',
       summary: json['summary']?.toString() ?? '',
@@ -80,7 +82,7 @@ class PostureWindowModel {
 
   factory PostureWindowModel.fromJson(Map<String, dynamic> json) {
     return PostureWindowModel(
-      weeks: (json['weeks'] as num?)?.toInt() ?? 0,
+      weeks: safeParseInt(json['weeks']) ?? 0,
       from: json['from']?.toString() ?? '',
       to: json['to']?.toString() ?? '',
     );

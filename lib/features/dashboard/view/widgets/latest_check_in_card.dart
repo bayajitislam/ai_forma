@@ -1,3 +1,5 @@
+import 'package:ai_forma/core/widgets/app_shimmer.dart';
+import 'package:ai_forma/features/dashboard/models/home_response_model.dart';
 import 'package:ai_forma/features/timeline/view/pages/scan_detail_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -6,11 +8,13 @@ import 'package:ai_forma/core/constants/app_images.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
 import 'package:ai_forma/core/theme/app_text_styles.dart';
 import 'package:ai_forma/features/dashboard/constants/dashboard_strings.dart';
+import 'package:intl/intl.dart';
 
 class LatestCheckInCard extends StatefulWidget {
-  const LatestCheckInCard({super.key, this.onTap});
+  const LatestCheckInCard({super.key, this.onTap, this.analysisData});
 
   final VoidCallback? onTap;
+  final HomeLatestAnalysisModel? analysisData;
 
   @override
   State<LatestCheckInCard> createState() => _LatestCheckInCardState();
@@ -83,24 +87,51 @@ class _LatestCheckInCardState extends State<LatestCheckInCard>
     _scaleController.reverse();
   }
 
+  String _formatDate(String? isoDate) {
+    if (isoDate == null || isoDate.isEmpty) return 'May 18 2025';
+    try {
+      final dt = DateTime.parse(isoDate);
+      return DateFormat('MMMM d, yyyy').format(dt);
+    } catch (_) {
+      return isoDate;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return ScaleTransition(
-      scale: _scaleAnimation,
+    final displayDate = _formatDate(widget.analysisData?.scanDate);
+    final viewsList = widget.analysisData?.views ?? [];
+
+    return AnimatedBuilder(
+      animation: _scaleAnimation,
+      builder: (context, child) => Transform.scale(
+        scale: _scaleAnimation.value,
+        child: child,
+      ),
       child: GestureDetector(
         onTapDown: _onTapDown,
         onTapUp: _onTapUp,
         onTapCancel: _onTapCancel,
+        onTap: () {
+          final scanId = widget.analysisData?.scanId;
+          Navigator.push(
+            context,
+            MaterialPageRoute<void>(
+              builder: (_) => ScanDetailView(scanId: scanId ?? ''),
+            ),
+          );
+        },
         child: Container(
           width: double.infinity,
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: AppColors.surface,
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppColors.cardBorder, width: 1),
             boxShadow: const [
               BoxShadow(
-                color: Color(0x0D000000),
-                blurRadius: 10,
+                color: AppColors.cardShadow,
+                blurRadius: 8,
                 offset: Offset(0, 2),
               ),
             ],
@@ -108,45 +139,55 @@ class _LatestCheckInCardState extends State<LatestCheckInCard>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header row: title + toggle
+              // Header Row
               Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Expanded(
-                    child: const Text(
-                      DashboardStrings.latestScan,
-                      style: AppTextStyles.dashboardMetricValue,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          DashboardStrings.latestScan,
+                          style: AppTextStyles.dashboardMetricLabel,
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          displayDate,
+                          style: AppTextStyles.dashboardMetricValue.copyWith(
+                            fontSize: 16,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  // "Show photos" toggle
-                  GestureDetector(
-                    // Absorb tap so it doesn't bubble to the card tap
-                    onTap: () {}, // handled by the Switch onChanged
+
+                  // Privacy toggle switch
+                  Semantics(
+                    label: 'Toggle photos visibility',
+                    value: _showPhotos ? 'Photos visible' : 'Photos hidden',
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(
-                          _showPhotos ? 'Hide photos' : 'Show photos',
-                          style: AppTextStyles.dashboardMetricLabel,
+                        Icon(
+                          _showPhotos
+                              ? Icons.visibility_outlined
+                              : Icons.visibility_off_outlined,
+                          size: 16,
+                          color: AppColors.brandTeal,
                         ),
-                        const SizedBox(width: 6),
-                        GestureDetector(
-                          behavior: HitTestBehavior.opaque,
-                          onTapDown: (_) {}, // prevent card press animation
-                          child: Transform.scale(
-                            scale: 0.8,
-                            child: Switch.adaptive(
-                              value: _showPhotos,
-                              onChanged: (val) {
-                                HapticFeedback.selectionClick();
-                                _setShowPhotos(val);
-                              },
-                              activeColor: AppColors.brandTealLight,
-
-                              materialTapTargetSize:
-                                  MaterialTapTargetSize.shrinkWrap,
-                            ),
+                        const SizedBox(width: 4),
+                        Switch(
+                          value: _showPhotos,
+                          onChanged: _setShowPhotos,
+                          activeThumbColor: AppColors.brandTeal,
+                          activeTrackColor: AppColors.brandTeal.withValues(
+                            alpha: 0.25,
                           ),
+                          inactiveThumbColor: AppColors.navInactive,
+                          inactiveTrackColor: AppColors.cardBorder,
+                          materialTapTargetSize:
+                              MaterialTapTargetSize.shrinkWrap,
                         ),
                       ],
                     ),
@@ -154,62 +195,63 @@ class _LatestCheckInCardState extends State<LatestCheckInCard>
                 ],
               ),
 
-              const SizedBox(height: 4),
-              Text(
-                DashboardStrings.latestAnalysisDate,
-                style: AppTextStyles.dashboardMetricLabel,
-              ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 14),
 
-              // Photo area with fade transition
-              GestureDetector(
-                onTap: () => _showPhotos
-                    ? Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              ScanDetailView(date: "May 18 2025"),
-                        ),
-                      )
-                    : null,
-                child: AnimatedCrossFade(
-                  duration: const Duration(milliseconds: 300),
-                  crossFadeState: _showPhotos
-                      ? CrossFadeState.showFirst
-                      : CrossFadeState.showSecond,
-                  layoutBuilder: (topChild, topKey, bottomChild, bottomKey) {
-                    return Stack(
-                      children: [
-                        Positioned.fill(key: bottomKey, child: bottomChild),
-                        topChild,
-                      ],
-                    );
-                  },
-                  firstChild: Row(
-                    children: List.generate(_analysisImages.length, (index) {
-                      return Expanded(
-                        child: Padding(
-                          padding: EdgeInsets.only(
-                            right: index < _analysisImages.length - 1 ? 10 : 0,
-                          ),
-                          child: _AnalysisImage(
-                            imagePath: _analysisImages[index],
-                          ),
-                        ),
-                      );
-                    }),
-                  ),
-                  secondChild: _PrivacyPlaceholder(),
+              // Animated CrossFade for Photos vs Privacy placeholder
+              AnimatedCrossFade(
+                duration: const Duration(milliseconds: 250),
+                crossFadeState: _showPhotos
+                    ? CrossFadeState.showFirst
+                    : CrossFadeState.showSecond,
+                layoutBuilder: (topChild, topKey, bottomChild, bottomKey) {
+                  return Stack(
+                    children: [
+                      Positioned.fill(key: bottomKey, child: bottomChild),
+                      topChild,
+                    ],
+                  );
+                },
+                firstChild: Row(
+                  children: viewsList.isNotEmpty
+                      ? List.generate(viewsList.length, (index) {
+                          final view = viewsList[index];
+                          final url = view.thumbUrl ?? view.imageUrl;
+                          return Expanded(
+                            child: Padding(
+                              padding: EdgeInsets.only(
+                                right: index < viewsList.length - 1 ? 10 : 0,
+                              ),
+                              child: _AnalysisImage(
+                                imageUrl: url,
+                                fallbackAsset: _analysisImages[index % _analysisImages.length],
+                              ),
+                            ),
+                          );
+                        })
+                      : List.generate(_analysisImages.length, (index) {
+                          return Expanded(
+                            child: Padding(
+                              padding: EdgeInsets.only(
+                                right: index < _analysisImages.length - 1 ? 10 : 0,
+                              ),
+                              child: _AnalysisImage(
+                                fallbackAsset: _analysisImages[index],
+                              ),
+                            ),
+                          );
+                        }),
                 ),
+                secondChild: _PrivacyPlaceholder(),
               ),
-              // end Photo area
+
+              const SizedBox(height: 12),
               Row(
                 children: [
-                  Icon(
+                  const Icon(
                     Icons.error_outline,
                     size: 15,
                     color: AppColors.brandTeal,
                   ),
-
                   const SizedBox(width: 4),
                   Text(
                     DashboardStrings.imageGenerate,
@@ -228,9 +270,10 @@ class _LatestCheckInCardState extends State<LatestCheckInCard>
 }
 
 class _AnalysisImage extends StatelessWidget {
-  const _AnalysisImage({required this.imagePath});
+  const _AnalysisImage({this.imageUrl, required this.fallbackAsset});
 
-  final String imagePath;
+  final String? imageUrl;
+  final String fallbackAsset;
 
   @override
   Widget build(BuildContext context) {
@@ -239,12 +282,25 @@ class _AnalysisImage extends StatelessWidget {
       child: Container(
         height: 152,
         color: AppColors.progressInactive,
-        child: Image.asset(
-          imagePath,
-          height: 152,
-          width: double.infinity,
-          fit: BoxFit.cover,
-        ),
+        child: (imageUrl != null && imageUrl!.isNotEmpty)
+            ? AppShimmerImage(
+                imageUrl: imageUrl!,
+                fit: BoxFit.contain,
+                height: 152,
+                width: double.infinity,
+                errorWidget: Image.asset(
+                  fallbackAsset,
+                  height: 152,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                ),
+              )
+            : Image.asset(
+                fallbackAsset,
+                height: 152,
+                width: double.infinity,
+                fit: BoxFit.cover,
+              ),
       ),
     );
   }

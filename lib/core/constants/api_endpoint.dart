@@ -43,4 +43,11 @@ class ApiEndpoint {
   //scans & compare
   static const String scansList = '/api/scans/';
   static const String compareScans = '/api/scans/compare/';
+
+  //home
+  static const String homeData = '/api/home/';
+
+  //checkins
+  static const String dailyCheckIn = '/api/checkins/daily/';
+  static const String weeklyCheckIn = '/api/checkins/weekly/';
 }

@@ -1,3 +1,5 @@
+import 'package:ai_forma/features/timeline/models/timeline_overview_model.dart';
+
 class InsightTitleSubtitleItem {
   final String title;
   final String subtitle;
@@ -45,12 +47,12 @@ class FatLossModel {
 
   factory FatLossModel.fromJson(Map<String, dynamic> json) {
     return FatLossModel(
-      score: (json['score'] as num?)?.toInt() ?? 0,
+      score: safeParseInt(json['score']) ?? 0,
       remark: json['remark']?.toString() ?? '',
       status: json['status']?.toString() ?? '',
       nextStep: json['next_step']?.toString() ?? '',
       rationale: json['rationale']?.toString() ?? '',
-      bodyFatKg: (json['body_fat_kg'] as num?)?.toDouble(),
+      bodyFatKg: safeParseDouble(json['body_fat_kg']),
       detectedSummary: json['detected_summary']?.toString() ?? '',
       weeklyPriorities: (json['weekly_priorities'] as List<dynamic>?)
               ?.map((e) => e.toString())
@@ -83,12 +85,12 @@ class MuscleGrowthModel {
 
   factory MuscleGrowthModel.fromJson(Map<String, dynamic> json) {
     return MuscleGrowthModel(
-      score: (json['score'] as num?)?.toInt() ?? 0,
+      score: safeParseInt(json['score']) ?? 0,
       remark: json['remark']?.toString() ?? '',
       status: json['status']?.toString() ?? '',
       nextStep: json['next_step']?.toString() ?? '',
       rationale: json['rationale']?.toString() ?? '',
-      muscleMassKg: (json['muscle_mass_kg'] as num?)?.toDouble(),
+      muscleMassKg: safeParseDouble(json['muscle_mass_kg']),
       detectedSummary: json['detected_summary']?.toString() ?? '',
       weeklyPriorities: (json['weekly_priorities'] as List<dynamic>?)
               ?.map((e) => e.toString())
@@ -119,7 +121,7 @@ class SymmetryScoreModel {
 
   factory SymmetryScoreModel.fromJson(Map<String, dynamic> json) {
     return SymmetryScoreModel(
-      score: (json['score'] as num?)?.toInt() ?? 0,
+      score: safeParseInt(json['score']) ?? 0,
       remark: json['remark']?.toString() ?? '',
       status: json['status']?.toString() ?? '',
       nextStep: json['next_step']?.toString() ?? '',
@@ -162,7 +164,7 @@ class PostureAnalysisModel {
 
   factory PostureAnalysisModel.fromJson(Map<String, dynamic> json) {
     return PostureAnalysisModel(
-      score: (json['score'] as num?)?.toInt() ?? 0,
+      score: safeParseInt(json['score']) ?? 0,
       remark: json['remark']?.toString() ?? '',
       status: json['status']?.toString() ?? '',
       nextStep: json['next_step']?.toString() ?? '',
@@ -283,9 +285,9 @@ class ScanLatestResponseModel {
       id: json['id']?.toString() ?? '',
       scanDate: json['scan_date']?.toString() ?? '',
       status: json['status']?.toString() ?? '',
-      checkinNumber: (json['checkin_number'] as num?)?.toInt() ?? 0,
+      checkinNumber: safeParseInt(json['checkin_number']) ?? 0,
       source: json['source']?.toString() ?? '',
-      weightKg: (json['weight_kg'] as num?)?.toDouble(),
+      weightKg: safeParseDouble(json['weight_kg']),
       frontImageUrl: json['front_image_url']?.toString(),
       backImageUrl: json['back_image_url']?.toString(),
       sideImageUrl: json['side_image_url']?.toString(),

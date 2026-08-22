@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:ai_forma/core/network/dio_client.dart';
+import 'package:ai_forma/core/theme/app_colors.dart';
 import 'package:ai_forma/features/dashboard/constants/dashboard_strings.dart';
+import 'package:ai_forma/features/dashboard/controllers/home_controller.dart';
 import 'package:ai_forma/features/dashboard/controllers/weight_controller.dart';
+import 'package:ai_forma/features/dashboard/repositories/dashboard_repository.dart';
 import 'package:ai_forma/features/dashboard/view/widgets/ai_daily_brief_card.dart';
 import 'package:ai_forma/features/dashboard/view/widgets/ai_insight_card.dart';
 import 'package:ai_forma/features/dashboard/view/widgets/dashboard_header.dart';
@@ -17,80 +21,137 @@ class DashboardView extends StatelessWidget {
   final void Function()? goInsight;
   const DashboardView({super.key, required this.goInsight});
 
+  String _formatWeightChange(String? changeKg) {
+    if (changeKg == null || changeKg.isEmpty) return '-';
+    final numVal = double.tryParse(changeKg);
+    if (numVal != null && numVal > 0 && !changeKg.startsWith('+')) {
+      return '+$changeKg kg';
+    }
+    return '$changeKg kg';
+  }
+
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put(WeightController());
-    return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 120),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const DashboardHeader(),
-          const SizedBox(height: 16),
-          const MomentumCard(),
-          // const SizedBox(height: 16),
-          // const TodaysPriorityCard(),
-          const SizedBox(height: 16),
+    final weightController = Get.isRegistered<WeightController>()
+        ? Get.find<WeightController>()
+        : Get.put(WeightController());
 
-          // AI Daily Brief Widget
-          const AIDailyBriefCard(),
-          const SizedBox(height: 16),
+    final homeController = Get.isRegistered<HomeController>()
+        ? Get.find<HomeController>()
+        : Get.put(
+            HomeController(
+              repository: DashboardRepository(
+                Get.isRegistered<DioClient>()
+                    ? Get.find<DioClient>()
+                    : DioClient(),
+              ),
+            ),
+          );
 
-          // Weekly Scan Widget
-          const WeeklyScanCard(),
-          const SizedBox(height: 16),
+    return Obx(() {
+      final isLoading = homeController.isLoading.value;
+      final homeData = homeController.homeData.value;
+      final weightData = homeData?.weight;
 
-          // Current Weight & Weekly Change Row
-          Row(
+      if (isLoading && homeData == null) {
+        return const Center(
+          child: CircularProgressIndicator(color: AppColors.brandTeal),
+        );
+      }
+
+      final currentWeightStr = weightData?.currentKg != null
+          ? '${weightData!.currentKg} kg'
+          : (weightController.currentWeight != null
+              ? '${weightController.currentWeight!.weightKg.toStringAsFixed(1)} kg'
+              : '-');
+
+      final weightChangeStr = weightData?.changeKg != null
+          ? _formatWeightChange(weightData!.changeKg)
+          : weightController.weightChangeSinceLastString;
+
+      final statusLabelStr = (weightData?.statusLabel.isNotEmpty ?? false)
+          ? weightData!.statusLabel
+          : weightController.weeklyProgressStatus;
+
+      return RefreshIndicator(
+        onRefresh: () => homeController.fetchHomeData(force: true),
+        color: AppColors.brandTeal,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 120),
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: GestureDetector(
-                  onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => const WeightTrendsView()),
-                    );
-                  },
-                  child: Obx(() {
-                    final currentWeight = controller.currentWeight;
-                    return MetricCard(
-                      label: DashboardStrings.currentWeight,
-                      value: currentWeight != null
-                          ? '${currentWeight.weightKg.toStringAsFixed(1)} kg'
-                          : '-',
-                      trendText: controller.weightChangeSinceLastString,
-                    );
-                  }),
-                ),
+              DashboardHeader(headerData: homeData?.header),
+              const SizedBox(height: 16),
+              MomentumCard(momentumData: homeData?.momentum),
+              const SizedBox(height: 16),
+
+              // Today's Priority / AI Daily Brief Widget
+              AIDailyBriefCard(
+                priorityData: homeData?.todayPriority,
+                dailyBriefData: homeData?.dailyBrief,
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: GestureDetector(
-                  onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                          builder: (_) => const WeeklyProgressView()),
-                    );
-                  },
-                  child: Obx(() {
-                    return MetricCard(
-                      label: DashboardStrings.weeklyChange,
-                      value: controller.weightChangeSinceLastString,
-                      caption: controller.weeklyProgressStatus,
-                      child: const SparklineChart(),
-                    );
-                  }),
-                ),
+              if (homeData?.dailyBrief?.visible == true)
+                const SizedBox(height: 16),
+
+              // Weekly Scan Widget
+              WeeklyScanCard(weeklyScanData: homeData?.weeklyScan),
+              if (homeData?.weeklyScan?.visible == true)
+                const SizedBox(height: 16),
+
+              // Current Weight & Weekly Change Row
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const WeightTrendsView(),
+                          ),
+                        );
+                      },
+                      child: MetricCard(
+                        label: DashboardStrings.currentWeight,
+                        value: currentWeightStr,
+                        trendText: weightChangeStr,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const WeeklyProgressView(),
+                          ),
+                        );
+                      },
+                      child: MetricCard(
+                        label: DashboardStrings.weeklyChange,
+                        value: weightChangeStr,
+                        caption: statusLabelStr,
+                        child: const SparklineChart(),
+                      ),
+                    ),
+                  ),
+                ],
               ),
+              const SizedBox(height: 16),
+              LatestCheckInCard(analysisData: homeData?.latestAnalysis),
+              const SizedBox(height: 16),
+              AiInsightCard(
+                goInsightPage: goInsight,
+                aiInsightData: homeData?.aiInsight,
+              ),
+              const SizedBox(height: 24),
             ],
           ),
-          const SizedBox(height: 16),
-          const LatestCheckInCard(),
-          const SizedBox(height: 16),
-          AiInsightCard(goInsightPage: goInsight),
-          const SizedBox(height: 24),
-        ],
-      ),
-    );
+        ),
+      );
+    });
   }
 }

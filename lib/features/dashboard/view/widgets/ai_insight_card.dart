@@ -1,4 +1,5 @@
 import 'package:ai_forma/features/dashboard/constants/dashboard_strings.dart';
+import 'package:ai_forma/features/dashboard/models/home_response_model.dart';
 import 'package:flutter/material.dart';
 import 'package:ai_forma/core/icons/app_icons.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
@@ -8,16 +9,30 @@ import 'package:ai_forma/core/widgets/app_icon.dart';
 
 class AiInsightCard extends StatelessWidget {
   final void Function()? goInsightPage;
-  const AiInsightCard({super.key, required this.goInsightPage});
+  final HomeAiInsightModel? aiInsightData;
+
+  const AiInsightCard({
+    super.key,
+    required this.goInsightPage,
+    this.aiInsightData,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final bodyText = (aiInsightData?.text?.isNotEmpty ?? false)
+        ? aiInsightData!.text!
+        : DashboardStrings.aiInsightBody;
+
+    final ctaText = (aiInsightData?.ctaLabel?.isNotEmpty ?? false)
+        ? aiInsightData!.ctaLabel!
+        : DashboardStrings.viewAnalysis;
+
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(14),
         color: AppColors.darkCard,
-          gradient: const RadialGradient(
+        gradient: const RadialGradient(
           center: Alignment(0.6, -1.3),
           radius: 1,
           colors: [Color.fromARGB(255, 39, 97, 90), AppColors.darkCard],
@@ -52,7 +67,7 @@ class AiInsightCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  DashboardStrings.aiInsightBody,
+                  bodyText,
                   style: TextStyle(
                     fontFamily: AppFonts.family,
                     fontSize: 13,
@@ -68,8 +83,8 @@ class AiInsightCard extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        DashboardStrings.viewAnalysis,
-                        style: TextStyle(
+                        ctaText,
+                        style: const TextStyle(
                           fontFamily: AppFonts.family,
                           fontSize: 12,
                           fontWeight: FontWeight.w500,

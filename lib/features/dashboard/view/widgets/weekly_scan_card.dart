@@ -6,9 +6,12 @@ import 'package:ai_forma/features/check_in/controllers/check_in_controller.dart'
 import 'package:ai_forma/features/check_in/view/pages/camera_position_view.dart';
 import 'package:ai_forma/features/check_in/view/pages/check_in_intro_view.dart';
 import 'package:ai_forma/features/dashboard/controllers/daily_brief_controller.dart';
+import 'package:ai_forma/features/dashboard/models/home_response_model.dart';
 
 class WeeklyScanCard extends StatelessWidget {
-  const WeeklyScanCard({super.key});
+  const WeeklyScanCard({super.key, this.weeklyScanData});
+
+  final HomeWeeklyScanModel? weeklyScanData;
 
   void _beginScan(BuildContext context) {
     final user = Get.isRegistered<UserController>()
@@ -36,6 +39,10 @@ class WeeklyScanCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (weeklyScanData != null && !weeklyScanData!.visible) {
+      return const SizedBox.shrink();
+    }
+
     final controller = DailyBriefController.to;
 
     return Obx(() {
@@ -49,9 +56,15 @@ class WeeklyScanCard extends StatelessWidget {
   }
 
   Widget _buildScanReadyCard(BuildContext context) {
+    final cardTitle = weeklyScanData?.title ?? 'Your weekly scan is ready.';
+    final cardSubtitle = weeklyScanData?.subtitle ??
+        'Complete your photos and measurements to see how your body has changed.';
+    final ctaText = weeklyScanData?.ctaLabel ?? 'Begin Weekly Scan';
+    final attachedLabel = weeklyScanData?.attachedBriefsLabel;
+
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: const Color(0xFFEFF9F8),
         borderRadius: BorderRadius.circular(20),
@@ -93,10 +106,10 @@ class WeeklyScanCard extends StatelessWidget {
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
+                  children: [
                     Text(
-                      'Your weekly scan is ready.',
-                      style: TextStyle(
+                      cardTitle,
+                      style: const TextStyle(
                         fontFamily: 'Nunito',
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -104,10 +117,10 @@ class WeeklyScanCard extends StatelessWidget {
                         height: 1.25,
                       ),
                     ),
-                    SizedBox(height: 6),
+                    const SizedBox(height: 6),
                     Text(
-                      'Complete your photos and measurements to see how your body has changed.',
-                      style: TextStyle(
+                      cardSubtitle,
+                      style: const TextStyle(
                         fontFamily: 'Nunito',
                         fontSize: 12,
                         color: AppColors.textSecondary,
@@ -160,18 +173,18 @@ class WeeklyScanCard extends StatelessWidget {
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: const [
+                children: [
                   Text(
-                    'Begin Weekly Scan',
-                    style: TextStyle(
+                    ctaText,
+                    style: const TextStyle(
                       fontFamily: 'Nunito',
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                     ),
                   ),
-                  SizedBox(width: 6),
-                  Icon(
+                  const SizedBox(width: 6),
+                  const Icon(
                     Icons.chevron_right,
                     size: 18,
                     color: Colors.white,
@@ -180,29 +193,29 @@ class WeeklyScanCard extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: 12),
-
-          // Lock Footer
-          Row(
-            children: const [
-              Icon(
-                Icons.lock_outline,
-                size: 13,
-                color: AppColors.brandTeal,
-              ),
-              SizedBox(width: 6),
-              Expanded(
-                child: Text(
-                  '6 daily brief responses from last week are attached to this scan.',
-                  style: TextStyle(
-                    fontFamily: 'Nunito',
-                    fontSize: 9,
-                    color: AppColors.textSecondary,
+          if (attachedLabel != null && attachedLabel.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                const Icon(
+                  Icons.lock_outline,
+                  size: 13,
+                  color: AppColors.brandTeal,
+                ),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    attachedLabel,
+                    style: const TextStyle(
+                      fontFamily: 'Nunito',
+                      fontSize: 9,
+                      color: AppColors.textSecondary,
+                    ),
                   ),
                 ),
-              ),
-            ],
-          ),
+              ],
+            ),
+          ],
         ],
       ),
     );

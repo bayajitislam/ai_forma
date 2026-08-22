@@ -1,3 +1,5 @@
+import 'package:ai_forma/features/timeline/models/timeline_overview_model.dart';
+
 class FatLossDetailResponseModel {
   final String accessLevel;
   final String scanId;
@@ -34,13 +36,13 @@ class FatLossDetailResponseModel {
       accessLevel: json['access_level']?.toString() ?? '',
       scanId: json['scan_id']?.toString() ?? '',
       scanDate: json['scan_date']?.toString() ?? '',
-      checkinNumber: (json['checkin_number'] as num?)?.toInt() ?? 0,
+      checkinNumber: safeParseInt(json['checkin_number']) ?? 0,
       window: json['window'] is Map<String, dynamic>
           ? FatLossWindowModel.fromJson(
               json['window'] as Map<String, dynamic>,
             )
           : null,
-      score: (json['score'] as num?)?.toInt() ?? 0,
+      score: safeParseInt(json['score']) ?? 0,
       status: json['status']?.toString() ?? '',
       statusTone: json['status_tone']?.toString() ?? '',
       summary: json['summary']?.toString() ?? '',
@@ -82,7 +84,7 @@ class FatLossWindowModel {
 
   factory FatLossWindowModel.fromJson(Map<String, dynamic> json) {
     return FatLossWindowModel(
-      weeks: (json['weeks'] as num?)?.toInt() ?? 0,
+      weeks: safeParseInt(json['weeks']) ?? 0,
       from: json['from']?.toString() ?? '',
       to: json['to']?.toString() ?? '',
     );
@@ -137,8 +139,8 @@ class FatLossValueDeltaModel {
 
   factory FatLossValueDeltaModel.fromJson(Map<String, dynamic> json) {
     return FatLossValueDeltaModel(
-      value: (json['value'] as num?)?.toDouble() ?? 0.0,
-      delta: (json['delta'] as num?)?.toDouble() ?? 0.0,
+      value: safeParseDouble(json['value']) ?? 0.0,
+      delta: safeParseDouble(json['delta']) ?? 0.0,
     );
   }
 }
@@ -182,8 +184,8 @@ class FatLossChartSeriesItemModel {
   factory FatLossChartSeriesItemModel.fromJson(Map<String, dynamic> json) {
     return FatLossChartSeriesItemModel(
       date: json['date']?.toString() ?? '',
-      bodyFatKg: (json['body_fat_kg'] as num?)?.toDouble() ?? 0.0,
-      bodyFatPercent: (json['body_fat_percent'] as num?)?.toDouble() ?? 0.0,
+      bodyFatKg: safeParseDouble(json['body_fat_kg']) ?? 0.0,
+      bodyFatPercent: safeParseDouble(json['body_fat_percent']) ?? 0.0,
     );
   }
 }
