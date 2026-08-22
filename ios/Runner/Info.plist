@@ -66,5 +66,13 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>AiFORMA needs access to your camera to capture weekly check-in photos for AI body scan analysis.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>AiFORMA needs access to your photo library to allow you to select check-in photos for body scan analysis.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>AiFORMA needs permission to save check-in photos to your photo library.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>AiFORMA requires microphone access while using camera features.</string>
 </dict>
 </plist>
