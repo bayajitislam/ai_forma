@@ -28,6 +28,83 @@ class InsightPostureComparison extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool hasBefore = (beforeImageUrl?.isNotEmpty ?? false) ||
+        (beforeThumbUrl?.isNotEmpty ?? false);
+
+    // Single scan baseline UI: When "before" is null (1st scan)
+    if (!hasBefore) {
+      return Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: AppColors.insightChartBackground,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: AppColors.cardBorder),
+        ),
+        child: Row(
+          children: [
+            _ComparisonCard(
+              label: afterLabel,
+              imageUrl: afterImageUrl,
+              thumbUrl: afterThumbUrl,
+              onRefreshRequested: onRefreshRequested,
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        width: 28,
+                        height: 28,
+                        decoration: BoxDecoration(
+                          color: AppColors.insightIconBackground,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Center(
+                          child: AppIcon(
+                            icon: AppIcons.shieldCheck,
+                            size: 16,
+                            color: AppColors.brandTealDark,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      const Expanded(
+                        child: Text(
+                          'Baseline Captured',
+                          style: TextStyle(
+                            fontFamily: AppFonts.family,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  const Text(
+                    'Comparative before & after posture analysis will unlock after your 2nd check-in.',
+                    style: TextStyle(
+                      fontFamily: AppFonts.family,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w400,
+                      color: AppColors.textSecondary,
+                      height: 1.4,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // Multi-scan comparison UI: Side-by-side before & after cards
     return Row(
       children: [
         Expanded(
@@ -81,8 +158,8 @@ class _ComparisonCard extends StatelessWidget {
 
     final fallbackUrl =
         (imageUrl?.isNotEmpty ?? false) && (thumbUrl?.isNotEmpty ?? false)
-        ? thumbUrl
-        : null;
+            ? thumbUrl
+            : null;
 
     return Column(
       children: [
@@ -233,10 +310,10 @@ class InsightStatusList extends StatelessWidget {
   }
 
   Color _toneColor(InsightStatusTone tone) => switch (tone) {
-    InsightStatusTone.positive => AppColors.brandTealDark,
-    InsightStatusTone.warning => AppColors.insightWarning,
-    InsightStatusTone.neutral => AppColors.textSecondary,
-  };
+        InsightStatusTone.positive => AppColors.brandTealDark,
+        InsightStatusTone.warning => AppColors.insightWarning,
+        InsightStatusTone.neutral => AppColors.textSecondary,
+      };
 }
 
 class InsightStatusItem {
