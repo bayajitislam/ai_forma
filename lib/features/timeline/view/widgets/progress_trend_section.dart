@@ -1,13 +1,35 @@
 import 'package:flutter/material.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
 import 'package:ai_forma/core/theme/app_text_styles.dart';
+import 'package:ai_forma/features/timeline/models/timeline_overview_model.dart';
 import 'package:ai_forma/features/timeline/view/widgets/progress_line_chart.dart';
 
 class ProgressTrendSection extends StatelessWidget {
-  const ProgressTrendSection({super.key});
+  const ProgressTrendSection({
+    super.key,
+    this.progress,
+    this.chart,
+  });
+
+  final TimelineProgressModel? progress;
+  final TimelineChartModel? chart;
 
   @override
   Widget build(BuildContext context) {
+    // Format values
+    final muscleStr = progress?.muscleChangeKg != null
+        ? '${progress!.muscleChangeKg}'
+        : '+0.0';
+    final fatStr = progress?.bodyFatChangePercent != null
+        ? '${progress!.bodyFatChangePercent}%'
+        : '0.0%';
+    final momentumVal = progress?.momentumChange;
+    final momentumStr = momentumVal != null
+        ? (momentumVal > 0 ? '+$momentumVal' : '$momentumVal')
+        : '+0';
+
+    final seriesPoints = chart?.series ?? [];
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -49,17 +71,17 @@ class ProgressTrendSection extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
                     _buildMetricItem(
-                      value: '+1.2',
+                      value: muscleStr,
                       unit: ' kg Muscle',
                       color: AppColors.textPrimary,
                     ),
                     _buildMetricItem(
-                      value: '-2.3%',
+                      value: fatStr,
                       unit: ' Body Fat',
                       color: AppColors.brandTeal,
                     ),
                     _buildMetricItem(
-                      value: '+8',
+                      value: momentumStr,
                       unit: ' Momentum',
                       color: AppColors.textPrimary,
                     ),
@@ -67,7 +89,7 @@ class ProgressTrendSection extends StatelessWidget {
                 ),
                 const SizedBox(height: 24),
                 // Trend Line Chart
-                const ProgressLineChart(),
+                ProgressLineChart(seriesPoints: seriesPoints),
               ],
             ),
           ),

@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
 import 'package:ai_forma/core/constants/app_images.dart';
+import 'package:ai_forma/core/widgets/app_shimmer.dart';
+import 'package:ai_forma/features/timeline/controllers/timeline_controller.dart';
+import 'package:ai_forma/features/timeline/models/timeline_history_model.dart';
 import 'package:ai_forma/features/timeline/view/pages/scan_detail_view.dart';
 
 class ScanHistoryTabView extends StatefulWidget {
@@ -13,23 +17,10 @@ class ScanHistoryTabView extends StatefulWidget {
 class _ScanHistoryTabViewState extends State<ScanHistoryTabView> {
   String _selectedAngle = 'All';
 
-  final List<_MonthGroup> _historyData = [
-    _MonthGroup(
-      month: 'May 2025',
-      scans: [
-        _ScanHistoryItem(date: 'May 18'),
-        _ScanHistoryItem(date: 'May 11'),
-        _ScanHistoryItem(date: 'May 4'),
-      ],
-    ),
-    _MonthGroup(
-      month: 'Apr 2025',
-      scans: [_ScanHistoryItem(date: 'Apr 4')],
-    ),
-  ];
-
   @override
   Widget build(BuildContext context) {
+    final controller = Get.find<TimelineController>();
+
     return Column(
       children: [
         // Angle Filters Row
@@ -76,42 +67,126 @@ class _ScanHistoryTabViewState extends State<ScanHistoryTabView> {
         ),
         // History List
         Expanded(
-          child: ListView.builder(
-            padding: const EdgeInsets.fromLTRB(20, 0, 20, 120),
-            itemCount: _historyData.length,
-            itemBuilder: (context, index) {
-              final group = _historyData[index];
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    child: Text(
-                      group.month,
-                      style: const TextStyle(
-                        fontFamily: 'Nunito',
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
+          child: Obx(() {
+            final isLoading = controller.isHistoryLoading.value;
+            final historyItems = controller.historyList;
+
+            if (isLoading && historyItems.isEmpty) {
+              return ListView.builder(
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 120),
+                itemCount: 4,
+                itemBuilder: (context, index) {
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 20),
+                    child: Row(
+                      children: [
+                        AppShimmer(
+                          child: Container(
+                            width: 60,
+                            height: 16,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFE5E7EB),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Row(
+                            children: List.generate(
+                              3,
+                              (i) => Padding(
+                                padding: const EdgeInsets.only(right: 8),
+                                child: AppShimmer(
+                                  child: Container(
+                                    width: 76,
+                                    height: 100,
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFE5E7EB),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              );
+            }
+
+            if (historyItems.isEmpty) {
+              return const Center(
+                child: Text(
+                  'No scan history found.',
+                  style: TextStyle(
+                    fontFamily: 'Nunito',
+                    fontSize: 14,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              );
+            }
+
+            // Group by monthLabel
+            final groupedMap = <String, List<TimelineHistoryScanItemModel>>{};
+            for (final item in historyItems) {
+              final month = item.monthLabel.isNotEmpty
+                  ? item.monthLabel
+                  : (item.month.isNotEmpty ? item.month : 'Scan History');
+              groupedMap.putIfAbsent(month, () => []).add(item);
+            }
+
+            final monthGroupKeys = groupedMap.keys.toList();
+
+            return ListView.builder(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 120),
+              itemCount: monthGroupKeys.length,
+              itemBuilder: (context, index) {
+                final month = monthGroupKeys[index];
+                final scans = groupedMap[month]!;
+
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      child: Text(
+                        month,
+                        style: const TextStyle(
+                          fontFamily: 'Nunito',
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textPrimary,
+                        ),
                       ),
                     ),
-                  ),
-                  ...group.scans.map((scan) => _buildScanRow(context, scan)),
-                ],
-              );
-            },
-          ),
+                    ...scans.map((scan) => _buildScanRow(context, scan)),
+                  ],
+                );
+              },
+            );
+          }),
         ),
       ],
     );
   }
 
-  Widget _buildScanRow(BuildContext context, _ScanHistoryItem scan) {
+  Widget _buildScanRow(
+      BuildContext context, TimelineHistoryScanItemModel scan) {
+    final thumbs = _getFilteredThumbnails(scan);
+
     return GestureDetector(
       onTap: () {
         Navigator.of(context).push(
           MaterialPageRoute(
-            builder: (context) => ScanDetailView(date: scan.date),
+            builder: (context) => ScanDetailView(
+              scanId: scan.id,
+              date: scan.scanDate,
+            ),
           ),
         );
       },
@@ -123,7 +198,7 @@ class _ScanHistoryTabViewState extends State<ScanHistoryTabView> {
             SizedBox(
               width: 60,
               child: Text(
-                scan.date,
+                scan.scanDate,
                 style: const TextStyle(
                   fontFamily: 'Nunito',
                   fontSize: 14,
@@ -136,7 +211,8 @@ class _ScanHistoryTabViewState extends State<ScanHistoryTabView> {
             // Thumbnails
             Expanded(
               child: Row(
-                children: _getFilteredThumbnails().map((imgPath) {
+                children: thumbs.map((urlOrAsset) {
+                  final isNetwork = urlOrAsset.startsWith('http');
                   return Padding(
                     padding: const EdgeInsets.only(right: 8),
                     child: Container(
@@ -145,7 +221,6 @@ class _ScanHistoryTabViewState extends State<ScanHistoryTabView> {
                       decoration: BoxDecoration(
                         color: AppColors.insightConsistencyIncompleteBg,
                         borderRadius: BorderRadius.circular(8),
-
                         boxShadow: [
                           BoxShadow(
                             color: AppColors.background.withValues(alpha: 0.25),
@@ -156,7 +231,19 @@ class _ScanHistoryTabViewState extends State<ScanHistoryTabView> {
                       ),
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(8),
-                        child: Image.asset(imgPath, fit: BoxFit.cover),
+                        child: isNetwork
+                            ? AppShimmerImage(
+                                imageUrl: urlOrAsset,
+                                fit: BoxFit.contain,
+                                errorWidget: Image.asset(
+                                  AppImages.frontView,
+                                  fit: BoxFit.cover,
+                                ),
+                              )
+                            : Image.asset(
+                                urlOrAsset,
+                                fit: BoxFit.cover,
+                              ),
                       ),
                     ),
                   );
@@ -175,30 +262,28 @@ class _ScanHistoryTabViewState extends State<ScanHistoryTabView> {
     );
   }
 
-  List<String> _getFilteredThumbnails() {
+  List<String> _getFilteredThumbnails(TimelineHistoryScanItemModel scan) {
+    final front = scan.thumbs?.front;
+    final side = scan.thumbs?.side;
+    final back = scan.thumbs?.back;
+
     switch (_selectedAngle) {
       case 'Front':
-        return [AppImages.frontView];
+        return [front ?? AppImages.frontView];
       case 'Side':
-        return [AppImages.sideView];
+        return [side ?? AppImages.sideView];
       case 'Back':
-        return [AppImages.backView];
+        return [back ?? AppImages.backView];
       case 'All':
       default:
-        return [AppImages.frontView, AppImages.sideView, AppImages.backView];
+        final list = <String>[];
+        if (front != null) list.add(front);
+        if (side != null) list.add(side);
+        if (back != null) list.add(back);
+        if (list.isEmpty) {
+          return [AppImages.frontView, AppImages.sideView, AppImages.backView];
+        }
+        return list;
     }
   }
-}
-
-class _MonthGroup {
-  final String month;
-  final List<_ScanHistoryItem> scans;
-
-  _MonthGroup({required this.month, required this.scans});
-}
-
-class _ScanHistoryItem {
-  final String date;
-
-  _ScanHistoryItem({required this.date});
 }

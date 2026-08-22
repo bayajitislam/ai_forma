@@ -1,20 +1,43 @@
 import 'package:flutter/material.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
+import 'package:ai_forma/features/timeline/models/timeline_overview_model.dart';
+import 'package:intl/intl.dart' hide TextDirection;
 
 class ProgressLineChart extends StatelessWidget {
-  const ProgressLineChart({super.key});
+  const ProgressLineChart({
+    super.key,
+    this.seriesPoints = const [],
+  });
+
+  final List<TimelineChartSeriesItemModel> seriesPoints;
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       height: 120,
       width: double.infinity,
-      child: CustomPaint(painter: _ProgressChartPainter()),
+      child: CustomPaint(
+        painter: _ProgressChartPainter(seriesPoints: seriesPoints),
+      ),
     );
   }
 }
 
 class _ProgressChartPainter extends CustomPainter {
+  final List<TimelineChartSeriesItemModel> seriesPoints;
+
+  _ProgressChartPainter({required this.seriesPoints});
+
+  String _formatDateLabel(String rawDate) {
+    if (rawDate.isEmpty) return '';
+    try {
+      final parsed = DateTime.parse(rawDate);
+      return DateFormat('MMM d').format(parsed);
+    } catch (_) {
+      return rawDate;
+    }
+  }
+
   @override
   void paint(Canvas canvas, Size size) {
     final linePaint = Paint()
@@ -27,26 +50,59 @@ class _ProgressChartPainter extends CustomPainter {
       ..color = AppColors.brandTeal
       ..style = PaintingStyle.fill;
 
-    // Data points represented as ratios (x, y) where y goes from 0 (bottom) to 1 (top)
-    // We reverse y in calculations so that higher values are drawn higher up.
-    final data = [
-      _ChartPoint(xRatio: 0.1, yRatio: 0.25, label: 'Apr 27'),
-      _ChartPoint(xRatio: 0.36, yRatio: 0.4, label: 'May 4'),
-      _ChartPoint(xRatio: 0.63, yRatio: 0.55, label: 'May 11'),
-      _ChartPoint(xRatio: 0.9, yRatio: 0.7, label: 'May 18'),
-    ];
+    if (seriesPoints.isEmpty) {
+      // Fallback default points if empty
+      final defaultData = [
+        _ChartPoint(xRatio: 0.1, yRatio: 0.25, label: 'Apr 27'),
+        _ChartPoint(xRatio: 0.36, yRatio: 0.4, label: 'May 4'),
+        _ChartPoint(xRatio: 0.63, yRatio: 0.55, label: 'May 11'),
+        _ChartPoint(xRatio: 0.9, yRatio: 0.7, label: 'May 18'),
+      ];
+      _drawChartPoints(canvas, size, defaultData, linePaint, pointPaint);
+      return;
+    }
 
+    // Min and Max calculation
+    final minY = seriesPoints
+        .map((e) => e.value)
+        .reduce((a, b) => a < b ? a : b);
+    final maxY = seriesPoints
+        .map((e) => e.value)
+        .reduce((a, b) => a > b ? a : b);
+    final rangeY = (maxY - minY) == 0 ? 1.0 : (maxY - minY);
+
+    final chartData = <_ChartPoint>[];
+    for (int i = 0; i < seriesPoints.length; i++) {
+      final xRatio = seriesPoints.length == 1
+          ? 0.5
+          : 0.1 + (i / (seriesPoints.length - 1)) * 0.8;
+      final normalizedY = (seriesPoints[i].value - minY) / rangeY;
+      final yRatio = 0.2 + normalizedY * 0.6;
+      final label = _formatDateLabel(seriesPoints[i].date);
+
+      chartData.add(
+        _ChartPoint(xRatio: xRatio, yRatio: yRatio, label: label),
+      );
+    }
+
+    _drawChartPoints(canvas, size, chartData, linePaint, pointPaint);
+  }
+
+  void _drawChartPoints(
+    Canvas canvas,
+    Size size,
+    List<_ChartPoint> data,
+    Paint linePaint,
+    Paint pointPaint,
+  ) {
     final path = Path();
     final points = <Offset>[];
-
-    const chartHeightOffset =
-        40.0; // Space for labels at bottom and padding at top
+    const chartHeightOffset = 40.0;
 
     for (int i = 0; i < data.length; i++) {
       final d = data[i];
       final x = size.width * d.xRatio;
-      final y =
-          size.height -
+      final y = size.height -
           chartHeightOffset -
           (d.yRatio * (size.height - chartHeightOffset - 10));
       final offset = Offset(x, y);
@@ -59,20 +115,18 @@ class _ProgressChartPainter extends CustomPainter {
       }
     }
 
-    // Draw connecting line
-    canvas.drawPath(path, linePaint);
+    if (data.length > 1) {
+      canvas.drawPath(path, linePaint);
+    }
 
-    // Draw data points & text labels
     final textPainter = TextPainter(textDirection: TextDirection.ltr);
 
     for (int i = 0; i < data.length; i++) {
       final point = points[i];
       final d = data[i];
 
-      // Draw point circle
       canvas.drawCircle(point, 7.0, pointPaint);
 
-      // Draw date text
       textPainter.text = TextSpan(
         text: d.label,
         style: const TextStyle(
@@ -91,7 +145,7 @@ class _ProgressChartPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
 
 class _ChartPoint {

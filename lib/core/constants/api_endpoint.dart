@@ -33,4 +33,10 @@ class ApiEndpoint {
 
   //bug reports
   static const String bugReports = '/api/bug-reports/';
+
+  //timeline
+  static const String timelineOverview = '/api/timeline/overview/';
+  static const String timelineTrends = '/api/timeline/trends/';
+  static const String timelineHistory = '/api/timeline/history/';
+  static String timelineScanDetail(String id) => '/api/timeline/scans/$id/';
 }

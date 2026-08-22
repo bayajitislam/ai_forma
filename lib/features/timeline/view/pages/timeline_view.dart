@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:ai_forma/core/network/dio_client.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
-import 'package:ai_forma/features/timeline/view/widgets/recent_scans_section.dart';
+import 'package:ai_forma/core/widgets/app_shimmer.dart';
+import 'package:ai_forma/features/timeline/controllers/timeline_controller.dart';
+import 'package:ai_forma/features/timeline/repositories/timeline_repository.dart';
+import 'package:ai_forma/features/timeline/view/pages/scan_detail_view.dart';
 import 'package:ai_forma/features/timeline/view/widgets/progress_trend_section.dart';
-
-import 'package:ai_forma/features/timeline/view/widgets/trends_tab_view.dart';
+import 'package:ai_forma/features/timeline/view/widgets/recent_scans_section.dart';
 import 'package:ai_forma/features/timeline/view/widgets/scan_history_tab_view.dart';
+import 'package:ai_forma/features/timeline/view/widgets/trends_tab_view.dart';
 
 class TimelineView extends StatefulWidget {
   const TimelineView({super.key});
@@ -34,6 +39,18 @@ class _TimelineViewState extends State<TimelineView>
 
   @override
   Widget build(BuildContext context) {
+    final controller = Get.isRegistered<TimelineController>()
+        ? Get.find<TimelineController>()
+        : Get.put(
+            TimelineController(
+              repository: TimelineRepository(
+                Get.isRegistered<DioClient>()
+                    ? Get.find<DioClient>()
+                    : DioClient(),
+              ),
+            ),
+          );
+
     return Column(
       children: [
         // Tab Bar
@@ -72,23 +89,113 @@ class _TimelineViewState extends State<TimelineView>
         Expanded(
           child: TabBarView(
             controller: _tabController,
-            children: const [
+            children: [
               // Overview View
-              SingleChildScrollView(
-                padding: EdgeInsets.only(top: 24, bottom: 120),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    RecentScansSection(),
-                    SizedBox(height: 28),
-                    ProgressTrendSection(),
-                  ],
-                ),
-              ),
+              Obx(() {
+                final isLoading = controller.isOverviewLoading.value;
+                final overview = controller.overviewData.value;
+
+                if (isLoading && overview == null) {
+                  return SingleChildScrollView(
+                    padding: const EdgeInsets.only(top: 24, bottom: 120),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: AppShimmer(
+                            child: Container(
+                              width: 140,
+                              height: 20,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFE5E7EB),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        SizedBox(
+                          height: 175,
+                          child: ListView.separated(
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            scrollDirection: Axis.horizontal,
+                            itemCount: 4,
+                            separatorBuilder: (context, index) =>
+                                const SizedBox(width: 14),
+                            itemBuilder: (context, index) {
+                              return Column(
+                                children: [
+                                  AppShimmer(
+                                    child: Container(
+                                      width: 96,
+                                      height: 130,
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFE5E5EA),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  AppShimmer(
+                                    child: Container(
+                                      width: 60,
+                                      height: 14,
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFE5E7EB),
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
+                        ),
+                        const SizedBox(height: 28),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: AppShimmer(
+                            child: Container(
+                              width: double.infinity,
+                              height: 180,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFE5E7EB),
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
+                final recentScans = overview?.recentScans ?? [];
+                final progress = overview?.progress;
+                final chart = overview?.chart;
+
+                return SingleChildScrollView(
+                  padding: const EdgeInsets.only(top: 24, bottom: 120),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      RecentScansSection(
+                        recentScans: recentScans,
+                        onScanTap: (id) {
+                          Get.to(() => ScanDetailView(scanId: id));
+                        },
+                      ),
+                      const SizedBox(height: 28),
+                      ProgressTrendSection(progress: progress, chart: chart),
+                    ],
+                  ),
+                );
+              }),
               // Trends View
-              TrendsTabView(),
+              const TrendsTabView(),
               // Scan History View
-              ScanHistoryTabView(),
+              const ScanHistoryTabView(),
             ],
           ),
         ),

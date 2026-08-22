@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:ai_forma/core/constants/app_images.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
 import 'package:ai_forma/core/theme/app_fonts.dart';
+import 'package:ai_forma/core/widgets/app_shimmer.dart';
 import 'package:ai_forma/features/insights/constants/insights_strings.dart';
 
 class InsightSymmetryBodyMap extends StatelessWidget {
@@ -21,11 +22,6 @@ class InsightSymmetryBodyMap extends StatelessWidget {
     final primaryUrl = (imageUrl?.isNotEmpty ?? false)
         ? imageUrl
         : ((thumbUrl?.isNotEmpty ?? false) ? thumbUrl : null);
-
-    final fallbackUrl = (imageUrl?.isNotEmpty ?? false) &&
-            (thumbUrl?.isNotEmpty ?? false)
-        ? thumbUrl
-        : null;
 
     return Column(
       children: [
@@ -52,64 +48,17 @@ class InsightSymmetryBodyMap extends StatelessWidget {
                 ClipRRect(
                   borderRadius: BorderRadius.circular(14),
                   child: primaryUrl != null
-                      ? Image.network(
-                          primaryUrl,
+                      ? AppShimmerImage(
+                          imageUrl: primaryUrl,
                           fit: BoxFit.contain,
                           height: 288,
                           width: 176,
-                          loadingBuilder: (context, child, loadingProgress) {
-                            if (loadingProgress == null) return child;
-                            return const Center(
-                              child: SizedBox(
-                                width: 24,
-                                height: 24,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: AppColors.brandTeal,
-                                ),
-                              ),
-                            );
-                          },
-                          errorBuilder: (context, error, stackTrace) {
-                            debugPrint(
-                              'S3 Symmetry Image error ($primaryUrl): $error',
-                            );
-                            if (fallbackUrl != null) {
-                              return Image.network(
-                                fallbackUrl,
-                                fit: BoxFit.contain,
-                                height: 288,
-                                width: 176,
-                                loadingBuilder:
-                                    (context, child, loadingProgress) {
-                                  if (loadingProgress == null) return child;
-                                  return const Center(
-                                    child: SizedBox(
-                                      width: 24,
-                                      height: 24,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        color: AppColors.brandTeal,
-                                      ),
-                                    ),
-                                  );
-                                },
-                                errorBuilder: (context, error, stackTrace) =>
-                                    Image.asset(
-                                  AppImages.frontView,
-                                  fit: BoxFit.cover,
-                                  height: 288,
-                                  width: 176,
-                                ),
-                              );
-                            }
-                            return Image.asset(
-                              AppImages.frontView,
-                              fit: BoxFit.cover,
-                              height: 288,
-                              width: 176,
-                            );
-                          },
+                          errorWidget: Image.asset(
+                            AppImages.frontView,
+                            fit: BoxFit.cover,
+                            height: 288,
+                            width: 176,
+                          ),
                         )
                       : Image.asset(
                           AppImages.frontView,

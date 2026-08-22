@@ -14,17 +14,6 @@ import 'package:ai_forma/features/insights/view/widgets/insight_score_section.da
 class PostureAnalysisView extends StatelessWidget {
   const PostureAnalysisView({super.key});
 
-  InsightStatusTone _mapTone(String? toneStr) {
-    switch (toneStr?.toLowerCase()) {
-      case 'positive':
-        return InsightStatusTone.positive;
-      case 'warning':
-        return InsightStatusTone.warning;
-      default:
-        return InsightStatusTone.neutral;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final controller = Get.isRegistered<PostureController>()
@@ -80,30 +69,6 @@ class PostureAnalysisView extends StatelessWidget {
           ? data!.summary
           : InsightsStrings.postureSummary;
 
-      // Comparison images & labels
-      final beforeItem = data?.comparison?.before;
-      final afterItem = data?.comparison?.after;
-
-      final beforeLabel = (beforeItem?.label.isNotEmpty ?? false)
-          ? beforeItem!.label
-          : InsightsStrings.postureBefore;
-      final afterLabel = (afterItem?.label.isNotEmpty ?? false)
-          ? afterItem!.label
-          : InsightsStrings.postureAfter;
-
-      // Alignment status items
-      final headLabel = data?.alignment?.headPosition?.label;
-      final headTone = data?.alignment?.headPosition?.tone;
-
-      final shoulderLabel = data?.alignment?.shoulderPosition?.label;
-      final shoulderTone = data?.alignment?.shoulderPosition?.tone;
-
-      final spinalLabel = data?.alignment?.spinalPosition?.label;
-      final spinalTone = data?.alignment?.spinalPosition?.tone;
-
-      final pelvicLabel = data?.alignment?.pelvicTilt?.label;
-      final pelvicTone = data?.alignment?.pelvicTilt?.tone;
-
       // Analysis
       final detectedText = (data?.analysis?.detected.isNotEmpty ?? false)
           ? data!.analysis!.detected
@@ -136,38 +101,12 @@ class PostureAnalysisView extends StatelessWidget {
           ),
           const SizedBox(height: 20),
           InsightPostureComparison(
-            beforeLabel: beforeLabel,
-            beforeImageUrl: beforeItem?.imageUrl,
-            beforeThumbUrl: beforeItem?.thumbUrl,
-            afterLabel: afterLabel,
-            afterImageUrl: afterItem?.imageUrl,
-            afterThumbUrl: afterItem?.thumbUrl,
+            comparison: data?.comparison,
             onRefreshRequested: controller.fetchDetail,
           ),
           const SizedBox(height: 16),
-          InsightStatusList(
-            items: [
-              InsightStatusItem(
-                label: InsightsStrings.headPosition,
-                status: headLabel ?? InsightsStrings.headPositionStatus,
-                tone: _mapTone(headTone ?? 'positive'),
-              ),
-              InsightStatusItem(
-                label: InsightsStrings.shoulderPosition,
-                status: shoulderLabel ?? InsightsStrings.shoulderPositionStatus,
-                tone: _mapTone(shoulderTone ?? 'positive'),
-              ),
-              InsightStatusItem(
-                label: InsightsStrings.spinalPosition,
-                status: spinalLabel ?? InsightsStrings.spinalPositionStatus,
-                tone: _mapTone(spinalTone ?? 'positive'),
-              ),
-              InsightStatusItem(
-                label: InsightsStrings.pelvicTilt,
-                status: pelvicLabel ?? InsightsStrings.pelvicTiltStatus,
-                tone: _mapTone(pelvicTone ?? 'positive'),
-              ),
-            ],
+          InsightPostureMetricsList(
+            alignment: data?.alignment,
           ),
           const SizedBox(height: 24),
           InsightAnalysisSection(

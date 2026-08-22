@@ -1,12 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
 import 'package:ai_forma/core/constants/app_images.dart';
 import 'package:ai_forma/core/widgets/app_brand_text.dart';
+import 'package:ai_forma/core/widgets/app_shimmer.dart';
+import 'package:ai_forma/features/timeline/controllers/timeline_controller.dart';
+import 'package:ai_forma/features/timeline/models/timeline_scan_detail_model.dart';
 
 class ScanDetailView extends StatefulWidget {
-  final String date;
+  final String scanId;
+  final String? date;
 
-  const ScanDetailView({super.key, required this.date});
+  const ScanDetailView({
+    super.key,
+    this.scanId = '',
+    this.date,
+  });
 
   @override
   State<ScanDetailView> createState() => _ScanDetailViewState();
@@ -17,16 +26,13 @@ class _ScanDetailViewState extends State<ScanDetailView>
   late final TabController _tabController;
   int _currentPhotoIndex = 0;
 
-  final List<_PhotoViewItem> _photos = [
-    _PhotoViewItem(title: 'Front View', imagePath: AppImages.frontView),
-    _PhotoViewItem(title: 'Side View', imagePath: AppImages.sideView),
-    _PhotoViewItem(title: 'Back View', imagePath: AppImages.backView),
-  ];
-
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    if (Get.isRegistered<TimelineController>()) {
+      Get.find<TimelineController>().fetchScanDetail(widget.scanId);
+    }
   }
 
   @override
@@ -35,21 +41,25 @@ class _ScanDetailViewState extends State<ScanDetailView>
     super.dispose();
   }
 
-  void _nextPhoto() {
+  void _nextPhoto(int totalPhotos) {
+    if (totalPhotos == 0) return;
     setState(() {
-      _currentPhotoIndex = (_currentPhotoIndex + 1) % _photos.length;
+      _currentPhotoIndex = (_currentPhotoIndex + 1) % totalPhotos;
     });
   }
 
-  void _previousPhoto() {
+  void _previousPhoto(int totalPhotos) {
+    if (totalPhotos == 0) return;
     setState(() {
       _currentPhotoIndex =
-          (_currentPhotoIndex - 1 + _photos.length) % _photos.length;
+          (_currentPhotoIndex - 1 + totalPhotos) % totalPhotos;
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    final controller = Get.find<TimelineController>();
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -91,14 +101,62 @@ class _ScanDetailViewState extends State<ScanDetailView>
           ],
         ),
       ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [_buildSummaryTab(), _buildPhotosTab()],
-      ),
+      body: Obx(() {
+        final isLoading = controller.isScanDetailLoading.value;
+        final error = controller.scanDetailError.value;
+        final detail = controller.scanDetailData.value;
+
+        if (isLoading) {
+          return const Center(
+            child: CircularProgressIndicator(color: AppColors.brandTeal),
+          );
+        }
+
+        if (error.isNotEmpty && detail == null) {
+          return Center(
+            child: Text(
+              error,
+              style: const TextStyle(
+                fontFamily: 'Nunito',
+                fontSize: 14,
+                color: AppColors.textSecondary,
+              ),
+            ),
+          );
+        }
+
+        return TabBarView(
+          controller: _tabController,
+          children: [
+            _buildSummaryTab(detail),
+            _buildPhotosTab(detail),
+          ],
+        );
+      }),
     );
   }
 
-  Widget _buildSummaryTab() {
+  Widget _buildSummaryTab(TimelineScanDetailResponseModel? detail) {
+    final summary = detail?.summary;
+    final comparison = detail?.comparison;
+
+    final bodyFatVal = summary?.bodyFat?.value != null
+        ? '${summary!.bodyFat!.value}%'
+        : '18.2%';
+    final bodyFatChange = summary?.bodyFat?.change;
+
+    final muscleVal = summary?.muscle?.value != null
+        ? '${summary!.muscle!.value} kg'
+        : '71.5 kg';
+    final muscleChange = summary?.muscle?.change;
+
+    final weightVal = summary?.weight?.value != null
+        ? '${summary!.weight!.value} kg'
+        : '87.4 kg';
+    final weightChange = summary?.weight?.change;
+
+    final momentumScore = summary?.momentum?.score ?? 82;
+
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
       child: Column(
@@ -116,41 +174,148 @@ class _ScanDetailViewState extends State<ScanDetailView>
           const SizedBox(height: 16),
           _buildMetricCard(
             label: 'Body Fat',
-            value: '18.2%',
-            trendWidget: _buildTrendBadge('↓ 0.6%', isPositive: true),
+            value: bodyFatVal,
+            trendWidget: bodyFatChange != null
+                ? _buildTrendBadge(bodyFatChange, isPositive: true)
+                : const SizedBox.shrink(),
           ),
           const SizedBox(height: 12),
           _buildMetricCard(
             label: 'Lean Muscle',
-            value: '71.5 kg',
-            trendWidget: _buildTrendBadge('↑ 0.8 kg', isPositive: true),
+            value: muscleVal,
+            trendWidget: muscleChange != null
+                ? _buildTrendBadge(muscleChange, isPositive: true)
+                : const SizedBox.shrink(),
           ),
           const SizedBox(height: 12),
           _buildMetricCard(
             label: 'Weight',
-            value: '87.4 kg',
-            trendWidget: _buildTrendBadge('↓ 0.6 kg', isPositive: true),
+            value: weightVal,
+            trendWidget: weightChange != null
+                ? _buildTrendBadge(weightChange, isPositive: true)
+                : const SizedBox.shrink(),
           ),
           const SizedBox(height: 12),
           _buildMetricCard(
             label: 'Momentum',
-            value: '82/100',
+            value: '$momentumScore/100',
             trendWidget: const SizedBox.shrink(),
           ),
+          if (comparison != null && comparison.then != null) ...[
+            const SizedBox(height: 24),
+            Text(
+              comparison.title.isNotEmpty ? comparison.title : 'Then vs Now',
+              style: const TextStyle(
+                fontFamily: 'Nunito',
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: AppColors.textPrimary,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppColors.insightConsistencyIncompleteBg.withValues(alpha: 0.5),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: AppColors.cardBorder.withValues(alpha: 0.5),
+                  width: 1,
+                ),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      children: [
+                        Text(
+                          comparison.then?.scanDate ?? '',
+                          style: const TextStyle(
+                            fontFamily: 'Nunito',
+                            fontSize: 12,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        const Text(
+                          'PREVIOUS',
+                          style: TextStyle(
+                            fontFamily: 'Nunito',
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Icon(
+                    Icons.arrow_forward,
+                    color: AppColors.brandTeal,
+                    size: 20,
+                  ),
+                  Expanded(
+                    child: Column(
+                      children: [
+                        Text(
+                          comparison.now?.scanDate ?? '',
+                          style: const TextStyle(
+                            fontFamily: 'Nunito',
+                            fontSize: 12,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        const Text(
+                          'THIS SCAN',
+                          style: TextStyle(
+                            fontFamily: 'Nunito',
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ],
       ),
     );
   }
 
-  Widget _buildPhotosTab() {
-    final photo = _photos[_currentPhotoIndex];
+  Widget _buildPhotosTab(TimelineScanDetailResponseModel? detail) {
+    final views = detail?.photos?.views ?? [];
+    final mainTitle = detail?.photos?.title ?? 'Body Scan';
+
+    if (views.isEmpty) {
+      return const Center(
+        child: Text(
+          'No photos available for this scan.',
+          style: TextStyle(
+            fontFamily: 'Nunito',
+            fontSize: 14,
+            color: AppColors.textSecondary,
+          ),
+        ),
+      );
+    }
+
+    final safeIndex =
+        _currentPhotoIndex >= views.length ? 0 : _currentPhotoIndex;
+    final photo = views[safeIndex];
+    final imageUrl = photo.imageUrl ?? photo.thumbUrl;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
       child: Column(
         children: [
           // Sub-header info
           Text(
-            '${widget.date}, 2025',
+            detail?.scanDate ?? widget.date ?? '',
             style: const TextStyle(
               fontFamily: 'Nunito',
               fontSize: 16,
@@ -160,7 +325,7 @@ class _ScanDetailViewState extends State<ScanDetailView>
           ),
           const SizedBox(height: 4),
           Text(
-            '${_currentPhotoIndex + 1} of ${_photos.length}',
+            '${safeIndex + 1} of ${views.length}',
             style: const TextStyle(
               fontFamily: 'Nunito',
               fontSize: 12,
@@ -173,31 +338,42 @@ class _ScanDetailViewState extends State<ScanDetailView>
             child: Stack(
               alignment: Alignment.center,
               children: [
-                // Image
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.symmetric(horizontal: 33),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(16),
-                    child: Image.asset(photo.imagePath, fit: BoxFit.cover),
+                    child: imageUrl != null && imageUrl.isNotEmpty
+                        ? AppShimmerImage(
+                            imageUrl: imageUrl,
+                            fit: BoxFit.contain,
+                            errorWidget: Image.asset(
+                              AppImages.frontView,
+                              fit: BoxFit.cover,
+                            ),
+                          )
+                        : Image.asset(
+                            AppImages.frontView,
+                            fit: BoxFit.cover,
+                          ),
                   ),
                 ),
                 // Left arrow
-                if (_currentPhotoIndex > 0)
+                if (safeIndex > 0)
                   Positioned(
                     left: 0,
                     child: _buildArrowButton(
                       icon: Icons.arrow_back_ios_rounded,
-                      onPressed: _previousPhoto,
+                      onPressed: () => _previousPhoto(views.length),
                     ),
                   ),
                 // Right arrow
-                if (_currentPhotoIndex < _photos.length - 1)
+                if (safeIndex < views.length - 1)
                   Positioned(
                     right: 0,
                     child: _buildArrowButton(
                       icon: Icons.arrow_forward_ios_rounded,
-                      onPressed: _nextPhoto,
+                      onPressed: () => _nextPhoto(views.length),
                     ),
                   ),
               ],
@@ -205,9 +381,9 @@ class _ScanDetailViewState extends State<ScanDetailView>
           ),
           const SizedBox(height: 16),
           // Caption label
-          const Text(
-            'Latest Body Scan',
-            style: TextStyle(
+          Text(
+            mainTitle,
+            style: const TextStyle(
               fontFamily: 'Nunito',
               fontSize: 13,
               color: AppColors.textSecondary,
@@ -215,7 +391,7 @@ class _ScanDetailViewState extends State<ScanDetailView>
           ),
           const SizedBox(height: 4),
           Text(
-            photo.title,
+            photo.label,
             style: const TextStyle(
               fontFamily: 'Nunito',
               fontSize: 18,
@@ -228,14 +404,14 @@ class _ScanDetailViewState extends State<ScanDetailView>
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: List.generate(
-              _photos.length,
+              views.length,
               (i) => AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
                 margin: const EdgeInsets.symmetric(horizontal: 4),
-                width: i == _currentPhotoIndex ? 20 : 8,
+                width: i == safeIndex ? 20 : 8,
                 height: 8,
                 decoration: BoxDecoration(
-                  color: i == _currentPhotoIndex
+                  color: i == safeIndex
                       ? AppColors.brandTeal
                       : AppColors.cardBorder,
                   borderRadius: BorderRadius.circular(4),
@@ -340,11 +516,4 @@ class _ScanDetailViewState extends State<ScanDetailView>
       ),
     );
   }
-}
-
-class _PhotoViewItem {
-  final String title;
-  final String imagePath;
-
-  _PhotoViewItem({required this.title, required this.imagePath});
 }

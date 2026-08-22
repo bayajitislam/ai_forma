@@ -4,6 +4,8 @@ import 'package:ai_forma/core/widgets/app_icon.dart';
 import 'package:ai_forma/features/insights/bindings/insights_binding.dart';
 import 'package:ai_forma/features/insights/controllers/insights_controller.dart';
 import 'package:ai_forma/features/profile/view/pages/report_bug_view.dart';
+import 'package:ai_forma/features/timeline/bindings/timeline_binding.dart';
+import 'package:ai_forma/features/timeline/controllers/timeline_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
 import 'package:ai_forma/core/widgets/app_navbar.dart';
@@ -27,8 +29,9 @@ class AppShellView extends StatefulWidget {
 class _AppShellViewState extends State<AppShellView> {
   late AppNavItem _selectedItem;
 
-  // Tracks whether we've already triggered the first fetch for Insights.
+  // Tracks whether we've already triggered the first fetch for Insights and Timeline.
   bool _insightsFetched = false;
+  bool _timelineFetched = false;
 
   @override
   void initState() {
@@ -38,14 +41,15 @@ class _AppShellViewState extends State<AppShellView> {
       _selectedItem = Get.arguments as AppNavItem;
     }
 
-    // Always register the InsightsController eagerly so InsightsView
-    // can always find it on its first build (IndexedStack builds all children).
-    // No API call happens here — fetchLatestScan is triggered manually below.
+    // Always register the InsightsController and TimelineController eagerly.
     InsightsBinding().dependencies();
+    TimelineBinding().dependencies();
 
-    // If app deep-links directly to Insights tab, fetch immediately.
+    // If app deep-links directly to Insights or Timeline tab, fetch immediately.
     if (_selectedItem == AppNavItem.insights) {
       _triggerInsightsFetch();
+    } else if (_selectedItem == AppNavItem.timeline) {
+      _triggerTimelineFetch();
     }
   }
 
@@ -54,6 +58,15 @@ class _AppShellViewState extends State<AppShellView> {
     if (_insightsFetched) return;
     _insightsFetched = true;
     Get.find<InsightsController>().fetchLatestScan();
+  }
+
+  /// Triggers Timeline fetch on demand when navigating to Timeline tab.
+  void _triggerTimelineFetch({bool force = false}) {
+    if (_timelineFetched && !force) return;
+    _timelineFetched = true;
+    if (Get.isRegistered<TimelineController>()) {
+      Get.find<TimelineController>().fetchTimelineData(force: force);
+    }
   }
 
   void navigateToInsights() {
@@ -126,6 +139,14 @@ class _AppShellViewState extends State<AppShellView> {
                 } else {
                   // First time navigating to Insights → trigger initial fetch
                   _triggerInsightsFetch();
+                }
+              } else if (item == AppNavItem.timeline) {
+                if (_selectedItem == AppNavItem.timeline) {
+                  // User tapped Timeline tab again while already on it → refresh
+                  _triggerTimelineFetch(force: true);
+                } else {
+                  // First time navigating to Timeline → trigger initial fetch
+                  _triggerTimelineFetch();
                 }
               }
               setState(() => _selectedItem = item);
