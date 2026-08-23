@@ -38,7 +38,7 @@ class HomeController extends GetxController {
   }
 
   /// Submit Daily Brief Answer to POST /api/checkins/daily/ and refresh Home
-  Future<bool> submitDailyBriefAnswer({
+  Future<({bool success, String message})> submitDailyBriefAnswer({
     required String questionKey,
     required String selectedOption,
     double? weightKg,
@@ -53,17 +53,15 @@ class HomeController extends GetxController {
 
       return result.fold(
         (failure) {
-          Get.snackbar('Error', failure.message);
-          return false;
+          return (success: false, message: failure.message);
         },
         (data) {
           fetchHomeData(force: true);
-          return true;
+          return (success: true, message: 'Response saved successfully');
         },
       );
     } catch (e) {
-      Get.snackbar('Error', 'Failed to submit answer.');
-      return false;
+      return (success: false, message: 'Failed to submit answer.');
     } finally {
       isSubmittingAnswer(false);
     }

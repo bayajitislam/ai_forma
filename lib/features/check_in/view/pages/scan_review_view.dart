@@ -15,7 +15,7 @@ import 'package:ai_forma/features/check_in/view/widgets/check_in_header.dart';
 import 'package:ai_forma/features/check_in/view/widgets/check_in_widgets.dart';
 import 'package:get/get.dart';
 
-import 'package:ai_forma/features/check_in/view/pages/analysing_view.dart';
+import 'package:ai_forma/routes/routes_name.dart';
 
 class ScanReviewView extends StatefulWidget {
   const ScanReviewView({super.key});
@@ -25,6 +25,8 @@ class ScanReviewView extends StatefulWidget {
 }
 
 class _ScanReviewViewState extends State<ScanReviewView> {
+  bool _isNavigating = false;
+
   @override
   void initState() {
     super.initState();
@@ -43,8 +45,10 @@ class _ScanReviewViewState extends State<ScanReviewView> {
   }
 
   void _onLooksGood(CheckInController controller) {
+    if (_isNavigating) return;
     if (controller.validationResult.value?.allValid == true) {
-      Get.off(() => const AnalysingView());
+      setState(() => _isNavigating = true);
+      Get.offNamed(RoutesName.analysing);
     }
   }
 

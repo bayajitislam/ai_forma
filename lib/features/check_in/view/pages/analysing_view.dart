@@ -7,7 +7,6 @@ import 'package:ai_forma/core/widgets/app_secondary_button.dart';
 import 'package:ai_forma/core/widgets/primary_button.dart';
 import 'package:ai_forma/features/check_in/constants/check_in_strings.dart';
 import 'package:ai_forma/features/check_in/controllers/check_in_controller.dart';
-import 'package:ai_forma/features/check_in/view/pages/scan_review_view.dart';
 import 'package:ai_forma/features/check_in/view/widgets/check_in_header.dart';
 import 'package:ai_forma/features/check_in/view/widgets/check_in_widgets.dart';
 import 'package:ai_forma/routes/routes_name.dart';
@@ -27,7 +26,11 @@ class _AnalysingViewState extends State<AnalysingView> {
   @override
   void initState() {
     super.initState();
-    _startAnalysisProcess();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _startAnalysisProcess();
+      }
+    });
   }
 
   @override
@@ -147,15 +150,16 @@ class _AnalysingViewState extends State<AnalysingView> {
               const SizedBox(height: 24),
               PrimaryButton(
                 onPressed: () {
-                  Get.back();
-                  Get.off(() => const ScanReviewView());
+                  _stepTimer?.cancel();
+                  Navigator.of(context, rootNavigator: true).pop();
+                  Get.offNamed(RoutesName.scanReview);
                 },
                 label: 'Back to Review',
               ),
               const SizedBox(height: 10),
               AppSecondaryButton(
                 onPressed: () {
-                  Get.back();
+                  Navigator.of(context, rootNavigator: true).pop();
                   _startAnalysisProcess();
                 },
                 label: 'Try Again',

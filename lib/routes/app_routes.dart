@@ -16,6 +16,7 @@ import 'package:ai_forma/features/check_in/bindings/check_in_binding.dart';
 import 'package:ai_forma/features/check_in/view/pages/analysing_view.dart';
 import 'package:ai_forma/features/check_in/view/pages/analysis_complete_view.dart';
 import 'package:ai_forma/features/check_in/view/pages/check_in_intro_view.dart';
+import 'package:ai_forma/features/check_in/view/pages/scan_review_view.dart';
 import 'package:ai_forma/features/onboarding/view/pages/onboarding_view.dart';
 import 'package:ai_forma/features/onboarding/view/pages/privacy_onboarding_view.dart';
 import 'package:ai_forma/features/shell/view/pages/app_shell_view.dart';
@@ -84,6 +85,10 @@ class AppRoutes {
       name: RoutesName.checkInIntro,
       page: () => const CheckInIntroView(),
       binding: CheckInBinding(),
+    ),
+    GetPage(
+      name: RoutesName.scanReview,
+      page: () => const ScanReviewView(),
     ),
     GetPage(
       name: RoutesName.analysing,

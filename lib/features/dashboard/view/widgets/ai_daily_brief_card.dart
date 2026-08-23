@@ -135,14 +135,43 @@ class AIDailyBriefCard extends StatelessWidget {
                   AnswerDailyBriefBottomSheet.show(
                     context,
                     dailyBriefData: dailyBriefData,
-                    onSavedOption: (questionKey, selectedValue) {
-                      if (Get.isRegistered<HomeController>()) {
-                        final prefill = dailyBriefData?.weightKgPrefill;
-                        final weight = prefill != null ? double.tryParse(prefill) : null;
-                        Get.find<HomeController>().submitDailyBriefAnswer(
-                          questionKey: questionKey,
-                          selectedOption: selectedValue,
-                          weightKg: weight,
+                    onSavedOption: (questionKey, selectedValue) async {
+                      if (!Get.isRegistered<HomeController>()) return;
+
+                      final controller = Get.find<HomeController>();
+                      final prefill = dailyBriefData?.weightKgPrefill;
+                      final weight =
+                          prefill != null ? double.tryParse(prefill) : null;
+
+                      final result = await controller.submitDailyBriefAnswer(
+                        questionKey: questionKey,
+                        selectedOption: selectedValue,
+                        weightKg: weight,
+                      );
+
+                      // Pop the bottom sheet first
+                      if (context.mounted) {
+                        Navigator.of(context).pop();
+                      }
+
+                      // Show snackbar after popping
+                      if (result.success) {
+                        Get.snackbar(
+                          'Success',
+                          result.message,
+                          snackPosition: SnackPosition.BOTTOM,
+                          backgroundColor: AppColors.brandTeal,
+                          colorText: Colors.white,
+                          margin: const EdgeInsets.all(16),
+                        );
+                      } else {
+                        Get.snackbar(
+                          'Error',
+                          result.message,
+                          snackPosition: SnackPosition.BOTTOM,
+                          backgroundColor: Colors.redAccent,
+                          colorText: Colors.white,
+                          margin: const EdgeInsets.all(16),
                         );
                       }
                     },
