@@ -6,7 +6,12 @@ import 'package:ai_forma/features/auth/controllers/user_controller.dart';
 import 'package:ai_forma/features/dashboard/controllers/home_controller.dart';
 
 class AppShellHeader extends StatelessWidget {
-  const AppShellHeader({super.key});
+  final bool showProfileOption;
+
+  const AppShellHeader({
+    super.key,
+    this.showProfileOption = true,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -21,33 +26,36 @@ class AppShellHeader extends StatelessWidget {
             child: AppBrandText(height: 22, width: 140),
           ),
         ),
-        Obx(() {
-          String? avatarUrl;
-          String initialLetter = 'U';
+        if (showProfileOption)
+          Obx(() {
+            String? avatarUrl;
+            String initialLetter = 'U';
 
-          if (Get.isRegistered<HomeController>()) {
-            final header = Get.find<HomeController>().homeData.value?.header;
-            avatarUrl = header?.avatarUrl;
-            final firstName = header?.firstName ?? '';
-            if (firstName.isNotEmpty) {
-              initialLetter = firstName[0].toUpperCase();
+            if (Get.isRegistered<HomeController>()) {
+              final header = Get.find<HomeController>().homeData.value?.header;
+              avatarUrl = header?.avatarUrl;
+              final firstName = header?.firstName ?? '';
+              if (firstName.isNotEmpty) {
+                initialLetter = firstName[0].toUpperCase();
+              }
             }
-          }
 
-          if (initialLetter == 'U' && Get.isRegistered<UserController>()) {
-            final user = Get.find<UserController>().currentUser.value;
-            if (user != null && user.fullName.isNotEmpty) {
-              initialLetter =
-                  user.fullName.trim().split(' ').first[0].toUpperCase();
+            if (initialLetter == 'U' && Get.isRegistered<UserController>()) {
+              final user = Get.find<UserController>().currentUser.value;
+              if (user != null && user.fullName.isNotEmpty) {
+                initialLetter =
+                    user.fullName.trim().split(' ').first[0].toUpperCase();
+              }
             }
-          }
 
-          return ProfileAvatar(
-            avatarUrl: avatarUrl,
-            initialLetter: initialLetter,
-            size: avatarSize,
-          );
-        }),
+            return ProfileAvatar(
+              avatarUrl: avatarUrl,
+              initialLetter: initialLetter,
+              size: avatarSize,
+            );
+          })
+        else
+          const SizedBox(width: avatarSize),
       ],
     );
   }

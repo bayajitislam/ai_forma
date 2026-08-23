@@ -88,16 +88,17 @@ class _AppShellViewState extends State<AppShellView> {
         bottom: false,
         child: Column(
           children: [
-            if (_selectedItem == AppNavItem.home)
-              const Padding(
-                padding: EdgeInsets.fromLTRB(16, 8, 16, 0),
-                child: AppShellHeader(),
+            Padding(
+              padding: EdgeInsets.fromLTRB(
+                16,
+                8,
+                16,
+                _selectedItem == AppNavItem.home ? 0 : 16,
               ),
-            if (_selectedItem != AppNavItem.home)
-              const Padding(
-                padding: EdgeInsets.fromLTRB(16, 8, 16, 16),
-                child: AppShellHeader(),
+              child: AppShellHeader(
+                showProfileOption: _selectedItem == AppNavItem.home,
               ),
+            ),
             Expanded(
               child: IndexedStack(
                 index: _selectedItem.index,
