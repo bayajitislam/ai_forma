@@ -179,7 +179,7 @@ class ComparisonSummaryView extends StatelessWidget {
                     context,
                     MaterialPageRoute<void>(
                       builder: (_) =>
-                          VisualScanView(thenScan: thenScan, nowScan: nowScan),
+                          VisualScanView(result: result, thenScan: thenScan, nowScan: nowScan),
                     ),
                   );
                 },

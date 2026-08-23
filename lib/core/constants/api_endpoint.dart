@@ -1,7 +1,6 @@
 class ApiEndpoint {
   // static const String baseUrl = 'https://aiformapi.dsrt321.online';
-  static const String baseUrl = 'http://10.10.26.245:8000';
-  
+  static const String baseUrl = 'https://aiformapi.dsrt321.online';
 
   //auth
   static const String login = '/api/auth/login/';
@@ -50,4 +49,9 @@ class ApiEndpoint {
   //checkins
   static const String dailyCheckIn = '/api/checkins/daily/';
   static const String weeklyCheckIn = '/api/checkins/weekly/';
+
+  //weight trends & progress
+  static const String weightTrends = '/api/checkins/weight-trends/';
+  static const String weightProgress = '/api/checkins/weight-progress/';
+  static const String weightHistory = '/api/checkins/weight-history/';
 }

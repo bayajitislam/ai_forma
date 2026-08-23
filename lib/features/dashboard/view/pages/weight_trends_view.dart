@@ -81,7 +81,7 @@ class WeightTrendsView extends StatelessWidget {
                         TextButton(
                           onPressed: () {},
                           child: const Text(
-                            'View all',
+                            'View All',
                             style: TextStyle(color: AppColors.brandTeal),
                           ),
                         ),
@@ -292,7 +292,7 @@ class WeightTrendsView extends StatelessWidget {
   Widget _buildHistoryList(WeightController controller, BuildContext context) {
     final records = controller.records;
     if (records.isEmpty) {
-      return const Text('No history available.');
+      return const SizedBox.shrink();
     }
 
     return Material(

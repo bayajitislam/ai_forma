@@ -752,7 +752,7 @@ class _WeeklyProgressViewState extends State<WeeklyProgressView> {
   Widget _buildHistoryList(WeightController controller, BuildContext context) {
     final records = controller.records;
     if (records.isEmpty) {
-      return const Text('No history available.');
+      return const SizedBox.shrink();
     }
 
     return Material(
@@ -802,17 +802,8 @@ class _WeeklyProgressViewState extends State<WeeklyProgressView> {
                       fontSize: 15,
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  const Icon(
-                    Icons.chevron_right,
-                    color: AppColors.textSecondary,
-                    size: 20,
-                  ),
                 ],
               ),
-              onTap: () {
-                WeightEntryBottomSheet.show(context, record: record);
-              },
             );
           },
         ),

@@ -33,6 +33,28 @@ class _VisualScanCompareSliderState extends State<VisualScanCompareSlider> {
     });
   }
 
+  Widget _buildImage(String path, double width, double height) {
+    if (path.startsWith('http://') || path.startsWith('https://')) {
+      return Image.network(
+        path,
+        fit: BoxFit.contain,
+        width: width,
+        height: height,
+        errorBuilder: (context, error, stackTrace) => Container(
+          color: AppColors.insightChartBackground,
+          alignment: Alignment.center,
+          child: const Icon(Icons.broken_image, color: AppColors.textSecondary),
+        ),
+      );
+    }
+    return Image.asset(
+      path,
+      fit: BoxFit.contain,
+      width: width,
+      height: height,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
@@ -52,20 +74,10 @@ class _VisualScanCompareSliderState extends State<VisualScanCompareSlider> {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              Image.asset(
-                widget.afterImage,
-                fit: BoxFit.contain,
-                width: width,
-                height: height,
-              ),
+              _buildImage(widget.afterImage, width, height),
               ClipRect(
                 clipper: _BeforeImageClipper(position: _position),
-                child: Image.asset(
-                  widget.beforeImage,
-                  fit: BoxFit.contain,
-                  width: width,
-                  height: height,
-                ),
+                child: _buildImage(widget.beforeImage, width, height),
               ),
               Positioned(
                 left: dividerX - 1,
