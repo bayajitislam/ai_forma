@@ -22,6 +22,116 @@ class HelpSupportView extends StatelessWidget {
     Get.offAllNamed(RoutesName.login);
   }
 
+  void _showDeleteAccountDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        title: const Text(
+          'Delete Account',
+          style: TextStyle(
+            fontFamily: 'Nunito',
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: AppColors.textPrimary,
+          ),
+        ),
+        content: const Text(
+          'This action is permanent and cannot be undone. All your data including scans, check-ins, weight logs, and subscription records will be permanently deleted.',
+          style: TextStyle(
+            fontFamily: 'Nunito',
+            fontSize: 14,
+            color: AppColors.textSecondary,
+            height: 1.4,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text(
+              'CANCEL',
+              style: TextStyle(
+                fontFamily: 'Nunito',
+                fontWeight: FontWeight.bold,
+                color: AppColors.textSecondary,
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              _executeDeleteAccount(context);
+            },
+            child: const Text(
+              'DELETE',
+              style: TextStyle(
+                fontFamily: 'Nunito',
+                fontWeight: FontWeight.bold,
+                color: Colors.redAccent,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _executeDeleteAccount(BuildContext context) async {
+    // Show loading overlay
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(
+        child: CircularProgressIndicator(color: AppColors.brandTeal),
+      ),
+    );
+
+    final userController = Get.isRegistered<UserController>()
+        ? Get.find<UserController>()
+        : null;
+
+    if (userController == null) {
+      Navigator.pop(context); // dismiss loading
+      Get.snackbar(
+        'Error',
+        'Unable to process request. Please try again.',
+        backgroundColor: Colors.redAccent,
+        colorText: Colors.white,
+      );
+      return;
+    }
+
+    final result = await userController.deleteAccount();
+
+    // Dismiss loading dialog
+    if (context.mounted) {
+      Navigator.pop(context);
+    }
+
+    result.fold(
+      (failure) {
+        Get.snackbar(
+          'Error',
+          failure.message,
+          backgroundColor: Colors.redAccent,
+          colorText: Colors.white,
+        );
+      },
+      (successMessage) {
+        Get.snackbar(
+          'Account Deleted',
+          successMessage,
+          backgroundColor: AppColors.brandTeal,
+          colorText: Colors.white,
+        );
+        Get.offAllNamed(RoutesName.login);
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -104,7 +214,7 @@ class HelpSupportView extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               GestureDetector(
-                onTap: () {},
+                onTap: () => _showDeleteAccountDialog(context),
                 child: const Text(
                   'DELETE ACCOUNT',
                   style: TextStyle(

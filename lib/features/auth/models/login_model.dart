@@ -11,6 +11,7 @@ class LoginModel {
 }
 
 class UserProfileModel {
+  final String? profileImageUrl;
   final String? dateOfBirth;
   final int? age;
   final String? heightCm;
@@ -27,6 +28,7 @@ class UserProfileModel {
   final String? timezone;
 
   UserProfileModel({
+    this.profileImageUrl,
     this.dateOfBirth,
     this.age,
     this.heightCm,
@@ -45,6 +47,7 @@ class UserProfileModel {
 
   factory UserProfileModel.fromJson(Map<String, dynamic> json) {
     return UserProfileModel(
+      profileImageUrl: json['profile_image_url']?.toString(),
       dateOfBirth: json['date_of_birth']?.toString(),
       age: (json['age'] as num?)?.toInt(),
       heightCm: json['height_cm']?.toString(),
@@ -65,6 +68,7 @@ class UserProfileModel {
   }
 
   Map<String, dynamic> toJson() => {
+        'profile_image_url': profileImageUrl,
         'date_of_birth': dateOfBirth,
         'age': age,
         'height_cm': heightCm,
@@ -87,10 +91,14 @@ class UserModel {
   final String email;
   final String fullName;
   final String? gender;
+  final String? profileImageUrl;
   final bool isEmailVerified;
   final bool onboardingCompleted;
   final bool initialScanCompleted;
   final String? nextStep;
+  final String? membershipStatus;
+  final bool isPaid;
+  final String? subscriptionState;
   final UserProfileModel? profile;
 
   UserModel({
@@ -98,10 +106,14 @@ class UserModel {
     required this.email,
     required this.fullName,
     this.gender,
+    this.profileImageUrl,
     required this.isEmailVerified,
     required this.onboardingCompleted,
     required this.initialScanCompleted,
     this.nextStep,
+    this.membershipStatus,
+    this.isPaid = false,
+    this.subscriptionState,
     this.profile,
   });
 
@@ -111,10 +123,14 @@ class UserModel {
       email: json['email'] ?? '',
       fullName: json['full_name'] ?? '',
       gender: json['gender'],
+      profileImageUrl: json['profile_image_url']?.toString(),
       isEmailVerified: json['is_email_verified'] ?? false,
       onboardingCompleted: json['onboarding_completed'] ?? false,
       initialScanCompleted: json['initial_scan_completed'] ?? false,
       nextStep: json['next_step']?.toString(),
+      membershipStatus: json['membership_status']?.toString(),
+      isPaid: json['is_paid'] ?? false,
+      subscriptionState: json['subscription_state']?.toString(),
       profile: json['profile'] != null && json['profile'] is Map<String, dynamic>
           ? UserProfileModel.fromJson(json['profile'] as Map<String, dynamic>)
           : null,
@@ -126,10 +142,14 @@ class UserModel {
         'email': email,
         'full_name': fullName,
         'gender': gender,
+        'profile_image_url': profileImageUrl,
         'is_email_verified': isEmailVerified,
         'onboarding_completed': onboardingCompleted,
         'initial_scan_completed': initialScanCompleted,
         'next_step': nextStep,
+        'membership_status': membershipStatus,
+        'is_paid': isPaid,
+        'subscription_state': subscriptionState,
         'profile': profile?.toJson(),
       };
 }

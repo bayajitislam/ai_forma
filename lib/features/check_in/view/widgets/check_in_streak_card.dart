@@ -6,12 +6,22 @@ import 'package:ai_forma/core/theme/app_text_styles.dart';
 import 'package:ai_forma/core/widgets/app_icon.dart';
 import 'package:ai_forma/features/check_in/constants/check_in_strings.dart';
 
+import 'package:ai_forma/features/check_in/models/checkin_status_model.dart';
 import 'package:ai_forma/features/insights/view/pages/consistency_view.dart';
 
 class CheckInStreakCard extends StatefulWidget {
   final VoidCallback? onTap;
+  final int streakWeeks;
+  final int personalBest;
+  final List<StreakCycleModel>? streakHistory;
 
-  const CheckInStreakCard({super.key, this.onTap});
+  const CheckInStreakCard({
+    super.key,
+    this.onTap,
+    this.streakWeeks = 12,
+    this.personalBest = 12,
+    this.streakHistory,
+  });
 
   static const Color _cardBackground = Color(0xFF081012);
   static const Color _tileBackground = Color(0xFF0F1A1C);
@@ -88,9 +98,9 @@ class _CheckInStreakCardState extends State<CheckInStreakCard> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          '12',
-                          style: TextStyle(
+                        Text(
+                          '${widget.streakWeeks}',
+                          style: const TextStyle(
                             fontFamily: AppFonts.family,
                             fontSize: 30,
                             fontWeight: FontWeight.w700,
@@ -143,36 +153,54 @@ class _CheckInStreakCardState extends State<CheckInStreakCard> {
                   ],
                 ),
                 const SizedBox(height: 18),
-                Row(
-                  children: List.generate(12, (index) {
-                    return Expanded(
-                      child: Padding(
-                        padding: EdgeInsets.only(right: index < 11 ? 6 : 0),
-                        child: Container(
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: List.generate(
+                      widget.streakHistory != null && widget.streakHistory!.isNotEmpty
+                          ? widget.streakHistory!.length
+                          : 12,
+                      (index) {
+                        final isComp = widget.streakHistory != null && index < widget.streakHistory!.length
+                            ? widget.streakHistory![index].isCompleted
+                            : true;
+
+                        return Container(
+                          width: 34,
                           height: 38,
+                          margin: const EdgeInsets.only(right: 6),
                           decoration: BoxDecoration(
-                            color: AppColors.brandTeal.withValues(alpha: 0.1),
+                            color: isComp
+                                ? AppColors.brandTeal.withValues(alpha: 0.1)
+                                : AppColors.surface,
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: Center(
-                            child: Container(
-                              width: 18,
-                              height: 18,
-                              decoration: const BoxDecoration(
-                                color: AppColors.brandTeal,
-                                shape: BoxShape.circle,
-                              ),
-                              child: const AppIcon(
-                                icon: AppIcons.check,
-                                size: 11,
-                                color: AppColors.onPrimary,
-                              ),
-                            ),
+                            child: isComp
+                                ? Container(
+                                    width: 18,
+                                    height: 18,
+                                    decoration: const BoxDecoration(
+                                      color: AppColors.brandTeal,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const AppIcon(
+                                      icon: AppIcons.check,
+                                      size: 11,
+                                      color: AppColors.onPrimary,
+                                    ),
+                                  )
+                                : const Icon(
+                                    Icons.circle_outlined,
+                                    size: 14,
+                                    color: AppColors.textSecondary,
+                                  ),
                           ),
-                        ),
-                      ),
-                    );
-                  }),
+                        );
+                      },
+                    ),
+                  ),
                 ),
               ],
             ),

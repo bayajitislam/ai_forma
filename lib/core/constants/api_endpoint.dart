@@ -11,6 +11,9 @@ class ApiEndpoint {
   static const String profile = '/api/auth/profile/';
   static const String tokenRefresh = '/api/auth/token/refresh/';
 
+  //account deletion
+  static const String deleteAccount = '/api/auth/delete-account/';
+
   //password reset
   static const String forgotPassword = '/api/auth/password/forgot/';
   static const String verifyResetCode = '/api/auth/password/verify-code/';
@@ -48,6 +51,7 @@ class ApiEndpoint {
   static const String homeData = '/api/home/';
 
   //checkins
+  static const String checkinStatus = '/api/checkins/status/';
   static const String dailyCheckIn = '/api/checkins/daily/';
   static const String weeklyCheckIn = '/api/checkins/weekly/';
 

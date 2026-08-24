@@ -97,6 +97,9 @@ class _AppShellViewState extends State<AppShellView> {
               ),
               child: AppShellHeader(
                 showProfileOption: _selectedItem == AppNavItem.home,
+                onProfileTap: () {
+                  setState(() => _selectedItem = AppNavItem.profile);
+                },
               ),
             ),
             Expanded(

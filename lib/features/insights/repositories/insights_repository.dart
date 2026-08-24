@@ -303,7 +303,7 @@ class InsightsRepository {
     }
   }
 
-  /// Fetch scan comparison from GET /api/scans/compare/?then=<uuid>&now=<uuid>
+  /// Fetch scan comparison 
   Future<Either<Failure, CompareResultResponseModel>> getScanComparison({
     required String thenId,
     required String nowId,

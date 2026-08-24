@@ -1,4 +1,7 @@
+import 'package:ai_forma/core/storage/auth_storage.dart';
 import 'package:ai_forma/features/profile/view/pages/edit_personal_details_view.dart';
+import 'package:ai_forma/features/profile/view/pages/report_bug_view.dart';
+import 'package:ai_forma/routes/routes_name.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
@@ -7,10 +10,127 @@ import 'package:ai_forma/features/dashboard/controllers/home_controller.dart';
 import 'package:ai_forma/features/dashboard/models/home_response_model.dart';
 import 'package:ai_forma/features/profile/view/pages/personal_details_view.dart';
 import 'package:ai_forma/features/profile/view/pages/subscription_view.dart';
-import 'package:ai_forma/features/profile/view/pages/help_support_view.dart';
+import 'package:ai_forma/core/widgets/primary_button.dart';
 
 class ProfileView extends StatelessWidget {
   const ProfileView({super.key});
+
+  Future<void> _handleLogout(BuildContext context) async {
+    if (Get.isRegistered<UserController>()) {
+      await Get.find<UserController>().logout();
+    } else {
+      await AuthStorage.clearSession();
+    }
+    Get.offAllNamed(RoutesName.login);
+  }
+
+  void _showDeleteAccountDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        title: const Text(
+          'Delete Account',
+          style: TextStyle(
+            fontFamily: 'Nunito',
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: AppColors.textPrimary,
+          ),
+        ),
+        content: const Text(
+          'This action is permanent and cannot be undone. All your data including scans, check-ins, weight logs, and subscription records will be permanently deleted.',
+          style: TextStyle(
+            fontFamily: 'Nunito',
+            fontSize: 14,
+            color: AppColors.textSecondary,
+            height: 1.4,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text(
+              'CANCEL',
+              style: TextStyle(
+                fontFamily: 'Nunito',
+                fontWeight: FontWeight.bold,
+                color: AppColors.textSecondary,
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              _executeDeleteAccount(context);
+            },
+            child: const Text(
+              'DELETE',
+              style: TextStyle(
+                fontFamily: 'Nunito',
+                fontWeight: FontWeight.bold,
+                color: Colors.redAccent,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _executeDeleteAccount(BuildContext context) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(
+        child: CircularProgressIndicator(color: AppColors.brandTeal),
+      ),
+    );
+
+    final userController = Get.isRegistered<UserController>()
+        ? Get.find<UserController>()
+        : null;
+
+    if (userController == null) {
+      Navigator.pop(context);
+      Get.snackbar(
+        'Error',
+        'Unable to process request. Please try again.',
+        backgroundColor: Colors.redAccent,
+        colorText: Colors.white,
+      );
+      return;
+    }
+
+    final result = await userController.deleteAccount();
+
+    if (context.mounted) {
+      Navigator.pop(context);
+    }
+
+    result.fold(
+      (failure) {
+        Get.snackbar(
+          'Error',
+          failure.message,
+          backgroundColor: Colors.redAccent,
+          colorText: Colors.white,
+        );
+      },
+      (successMessage) {
+        Get.snackbar(
+          'Account Deleted',
+          successMessage,
+          backgroundColor: AppColors.brandTeal,
+          colorText: Colors.white,
+        );
+        Get.offAllNamed(RoutesName.login);
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,20 +159,57 @@ class ProfileView extends StatelessWidget {
             ),
             child: Row(
               children: [
-                // Avatar image placeholder
-                Container(
-                  width: 56,
-                  height: 56,
-                  decoration: const BoxDecoration(
-                    shape: BoxShape.circle,
-                    image: DecorationImage(
-                      image: NetworkImage(
-                        'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&h=150&q=80',
-                      ),
-                      fit: BoxFit.cover,
+                // Avatar image
+                Builder(builder: (context) {
+                  final userCtrl = Get.isRegistered<UserController>()
+                      ? Get.find<UserController>()
+                      : null;
+                  if (userCtrl != null) {
+                    return Obx(() {
+                      final imageUrl = userCtrl.currentUser.value?.profileImageUrl
+                          ?? userCtrl.currentUser.value?.profile?.profileImageUrl;
+                      if (imageUrl != null && imageUrl.isNotEmpty) {
+                        return Container(
+                          width: 56,
+                          height: 56,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            image: DecorationImage(
+                              image: NetworkImage(imageUrl),
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        );
+                      }
+                      return Container(
+                        width: 56,
+                        height: 56,
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: AppColors.dashboardBackground,
+                        ),
+                        child: const Icon(
+                          Icons.person,
+                          size: 28,
+                          color: AppColors.textSecondary,
+                        ),
+                      );
+                    });
+                  }
+                  return Container(
+                    width: 56,
+                    height: 56,
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: AppColors.dashboardBackground,
                     ),
-                  ),
-                ),
+                    child: const Icon(
+                      Icons.person,
+                      size: 28,
+                      color: AppColors.textSecondary,
+                    ),
+                  );
+                }),
                 const SizedBox(width: 16),
                 // User metadata
                 Expanded(
@@ -88,15 +245,36 @@ class ProfileView extends StatelessWidget {
                         );
                       }),
                       const SizedBox(height: 4),
-                      const Text(
-                        'Premium Member',
-                        style: TextStyle(
-                          fontFamily: 'Nunito',
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.brandTeal,
-                        ),
-                      ),
+                      Builder(builder: (context) {
+                        final userCtrl = Get.isRegistered<UserController>()
+                            ? Get.find<UserController>()
+                            : null;
+                        if (userCtrl != null) {
+                          return Obx(() {
+                            final user = userCtrl.currentUser.value;
+                            final isPaid = user?.isPaid ?? false;
+                            final label = isPaid ? 'Premium Member' : 'Free Member';
+                            return Text(
+                              label,
+                              style: TextStyle(
+                                fontFamily: 'Nunito',
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: isPaid ? AppColors.brandTeal : AppColors.textSecondary,
+                              ),
+                            );
+                          });
+                        }
+                        return const Text(
+                          'Free Member',
+                          style: TextStyle(
+                            fontFamily: 'Nunito',
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.textSecondary,
+                          ),
+                        );
+                      }),
                     ],
                   ),
                 ),
@@ -135,7 +313,7 @@ class ProfileView extends StatelessWidget {
                 : null;
 
             Widget buildCardContent(HomeMomentumModel? momentum) {
-              final score = momentum?.displayedScore ?? 82;
+              final score = momentum?.displayedScore ?? 0;
               final maxScore = momentum?.max ?? 100;
               final progressValue =
                   (maxScore > 0) ? (score / maxScore).clamp(0.0, 1.0) : 0.0;
@@ -287,19 +465,6 @@ class ProfileView extends StatelessWidget {
               );
             },
           ),
-          // _buildDivider(),
-          // _buildOptionTile(
-          //   context,
-          //   icon: Icons.track_changes_outlined,
-          //   title: 'Physique Targets',
-          //   onTap: () {
-          //     Navigator.of(context).push(
-          //       MaterialPageRoute(
-          //         builder: (context) => const PhysiqueTargetsView(),
-          //       ),
-          //     );
-          //   },
-          // ),
           _buildDivider(),
           _buildOptionTile(
             context,
@@ -309,6 +474,19 @@ class ProfileView extends StatelessWidget {
               Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (context) => const SubscriptionView(),
+                ),
+              );
+            },
+          ),
+          _buildDivider(),
+          _buildOptionTile(
+            context,
+            icon: Icons.bug_report_outlined,
+            title: 'Report an Issue',
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const ReportBugView(),
                 ),
               );
             },
@@ -327,19 +505,31 @@ class ProfileView extends StatelessWidget {
             title: 'Terms of Service',
             onTap: () {},
           ),
-          _buildDivider(),
-          _buildOptionTile(
-            context,
-            icon: Icons.help_outline,
-            title: 'Help & Support',
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => const HelpSupportView(),
-                ),
-              );
-            },
+
+          const SizedBox(height: 32),
+
+          // Logout Button
+          PrimaryButton(
+            onPressed: () => _handleLogout(context),
+            label: 'LOGOUT',
           ),
+          const SizedBox(height: 16),
+
+          // Delete Account
+          GestureDetector(
+            onTap: () => _showDeleteAccountDialog(context),
+            child: const Text(
+              'DELETE ACCOUNT',
+              style: TextStyle(
+                fontFamily: 'Nunito',
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: Colors.redAccent,
+                letterSpacing: 0.5,
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
         ],
       ),
     );

@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:ai_forma/core/widgets/app_bottom_sheet.dart';
+import 'package:ai_forma/features/check_in/models/checkin_status_model.dart';
 import 'package:ai_forma/features/check_in/models/scan_validation_model.dart';
 import 'package:ai_forma/features/check_in/repositories/check_in_repository.dart';
 import 'package:camera/camera.dart';
@@ -48,10 +49,38 @@ class CheckInController extends GetxController {
       Rx<ScanValidationResponseModel?>(null);
   final RxString errorMessage = ''.obs;
 
+  // Check-In Status Data
+  final Rx<CheckinStatusModel?> statusData = Rx<CheckinStatusModel?>(null);
+  final RxBool isLoadingStatus = false.obs;
+
   @override
   void onInit() {
     super.onInit();
     initCamera();
+    fetchStatusData();
+  }
+
+  /// Fetch Check-In Status from GET /api/checkins/status/
+  Future<void> fetchStatusData({bool force = false}) async {
+    if (!force && statusData.value != null && !isLoadingStatus.value) return;
+
+    isLoadingStatus(true);
+    try {
+      final result = await repository.getCheckInStatus();
+      result.fold(
+        (failure) {
+          DevLog.error('Failed to load checkin status: ${failure.message}');
+        },
+        (data) {
+          statusData.value = data;
+          selectedCheckDay.value = data.checkDay;
+        },
+      );
+    } catch (e) {
+      DevLog.error('Unexpected error fetching checkin status: $e');
+    } finally {
+      isLoadingStatus(false);
+    }
   }
 
   @override
@@ -322,6 +351,7 @@ class CheckInController extends GetxController {
       },
       (data) {
         scanResultData.value = data;
+        fetchStatusData(force: true);
         isSubmittingScan(false);
         return true;
       },

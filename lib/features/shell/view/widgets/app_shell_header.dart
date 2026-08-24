@@ -7,10 +7,12 @@ import 'package:ai_forma/features/dashboard/controllers/home_controller.dart';
 
 class AppShellHeader extends StatelessWidget {
   final bool showProfileOption;
+  final VoidCallback? onProfileTap;
 
   const AppShellHeader({
     super.key,
     this.showProfileOption = true,
+    this.onProfileTap,
   });
 
   @override
@@ -31,6 +33,10 @@ class AppShellHeader extends StatelessWidget {
             String? avatarUrl;
             String initialLetter = 'U';
 
+            final user = Get.isRegistered<UserController>()
+                ? Get.find<UserController>().currentUser.value
+                : null;
+
             if (Get.isRegistered<HomeController>()) {
               final header = Get.find<HomeController>().homeData.value?.header;
               avatarUrl = header?.avatarUrl;
@@ -40,18 +46,21 @@ class AppShellHeader extends StatelessWidget {
               }
             }
 
-            if (initialLetter == 'U' && Get.isRegistered<UserController>()) {
-              final user = Get.find<UserController>().currentUser.value;
-              if (user != null && user.fullName.isNotEmpty) {
-                initialLetter =
-                    user.fullName.trim().split(' ').first[0].toUpperCase();
-              }
+            // Fallback avatarUrl from UserController if home header is null or empty
+            avatarUrl ??= user?.profileImageUrl ?? user?.profile?.profileImageUrl;
+
+            if (initialLetter == 'U' && user != null && user.fullName.isNotEmpty) {
+              initialLetter =
+                  user.fullName.trim().split(' ').first[0].toUpperCase();
             }
 
-            return ProfileAvatar(
-              avatarUrl: avatarUrl,
-              initialLetter: initialLetter,
-              size: avatarSize,
+            return GestureDetector(
+              onTap: onProfileTap,
+              child: ProfileAvatar(
+                avatarUrl: avatarUrl,
+                initialLetter: initialLetter,
+                size: avatarSize,
+              ),
             );
           })
         else

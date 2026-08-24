@@ -69,7 +69,7 @@ class CompareScansController extends GetxController {
     }
   }
 
-  /// Fetch comparison result from GET /api/scans/compare/?then=<uuid>&now=<uuid>
+  /// Fetch comparison result
   Future<bool> fetchScanComparison() async {
     if (selectedIds.length != 2) return false;
 
