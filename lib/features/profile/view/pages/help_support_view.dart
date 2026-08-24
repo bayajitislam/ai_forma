@@ -4,7 +4,6 @@ import 'package:ai_forma/routes/routes_name.dart';
 import 'package:flutter/material.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
 import 'package:ai_forma/core/widgets/primary_button.dart';
-import 'package:ai_forma/features/profile/view/pages/community_chat_view.dart';
 import 'package:ai_forma/features/profile/view/pages/report_bug_view.dart';
 import 'package:get/get.dart';
 
@@ -31,7 +30,11 @@ class HelpSupportView extends StatelessWidget {
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: AppColors.textPrimary, size: 20),
+          icon: const Icon(
+            Icons.arrow_back_ios,
+            color: AppColors.textPrimary,
+            size: 20,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
@@ -44,9 +47,7 @@ class HelpSupportView extends StatelessWidget {
           ),
         ),
         centerTitle: true,
-        actions: const [
-          SizedBox(width: 48),
-        ],
+        actions: const [SizedBox(width: 48)],
       ),
       body: SafeArea(
         child: Padding(
@@ -57,20 +58,20 @@ class HelpSupportView extends StatelessWidget {
                 child: ListView(
                   children: [
                     const SizedBox(height: 12),
-                    _buildOptionTile(
-                      context,
-                      icon: Icons.people_outline,
-                      title: 'AiFORMA Community',
-                      subtitle: 'Share progress, ask questions and stay motivated.',
-                      onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (context) => const CommunityChatView(),
-                          ),
-                        );
-                      },
-                    ),
-                    _buildDivider(),
+                    // _buildOptionTile(
+                    //   context,
+                    //   icon: Icons.people_outline,
+                    //   title: 'AiFORMA Community',
+                    //   subtitle: 'Share progress, ask questions and stay motivated.',
+                    //   onTap: () {
+                    //     Navigator.of(context).push(
+                    //       MaterialPageRoute(
+                    //         builder: (context) => const CommunityChatView(),
+                    //       ),
+                    //     );
+                    //   },
+                    // ),
+                    // _buildDivider(),
                     _buildOptionTile(
                       context,
                       icon: Icons.bug_report_outlined,
@@ -85,14 +86,14 @@ class HelpSupportView extends StatelessWidget {
                       },
                     ),
                     _buildDivider(),
-                    _buildOptionTile(
-                      context,
-                      icon: Icons.help_outline,
-                      title: 'Knowledge Base',
-                      subtitle: 'Find answers to common questions.',
-                      onTap: () {},
-                    ),
-                    _buildDivider(),
+                    // _buildOptionTile(
+                    //   context,
+                    //   icon: Icons.help_outline,
+                    //   title: 'Knowledge Base',
+                    //   subtitle: 'Find answers to common questions.',
+                    //   onTap: () {},
+                    // ),
+                    // _buildDivider(),
                   ],
                 ),
               ),
