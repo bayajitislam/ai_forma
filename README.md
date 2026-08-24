@@ -78,7 +78,7 @@ lib/
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/your-username/ai_forma.git
+   git clone https://github.com/bayajitislam/ai_forma.git
    cd ai_forma
    ```
 
