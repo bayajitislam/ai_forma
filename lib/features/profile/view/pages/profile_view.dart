@@ -1,6 +1,8 @@
 import 'package:ai_forma/features/profile/view/pages/edit_personal_details_view.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
+import 'package:ai_forma/features/auth/controllers/user_controller.dart';
 import 'package:ai_forma/features/profile/view/pages/personal_details_view.dart';
 import 'package:ai_forma/features/profile/view/pages/subscription_view.dart';
 import 'package:ai_forma/features/profile/view/pages/help_support_view.dart';
@@ -54,18 +56,37 @@ class ProfileView extends StatelessWidget {
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
-                      Text(
-                        'Josh Bowden',
-                        style: TextStyle(
-                          fontFamily: 'Nunito',
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                      SizedBox(height: 4),
-                      Text(
+                    children: [
+                      Builder(builder: (context) {
+                        final userController = Get.isRegistered<UserController>()
+                            ? Get.find<UserController>()
+                            : null;
+                        if (userController != null) {
+                          return Obx(() {
+                            final name = userController.currentUser.value?.fullName;
+                            return Text(
+                              name != null && name.isNotEmpty ? name : 'User',
+                              style: const TextStyle(
+                                fontFamily: 'Nunito',
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.textPrimary,
+                              ),
+                            );
+                          });
+                        }
+                        return const Text(
+                          'User',
+                          style: TextStyle(
+                            fontFamily: 'Nunito',
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.textPrimary,
+                          ),
+                        );
+                      }),
+                      const SizedBox(height: 4),
+                      const Text(
                         'Premium Member',
                         style: TextStyle(
                           fontFamily: 'Nunito',

@@ -93,6 +93,71 @@ class UserController extends GetxController {
     }
   }
 
+  /// Update user profile details via PATCH /api/auth/profile/
+  Future<Either<Failure, UserModel>> updateProfile(Map<String, dynamic> updateData) async {
+    isLoading(true);
+    errorMessage('');
+
+    try {
+      final token = await AuthStorage.getAccessToken();
+
+      final response = await _dio.patch(
+        ApiEndpoint.profile,
+        data: updateData,
+        options: Options(
+          headers: {
+            if (token != null && token.isNotEmpty)
+              'Authorization': 'Bearer $token',
+          },
+        ),
+      );
+
+      Map<String, dynamic>? userMap;
+      if (response.data is Map<String, dynamic>) {
+        final map = response.data as Map<String, dynamic>;
+        if (map['user'] is Map<String, dynamic>) {
+          userMap = map['user'] as Map<String, dynamic>;
+        } else {
+          userMap = map;
+        }
+      }
+
+      if ((response.statusCode == 200 || response.statusCode == 201) &&
+          userMap != null) {
+        final updatedUser = UserModel.fromJson(userMap);
+
+        // Update reactive state
+        currentUser.value = updatedUser;
+
+        // Persist to local storage
+        await AuthStorage.saveUser(updatedUser);
+
+        isLoading(false);
+        return Right(updatedUser);
+      }
+
+      isLoading(false);
+      return Left(ServerFailure());
+    } on DioException catch (e) {
+      isLoading(false);
+      if (e.response?.data is Map<String, dynamic>) {
+        final message = ApiFailure.parseMessage(
+          e.response!.data as Map<String, dynamic>,
+        );
+        errorMessage(message);
+        return Left(ApiFailure(message: message));
+      }
+      final failure = NetworkFailure();
+      errorMessage(failure.message);
+      return Left(failure);
+    } catch (e) {
+      isLoading(false);
+      final failure = ServerFailure();
+      errorMessage(failure.message);
+      return Left(failure);
+    }
+  }
+
   /// Update currentUser state and save to local storage
   Future<void> setUser(UserModel user) async {
     currentUser.value = user;
