@@ -22,4 +22,6 @@ class RoutesName {
   static const String analysisComplete = '/analysis_complete';
   //Shell
   static const String appShell = '/app_shell';
+  //Dev UI Test Gallery
+  static const String uiTestGallery = '/ui_test_gallery';
 }

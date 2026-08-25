@@ -19,49 +19,40 @@ class WeightSelector extends StatefulWidget {
 }
 
 class _WeightSelectorState extends State<WeightSelector> {
-  static const double _minKg = 30.0;
-  static const double _maxKg = 200.0;
-  static const double _stepKg = 0.1;
+  static const int _minKg = 30;
+  static const int _maxKg = 200;
 
-  static const double _minLb = 66.0;
-  static const double _maxLb = 440.0;
-  static const double _stepLb = 0.2;
+  static const int _minLb = 66;
+  static const int _maxLb = 440;
 
   bool _isKg = true;
   late FixedExtentScrollController _controller;
-  late int _currentIndex;
 
-  double get _currentStep => _isKg ? _stepKg : _stepLb;
-  double get _minVal => _isKg ? _minKg : _minLb;
-  double get _maxVal => _isKg ? _maxKg : _maxLb;
+  late int _integerVal;
+  late int _decimalTenths; // 0 to 9 representing .0 to .9
 
-  int get _itemCount => ((_maxVal - _minVal) / _currentStep).round() + 1;
+  int get _minInt => _isKg ? _minKg : _minLb;
+  int get _maxInt => _isKg ? _maxKg : _maxLb;
+  int get _itemCount => _maxInt - _minInt + 1;
 
-  double _indexToValue(int index) {
-    return _minVal + (index * _currentStep);
+  double get _currentValueInUnit {
+    final val = _integerVal + (_decimalTenths / 10.0);
+    return double.parse(val.toStringAsFixed(1));
   }
-
-  int _valueToIndex(double value) {
-    final clamped = value.clamp(_minVal, _maxVal);
-    return ((clamped - _minVal) / _currentStep).round();
-  }
-
-  double get _currentValueInUnit => _indexToValue(_currentIndex);
 
   double get _currentValueInKg {
     if (_isKg) return _currentValueInUnit;
-    return _lbToKg(_currentValueInUnit);
+    return double.parse((_currentValueInUnit / 2.20462).toStringAsFixed(1));
   }
-
-  double _kgToLb(double kg) => kg * 2.20462;
-  double _lbToKg(double lb) => lb / 2.20462;
 
   @override
   void initState() {
     super.initState();
-    final initialKg = widget.initialWeightKg.clamp(_minKg, _maxKg);
-    _currentIndex = _valueToIndex(initialKg);
-    _controller = FixedExtentScrollController(initialItem: _currentIndex);
+    final initialKg = widget.initialWeightKg.clamp(_minKg.toDouble(), _maxKg.toDouble());
+    _integerVal = initialKg.floor();
+    _decimalTenths = ((initialKg * 10).round() % 10);
+    final initialIndex = (_integerVal - _minInt).clamp(0, _itemCount - 1);
+    _controller = FixedExtentScrollController(initialItem: initialIndex);
   }
 
   @override
@@ -76,32 +67,64 @@ class _WeightSelectorState extends State<WeightSelector> {
     final currentKg = _currentValueInKg;
     setState(() {
       _isKg = isKg;
+      double newUnitVal;
       if (_isKg) {
-        _currentIndex = _valueToIndex(currentKg);
+        newUnitVal = currentKg.clamp(_minKg.toDouble(), _maxKg.toDouble());
       } else {
-        final lbVal = _kgToLb(currentKg);
-        _currentIndex = _valueToIndex(lbVal);
+        newUnitVal = (currentKg * 2.20462).clamp(_minLb.toDouble(), _maxLb.toDouble());
       }
-      _controller.jumpToItem(_currentIndex);
+      _integerVal = newUnitVal.floor();
+      _decimalTenths = ((newUnitVal * 10).round() % 10);
+
+      final targetIndex = (_integerVal - _minInt).clamp(0, _itemCount - 1);
+      if (_controller.hasClients) {
+        _controller.jumpToItem(targetIndex);
+      }
     });
     widget.onChanged(_currentValueInKg);
   }
 
-  void _stepBy(int direction) {
-    final targetIndex = (_currentIndex + direction).clamp(0, _itemCount - 1);
-    if (targetIndex != _currentIndex) {
+  void _stepByTenths(int stepTenths) {
+    int newTenths = _decimalTenths + stepTenths;
+    int newInt = _integerVal;
+
+    if (newTenths < 0) {
+      newTenths += 10;
+      newInt -= 1;
+    } else if (newTenths > 9) {
+      newTenths -= 10;
+      newInt += 1;
+    }
+
+    if (newInt < _minInt) {
+      newInt = _minInt;
+      newTenths = 0;
+    } else if (newInt > _maxInt) {
+      newInt = _maxInt;
+      newTenths = 9;
+    }
+
+    final int targetIndex = (newInt - _minInt).clamp(0, _itemCount - 1);
+    setState(() {
+      _integerVal = newInt;
+      _decimalTenths = newTenths;
+    });
+
+    if (_controller.hasClients && _controller.selectedItem != targetIndex) {
       _controller.animateToItem(
         targetIndex,
         duration: const Duration(milliseconds: 200),
         curve: Curves.easeInOut,
       );
     }
+    widget.onChanged(_currentValueInKg);
   }
 
   @override
   Widget build(BuildContext context) {
     final unitLabel = _isKg ? 'kg' : 'lb';
     final stepText = _isKg ? '0.1' : '0.2';
+    final stepTenths = _isKg ? 1 : 2;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -115,16 +138,16 @@ class _WeightSelectorState extends State<WeightSelector> {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // Minus Button Shortcut
+            // Minus Button Shortcut (Decimal Adjust)
             _buildStepButton(
               isPlus: false,
               stepText: '-$stepText',
-              onPressed: () => _stepBy(-1),
+              onPressed: () => _stepByTenths(-stepTenths),
             ),
 
             const SizedBox(width: 16),
 
-            // Center Wheel Picker Box
+            // Center Wheel Picker Box (Whole Numbers Wheel)
             Container(
               width: 170,
               height: 220,
@@ -153,7 +176,7 @@ class _WeightSelectorState extends State<WeightSelector> {
                     ),
                   ),
 
-                  // ListWheelScrollView
+                  // ListWheelScrollView for Whole Numbers
                   ListWheelScrollView.useDelegate(
                     controller: _controller,
                     itemExtent: 44,
@@ -161,16 +184,19 @@ class _WeightSelectorState extends State<WeightSelector> {
                     perspective: 0.003,
                     physics: const FixedExtentScrollPhysics(),
                     onSelectedItemChanged: (index) {
-                      setState(() {
-                        _currentIndex = index;
-                      });
-                      widget.onChanged(_currentValueInKg);
+                      final newInt = _minInt + index;
+                      if (newInt != _integerVal) {
+                        setState(() {
+                          _integerVal = newInt;
+                        });
+                        widget.onChanged(_currentValueInKg);
+                      }
                     },
                     childDelegate: ListWheelChildBuilderDelegate(
                       childCount: _itemCount,
                       builder: (context, index) {
-                        final val = _indexToValue(index);
-                        final isSelected = index == _currentIndex;
+                        final intVal = _minInt + index;
+                        final isSelected = intVal == _integerVal;
 
                         return Center(
                           child: isSelected
@@ -180,7 +206,7 @@ class _WeightSelectorState extends State<WeightSelector> {
                                   textBaseline: TextBaseline.alphabetic,
                                   children: [
                                     Text(
-                                      val.toStringAsFixed(1),
+                                      '$_integerVal.$_decimalTenths',
                                       style: const TextStyle(
                                         fontFamily: AppFonts.family,
                                         fontSize: 28,
@@ -201,7 +227,7 @@ class _WeightSelectorState extends State<WeightSelector> {
                                   ],
                                 )
                               : Text(
-                                  val.toStringAsFixed(1),
+                                  '$intVal',
                                   style: TextStyle(
                                     fontFamily: AppFonts.family,
                                     fontSize: 20,
@@ -220,11 +246,11 @@ class _WeightSelectorState extends State<WeightSelector> {
 
             const SizedBox(width: 16),
 
-            // Plus Button Shortcut
+            // Plus Button Shortcut (Decimal Adjust)
             _buildStepButton(
               isPlus: true,
               stepText: '+$stepText',
-              onPressed: () => _stepBy(1),
+              onPressed: () => _stepByTenths(stepTenths),
             ),
           ],
         ),

@@ -49,7 +49,7 @@ class DashboardRepository {
     }
   }
 
-  /// Submit Daily Brief Answer to POST /api/checkins/daily/
+  /// Submit Daily Brief Answer to PATCH /api/checkins/daily/
   Future<Either<Failure, Map<String, dynamic>>> submitDailyAnswer({
     required String questionKey,
     required String selectedOption,
@@ -64,7 +64,7 @@ class DashboardRepository {
         payload['weight_kg'] = weightKg;
       }
 
-      final response = await _dio.post(
+      final response = await _dio.patch(
         ApiEndpoint.dailyCheckIn,
         data: payload,
       );

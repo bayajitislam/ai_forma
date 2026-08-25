@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'package:ai_forma/core/storage/auth_storage.dart';
+import 'package:ai_forma/features/auth/controllers/user_controller.dart';
 import 'package:ai_forma/features/auth/models/verify_email_model.dart';
 import 'package:ai_forma/features/auth/repositories/verify_email_repository.dart';
 import 'package:ai_forma/routes/routes_name.dart';
@@ -102,7 +104,18 @@ class VerifyEmailController extends GetxController {
         //Spinner Hide
         isLoading(false);
       },
-      (_) {
+      (loginResponse) async {
+        // Save access token, refresh token, and user data to local storage
+        await AuthStorage.saveAuthData(
+          tokens: loginResponse.tokens,
+          user: loginResponse.user,
+        );
+
+        // Update global user state
+        if (Get.isRegistered<UserController>()) {
+          Get.find<UserController>().setUser(loginResponse.user);
+        }
+
         //Spinner Hide
         isLoading(false);
         //Navigate to success screen — clear the verify + signup screens

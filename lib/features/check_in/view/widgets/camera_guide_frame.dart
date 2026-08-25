@@ -27,10 +27,10 @@ class CameraGuideFrame extends StatelessWidget {
               alignment: Alignment.center,
               children: [
                 Container(
-                  color: AppColors.surface,
+                  color: const Color(0xFff5f5f5),
                   child: Image.asset(
                     imagePath,
-                    fit: BoxFit.cover,
+                    fit: BoxFit.contain,
                     height: 480,
                     width: double.infinity,
                   ),
@@ -54,10 +54,7 @@ class CameraGuideFrame extends StatelessWidget {
               child: Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: AppColors.cardBorder,
-                    width: 4,
-                  ),
+                  border: Border.all(color: AppColors.cardBorder, width: 4),
                 ),
               ),
             ),
@@ -144,9 +141,7 @@ class CameraViewfinderOverlay extends StatelessWidget {
           bottom: 36,
           height: 180,
           width: 28,
-          child: CustomPaint(
-            painter: _AlignmentGuidePainter(),
-          ),
+          child: CustomPaint(painter: _AlignmentGuidePainter()),
         ),
       ],
     );

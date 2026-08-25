@@ -92,6 +92,7 @@ class AssessmentController extends GetxController {
   /// Store primitive/single/multi choice answers
   void setAnswer(String key, dynamic value) {
     answers[key] = value;
+    answers.refresh();
     errorMessage('');
   }
 
@@ -101,6 +102,7 @@ class AssessmentController extends GetxController {
       'value': value,
       'unit': unit,
     };
+    answers.refresh();
     errorMessage('');
   }
 

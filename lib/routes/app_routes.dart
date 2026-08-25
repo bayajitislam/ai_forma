@@ -1,3 +1,4 @@
+import 'package:ai_forma/core/dev/ui_test_gallery.dart';
 import 'package:ai_forma/features/onboarding_assessment/bindings/assessment_binding.dart';
 import 'package:ai_forma/features/onboarding_assessment/view/pages/dynamic_assessment_view.dart';
 import 'package:ai_forma/features/auth/bindings/forgot_password_binding.dart';
@@ -101,5 +102,11 @@ class AppRoutes {
 
     //Shell
     GetPage(name: RoutesName.appShell, page: () => const AppShellView()),
+
+    //Dev UI Gallery
+    GetPage(
+      name: RoutesName.uiTestGallery,
+      page: () => const UiTestGalleryView(),
+    ),
   ];
 }

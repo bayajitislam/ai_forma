@@ -11,13 +11,13 @@ abstract final class CheckInStrings {
   static const String statTotal = 'Total';
   static const String statOnTime = 'On-time';
   static const String statCheckDay = 'Check day';
-  static const String checkDayValue = 'Sun';
+  static const String checkDayValue = 'Sunday';
   static const String currentWeight = 'Current Weight';
   static const String currentWeightValue = '87.4 kg';
   static const String weightChange = '\u2193 0.6 kg vs last week';
   static const String latestScan = 'Latest Scan';
   static const String latestScanDate = 'May 12, 2026';
-  static const String beginNewScan = 'BEGIN NEW SCAN';
+  static const String beginNewScan = 'WEEKLY CHECK-IN';
   static const String latestInsight = 'Latest Insight';
   static const String latestInsightBody =
       'Your shoulder definition has improved 8% since your last check-in.';

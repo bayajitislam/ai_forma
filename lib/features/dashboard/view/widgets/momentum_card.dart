@@ -51,7 +51,7 @@ class MomentumCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                DashboardStrings.momentumScore,
+                DashboardStrings.bodyIntelligenceScore,
                 style: AppTextStyles.featureTitle.copyWith(
                   color: AppColors.brandTeal,
                   fontWeight: FontWeight.w600,

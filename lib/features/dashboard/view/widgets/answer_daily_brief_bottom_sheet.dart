@@ -46,7 +46,8 @@ class _AnswerDailyBriefBottomSheetState
   @override
   void initState() {
     super.initState();
-    final prefilled = widget.dailyBriefData?.previousWeekOption;
+    final prefilled = widget.dailyBriefData?.selectedOption ??
+        widget.dailyBriefData?.previousWeekOption;
     final options = _getStepOptions();
     if (prefilled != null && prefilled.isNotEmpty) {
       _selectedOptionValue = prefilled;

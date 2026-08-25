@@ -119,7 +119,7 @@ class _InsightsViewState extends State<InsightsView> {
                 InsightCategoryCard(
                   label: InsightsStrings.categoryStrengths,
                   icon: AppIcons.shieldCheck,
-                  isSelected: true,
+                  isSelected: false,
                   onTap: () => _openCategory(InsightCategory.strengths, analysis),
                 ),
                 const SizedBox(width: 10),

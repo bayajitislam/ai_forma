@@ -62,7 +62,7 @@ class SymmetryScoreView extends StatelessWidget {
       final badgeText = (data?.status.isNotEmpty ?? false)
           ? data!.status
           : InsightsStrings.good;
-      final badgeType = (data?.statusTone.toLowerCase() == 'warning')
+      final badgeType = (data?.statusTone.toLowerCase() == 'warning' || data?.statusTone.toLowerCase() == 'positive')
           ? InsightScoreBadgeType.warning
           : InsightScoreBadgeType.good;
       final summaryText = (data?.summary.isNotEmpty ?? false)

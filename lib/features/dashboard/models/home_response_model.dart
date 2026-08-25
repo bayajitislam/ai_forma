@@ -9,6 +9,7 @@ class HomeResponseModel {
   final HomeWeightModel? weight;
   final HomeLatestAnalysisModel? latestAnalysis;
   final HomeAiInsightModel? aiInsight;
+  final DailyBriefAiFeedbackModel? todayAiFeedback;
 
   const HomeResponseModel({
     this.header,
@@ -19,6 +20,7 @@ class HomeResponseModel {
     this.weight,
     this.latestAnalysis,
     this.aiInsight,
+    this.todayAiFeedback,
   });
 
   factory HomeResponseModel.fromJson(Map<String, dynamic> json) {
@@ -54,6 +56,11 @@ class HomeResponseModel {
           : null,
       aiInsight: json['ai_insight'] is Map<String, dynamic>
           ? HomeAiInsightModel.fromJson(json['ai_insight'] as Map<String, dynamic>)
+          : null,
+      todayAiFeedback: json['today_ai_feedback'] is Map<String, dynamic>
+          ? DailyBriefAiFeedbackModel.fromJson(
+              json['today_ai_feedback'] as Map<String, dynamic>,
+            )
           : null,
     );
   }
@@ -165,6 +172,31 @@ class HomeTodayPriorityModel {
   }
 }
 
+class DailyBriefAiFeedbackModel {
+  final String? title;
+  final String? description;
+
+  const DailyBriefAiFeedbackModel({
+    this.title,
+    this.description,
+  });
+
+  factory DailyBriefAiFeedbackModel.fromJson(Map<String, dynamic> json) {
+    Map<String, dynamic> dataMap = json;
+    if (json['ai_feedback'] is Map<String, dynamic>) {
+      dataMap = json['ai_feedback'] as Map<String, dynamic>;
+    }
+    if (dataMap['data'] is Map<String, dynamic>) {
+      dataMap = dataMap['data'] as Map<String, dynamic>;
+    }
+
+    return DailyBriefAiFeedbackModel(
+      title: dataMap['title']?.toString(),
+      description: dataMap['description']?.toString(),
+    );
+  }
+}
+
 class HomeDailyBriefModel {
   final bool visible;
   final String? heading;
@@ -172,6 +204,7 @@ class HomeDailyBriefModel {
   final int? answeredCount;
   final int? total;
   final String? questionKey;
+  final String? selectedOption;
   final String? title;
   final String? subtitle;
   final String? ctaLabel;
@@ -180,6 +213,7 @@ class HomeDailyBriefModel {
   final String? previousWeekOption;
   final String? weightKgPrefill;
   final Map<String, dynamic>? step;
+  final DailyBriefAiFeedbackModel? aiFeedback;
 
   const HomeDailyBriefModel({
     required this.visible,
@@ -188,6 +222,7 @@ class HomeDailyBriefModel {
     this.answeredCount,
     this.total,
     this.questionKey,
+    this.selectedOption,
     this.title,
     this.subtitle,
     this.ctaLabel,
@@ -196,6 +231,7 @@ class HomeDailyBriefModel {
     this.previousWeekOption,
     this.weightKgPrefill,
     this.step,
+    this.aiFeedback,
   });
 
   factory HomeDailyBriefModel.fromJson(Map<String, dynamic> json) {
@@ -206,6 +242,7 @@ class HomeDailyBriefModel {
       answeredCount: safeParseInt(json['answered_count']),
       total: safeParseInt(json['total']),
       questionKey: json['question_key']?.toString(),
+      selectedOption: json['selected_option']?.toString(),
       title: json['title']?.toString(),
       subtitle: json['subtitle']?.toString(),
       ctaLabel: json['cta_label']?.toString(),
@@ -215,6 +252,11 @@ class HomeDailyBriefModel {
       weightKgPrefill: json['weight_kg_prefill']?.toString(),
       step: json['step'] is Map<String, dynamic>
           ? json['step'] as Map<String, dynamic>
+          : null,
+      aiFeedback: json['ai_feedback'] is Map<String, dynamic>
+          ? DailyBriefAiFeedbackModel.fromJson(
+              json['ai_feedback'] as Map<String, dynamic>,
+            )
           : null,
     );
   }

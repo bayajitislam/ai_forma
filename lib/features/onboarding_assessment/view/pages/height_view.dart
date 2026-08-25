@@ -78,7 +78,7 @@ class _HeightViewState extends State<HeightView> {
   String _formatFeetInches(int totalInches) {
     final feet = totalInches ~/ 12;
     final inches = totalInches % 12;
-    return '$feet\' $inches"';
+    return '$feet.$inches';
   }
 
   @override
@@ -131,6 +131,7 @@ class _HeightViewState extends State<HeightView> {
                         minValue: AssessmentStrings.minHeightInches,
                         maxValue: AssessmentStrings.maxHeightInches,
                         initialValue: _heightInches,
+                        unit: AssessmentStrings.heightUnitFt,
                         labelBuilder: _formatFeetInches,
                         onChanged: (value) {
                           _heightInches = value;

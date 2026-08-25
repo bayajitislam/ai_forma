@@ -10,11 +10,15 @@ class AssessmentFlowHeader extends StatelessWidget {
   const AssessmentFlowHeader({
     super.key,
     required this.currentStep,
+    this.totalSteps,
     this.showBackButton = true,
+    this.onBackTap,
   });
 
   final int currentStep;
+  final int? totalSteps;
   final bool showBackButton;
+  final VoidCallback? onBackTap;
 
   @override
   Widget build(BuildContext context) {
@@ -27,14 +31,18 @@ class AssessmentFlowHeader extends StatelessWidget {
               Align(
                 alignment: Alignment.centerLeft,
                 child: GestureDetector(
-                  onTap: () => Navigator.maybePop(context),
-                  child: Navigator.canPop(context)
-                      ? const AppIcon(
-                          icon: AppIcons.back,
-                          size: 28,
-                          color: AppColors.textPrimary,
-                        )
-                      : const SizedBox.shrink(),
+                  onTap: () {
+                    if (onBackTap != null) {
+                      onBackTap!();
+                    } else {
+                      Navigator.maybePop(context);
+                    }
+                  },
+                  child: const AppIcon(
+                    icon: AppIcons.back,
+                    size: 28,
+                    color: AppColors.textPrimary,
+                  ),
                 ),
               ),
             const AppBrandText(height: 22, width: 150),
@@ -45,7 +53,7 @@ class AssessmentFlowHeader extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 8),
           child: AppProgressBar(
             currentStep: currentStep,
-            totalSteps: AssessmentStrings.totalSteps,
+            totalSteps: totalSteps ?? AssessmentStrings.totalSteps,
           ),
         ),
       ],

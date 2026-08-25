@@ -1,6 +1,7 @@
 import 'package:ai_forma/core/constants/api_endpoint.dart';
 import 'package:ai_forma/core/network/dio_client.dart';
 import 'package:ai_forma/core/failure/failure.dart';
+import 'package:ai_forma/features/auth/models/login_model.dart';
 import 'package:ai_forma/features/auth/models/verify_email_model.dart';
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
@@ -9,7 +10,7 @@ class VerifyEmailRepository {
   final DioClient _dio;
   VerifyEmailRepository({required this._dio});
 
-  Future<Either<Failure, bool>> verifyEmail(
+  Future<Either<Failure, LoginResponseModel>> verifyEmail(
     VerifyEmailModel verifyEmailModel,
   ) async {
     try {
@@ -20,9 +21,11 @@ class VerifyEmailRepository {
       );
 
       //Success: email verified
-      if (res.statusCode == 200 &&
-          res.data['user']['is_email_verified'] == true) {
-        return const Right(true);
+      if ((res.statusCode == 200 || res.statusCode == 201) &&
+          res.data is Map<String, dynamic>) {
+        final loginResponse =
+            LoginResponseModel.fromJson(res.data as Map<String, dynamic>);
+        return Right(loginResponse);
       }
 
       return Left(ServerFailure());

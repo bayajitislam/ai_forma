@@ -4,6 +4,7 @@ abstract final class DashboardStrings {
       'Your transformation is progressing steadily.';
 
   static const String momentumScore = 'Momentum Score';
+  static const String bodyIntelligenceScore = 'Body Intelligence Score';
   static const String momentumBadge = '\u2191 +12 this week';
   static const String momentumTitle = 'Strong Momentum';
   static const String momentumSubtitle =
@@ -33,5 +34,6 @@ abstract final class DashboardStrings {
       'Shoulder definition has improved by 8% since your previous scan.';
   static const String viewAnalysis = 'View Analysis';
   static const String latestScan = 'Latest Scan';
-  static const String imageGenerate =  'Image are genarate from your latest body scan';
+  static const String imageGenerate =
+      'Image are genarate from your latest body scan';
 }

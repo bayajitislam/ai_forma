@@ -1,3 +1,4 @@
+import 'package:ai_forma/features/auth/controllers/user_controller.dart';
 import 'package:ai_forma/routes/routes_name.dart';
 import 'package:flutter/material.dart';
 import 'package:ai_forma/core/icons/app_icons.dart';
@@ -8,7 +9,7 @@ import 'package:ai_forma/core/widgets/primary_button.dart';
 import 'package:ai_forma/features/auth/constants/auth_strings.dart';
 import 'package:ai_forma/features/auth/view/widgets/auth_brand_title.dart';
 import 'package:ai_forma/features/auth/view/widgets/auth_flow_header.dart';
-import 'package:get/route_manager.dart';
+import 'package:get/get.dart';
 
 class SignupSuccessView extends StatelessWidget {
   const SignupSuccessView({super.key});
@@ -60,7 +61,20 @@ class SignupSuccessView extends StatelessWidget {
               ),
               const Spacer(),
               PrimaryButton(
-                onPressed: () => Get.offAndToNamed(RoutesName.login),
+                onPressed: () {
+                  final user = Get.isRegistered<UserController>()
+                      ? Get.find<UserController>().currentUser.value
+                      : null;
+                  if (user != null && user.onboardingCompleted) {
+                    if (!user.initialScanCompleted) {
+                      Get.offAllNamed(RoutesName.checkInIntro);
+                    } else {
+                      Get.offAllNamed(RoutesName.appShell);
+                    }
+                  } else {
+                    Get.offAllNamed(RoutesName.gender);
+                  }
+                },
                 label: AuthStrings.beginAssessmentButton,
               ),
               const SizedBox(height: 32),

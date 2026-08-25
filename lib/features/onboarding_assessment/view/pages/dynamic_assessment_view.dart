@@ -22,65 +22,77 @@ class DynamicAssessmentView extends GetView<AssessmentController> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.onboardingBackground,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Obx(() {
-            if (controller.isLoadingSchema.value) {
-              return _buildSchemaLoadingView();
-            }
+    return Obx(
+      () => PopScope(
+        canPop: controller.isFirstStep,
+        onPopInvokedWithResult: (didPop, result) {
+          if (!didPop && !controller.isFirstStep) {
+            controller.previousStep();
+          }
+        },
+        child: Scaffold(
+          backgroundColor: AppColors.onboardingBackground,
+          body: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Builder(builder: (_) {
+                if (controller.isLoadingSchema.value) {
+                  return _buildSchemaLoadingView();
+                }
 
-            final step = controller.currentStep;
-            if (step == null) {
-              return const Center(child: Text("No steps available"));
-            }
+                final step = controller.currentStep;
+                if (step == null) {
+                  return const Center(child: Text("No steps available"));
+                }
 
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 8),
-                AssessmentFlowHeader(
-                  currentStep: controller.currentStepIndex.value + 1,
-                  showBackButton: !controller.isFirstStep,
-                ),
-                const SizedBox(height: 32),
-                Text(step.title, style: AppTextStyles.authSectionTitle),
-                const SizedBox(height: 12),
-                Text(step.subtitle, style: AppTextStyles.authBody),
-                const SizedBox(height: 20),
-                Expanded(child: _buildStepBody(step)),
-                // Inline error display
-                if (controller.errorMessage.value.isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: Text(
-                      controller.errorMessage.value,
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: Colors.red.shade400,
-                        fontWeight: FontWeight.w500,
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 8),
+                    AssessmentFlowHeader(
+                      currentStep: controller.currentStepIndex.value + 1,
+                      totalSteps: controller.activeSteps.length,
+                      showBackButton: !controller.isFirstStep,
+                      onBackTap: () => controller.previousStep(),
+                    ),
+                    const SizedBox(height: 32),
+                    Text(step.title, style: AppTextStyles.authSectionTitle),
+                    const SizedBox(height: 12),
+                    Text(step.subtitle, style: AppTextStyles.authBody),
+                    const SizedBox(height: 20),
+                    Expanded(child: _buildStepBody(step)),
+                    // Inline error display
+                    if (controller.errorMessage.value.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: Text(
+                          controller.errorMessage.value,
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.red.shade400,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    Obx(
+                      () => PrimaryButton(
+                        isLoading: controller.isSubmitting.value,
+                        onPressed: controller.isSubmitting.value
+                            ? null
+                            : () => controller.nextStep(),
+                        label: controller.isLastStep
+                            ? 'Complete'
+                            : AppStrings.nextButton,
                       ),
                     ),
-                  ),
-                Obx(
-                  () => PrimaryButton(
-                    isLoading: controller.isSubmitting.value,
-                    onPressed: controller.isSubmitting.value
-                        ? null
-                        : () => controller.nextStep(),
-                    label: controller.isLastStep
-                        ? 'Complete'
-                        : AppStrings.nextButton,
-                  ),
-                ),
-                Platform.isAndroid
-                    ? const SizedBox(height: 26)
-                    : const SizedBox.shrink(),
-              ],
-            );
-          }),
+                    Platform.isAndroid
+                        ? const SizedBox(height: 26)
+                        : const SizedBox.shrink(),
+                  ],
+                );
+              }),
+            ),
+          ),
         ),
       ),
     );
@@ -120,18 +132,20 @@ class DynamicAssessmentView extends GetView<AssessmentController> {
 
   /// Renders step input body dynamically based on step.type
   Widget _buildStepBody(OnboardingStepModel step) {
-    switch (step.type) {
-      case 'single_choice':
-        return _buildSingleChoice(step);
-      case 'multi_choice':
-        return _buildMultiChoice(step);
-      case 'number_picker':
-        return _buildNumberPicker(step);
-      case 'unit_picker':
-        return _buildUnitPicker(step);
-      default:
-        return _buildSingleChoice(step);
-    }
+    return Obx(() {
+      switch (step.type) {
+        case 'single_choice':
+          return _buildSingleChoice(step);
+        case 'multi_choice':
+          return _buildMultiChoice(step);
+        case 'number_picker':
+          return _buildNumberPicker(step);
+        case 'unit_picker':
+          return _buildUnitPicker(step);
+        default:
+          return _buildSingleChoice(step);
+      }
+    });
   }
 
   Widget _buildSingleChoice(OnboardingStepModel step) {

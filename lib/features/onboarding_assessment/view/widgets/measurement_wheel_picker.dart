@@ -14,9 +14,9 @@ class MeasurementWheelPicker extends StatefulWidget {
     this.unit,
     this.labelBuilder,
   }) : assert(
-          unit != null || labelBuilder != null,
-          'Provide either unit or labelBuilder',
-        );
+         unit != null || labelBuilder != null,
+         'Provide either unit or labelBuilder',
+       );
 
   final int minValue;
   final int maxValue;
@@ -36,13 +36,40 @@ class _MeasurementWheelPickerState extends State<MeasurementWheelPicker> {
   late final FixedExtentScrollController _controller;
   late int _selectedValue;
 
+  bool get _isFeetUnit =>
+      widget.unit?.toLowerCase() == 'ft' ||
+      widget.unit?.toLowerCase() == 'feet';
+
+  int get _effectiveMinValue {
+    if (_isFeetUnit && widget.minValue < 36) {
+      return widget.minValue * 12;
+    }
+    return widget.minValue;
+  }
+
+  int get _effectiveMaxValue {
+    if (_isFeetUnit && widget.minValue < 36) {
+      return widget.maxValue * 12;
+    }
+    return widget.maxValue;
+  }
+
+  int get _effectiveInitialValue {
+    if (_isFeetUnit && widget.minValue < 36 && widget.initialValue <= 10) {
+      return widget.initialValue * 12;
+    }
+    return widget.initialValue;
+  }
+
   @override
   void initState() {
     super.initState();
-    _selectedValue =
-        widget.initialValue.clamp(widget.minValue, widget.maxValue);
+    _selectedValue = _effectiveInitialValue.clamp(
+      _effectiveMinValue,
+      _effectiveMaxValue,
+    );
     _controller = FixedExtentScrollController(
-      initialItem: _selectedValue - widget.minValue,
+      initialItem: _selectedValue - _effectiveMinValue,
     );
   }
 
@@ -56,12 +83,17 @@ class _MeasurementWheelPickerState extends State<MeasurementWheelPicker> {
     if (widget.labelBuilder != null) {
       return widget.labelBuilder!(value);
     }
+    if (_isFeetUnit) {
+      final feet = value ~/ 12;
+      final inches = value % 12;
+      return '$feet.$inches';
+    }
     return '$value';
   }
 
   @override
   Widget build(BuildContext context) {
-    final itemCount = widget.maxValue - widget.minValue + 1;
+    final itemCount = _effectiveMaxValue - _effectiveMinValue + 1;
 
     return SizedBox(
       height: _itemHeight * _visibleItemCount,
@@ -77,14 +109,14 @@ class _MeasurementWheelPickerState extends State<MeasurementWheelPicker> {
             magnification: 1.15,
             physics: const FixedExtentScrollPhysics(),
             onSelectedItemChanged: (index) {
-              final value = widget.minValue + index;
+              final value = _effectiveMinValue + index;
               setState(() => _selectedValue = value);
               widget.onChanged(value);
             },
             childDelegate: ListWheelChildBuilderDelegate(
               childCount: itemCount,
               builder: (context, index) {
-                final value = widget.minValue + index;
+                final value = _effectiveMinValue + index;
                 final isSelected = value == _selectedValue;
 
                 return Center(
@@ -101,17 +133,9 @@ class _MeasurementWheelPickerState extends State<MeasurementWheelPicker> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Container(
-                  width: 120,
-                  height: 2,
-                  color: AppColors.brandTeal,
-                ),
+                Container(width: 120, height: 2, color: AppColors.brandTeal),
                 SizedBox(height: _itemHeight - 4),
-                Container(
-                  width: 120,
-                  height: 2,
-                  color: AppColors.brandTeal,
-                ),
+                Container(width: 120, height: 2, color: AppColors.brandTeal),
               ],
             ),
           ),
