@@ -1,4 +1,4 @@
-import 'package:ai_forma/core/widgets/app_shimmer.dart';
+import 'package:ai_forma/core/widgets/app_cached_image.dart';
 import 'package:ai_forma/features/dashboard/models/home_response_model.dart';
 import 'package:ai_forma/features/timeline/view/pages/scan_detail_view.dart';
 import 'package:flutter/material.dart';
@@ -283,7 +283,7 @@ class _AnalysisImage extends StatelessWidget {
         height: 152,
         color: AppColors.progressInactive,
         child: (imageUrl != null && imageUrl!.isNotEmpty)
-            ? AppShimmerImage(
+            ? AppCachedNetworkImage(
                 imageUrl: imageUrl!,
                 fit: BoxFit.contain,
                 height: 152,

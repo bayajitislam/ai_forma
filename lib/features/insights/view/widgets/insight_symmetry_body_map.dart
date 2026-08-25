@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:ai_forma/core/constants/app_images.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
 import 'package:ai_forma/core/theme/app_fonts.dart';
-import 'package:ai_forma/core/widgets/app_shimmer.dart';
+import 'package:ai_forma/core/widgets/app_cached_image.dart';
 import 'package:ai_forma/features/insights/constants/insights_strings.dart';
 
 class InsightSymmetryBodyMap extends StatelessWidget {
@@ -48,7 +48,7 @@ class InsightSymmetryBodyMap extends StatelessWidget {
                 ClipRRect(
                   borderRadius: BorderRadius.circular(14),
                   child: primaryUrl != null
-                      ? AppShimmerImage(
+                      ? AppCachedNetworkImage(
                           imageUrl: primaryUrl,
                           fit: BoxFit.contain,
                           height: 288,

@@ -21,6 +21,8 @@ class OnboardingStepModel {
   final String subtitle;
   final bool isRequired;
   final bool isSkippable;
+  final String? infoNote;
+  final String? icon;
   final num? min;
   final num? max;
   final dynamic defaultVal;
@@ -28,6 +30,7 @@ class OnboardingStepModel {
   final VisibleWhenModel? visibleWhen;
   final List<OptionItemModel> options;
   final List<UnitItemModel> units;
+  final List<CategoryItemModel> categories;
 
   OnboardingStepModel({
     required this.key,
@@ -36,6 +39,8 @@ class OnboardingStepModel {
     required this.subtitle,
     required this.isRequired,
     required this.isSkippable,
+    this.infoNote,
+    this.icon,
     this.min,
     this.max,
     this.defaultVal,
@@ -43,6 +48,7 @@ class OnboardingStepModel {
     this.visibleWhen,
     required this.options,
     required this.units,
+    required this.categories,
   });
 
   factory OnboardingStepModel.fromJson(Map<String, dynamic> json) {
@@ -53,6 +59,8 @@ class OnboardingStepModel {
       subtitle: json['subtitle'] ?? '',
       isRequired: json['required'] ?? false,
       isSkippable: json['skippable'] ?? true,
+      infoNote: json['info_note']?.toString(),
+      icon: json['icon']?.toString(),
       min: json['min'],
       max: json['max'],
       defaultVal: json['default'],
@@ -67,6 +75,34 @@ class OnboardingStepModel {
           .toList(),
       units: (json['units'] as List? ?? [])
           .map((e) => UnitItemModel.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      categories: (json['categories'] as List? ?? [])
+          .map((e) => CategoryItemModel.fromJson(e as Map<String, dynamic>))
+          .toList(),
+    );
+  }
+}
+
+class CategoryItemModel {
+  final String title;
+  final String key;
+  final String? icon;
+  final List<OptionItemModel> options;
+
+  CategoryItemModel({
+    required this.title,
+    required this.key,
+    this.icon,
+    required this.options,
+  });
+
+  factory CategoryItemModel.fromJson(Map<String, dynamic> json) {
+    return CategoryItemModel(
+      title: json['title'] ?? '',
+      key: json['key'] ?? '',
+      icon: json['icon']?.toString(),
+      options: (json['options'] as List? ?? [])
+          .map((e) => OptionItemModel.fromJson(e as Map<String, dynamic>))
           .toList(),
     );
   }
@@ -90,18 +126,21 @@ class OptionItemModel {
   final String value;
   final String label;
   final String? description;
+  final String? icon;
 
   OptionItemModel({
     required this.value,
     required this.label,
     this.description,
+    this.icon,
   });
 
   factory OptionItemModel.fromJson(Map<String, dynamic> json) {
     return OptionItemModel(
       value: json['value'] ?? '',
       label: json['label'] ?? '',
-      description: json['description'],
+      description: json['description']?.toString(),
+      icon: json['icon']?.toString(),
     );
   }
 }

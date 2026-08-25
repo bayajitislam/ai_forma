@@ -260,4 +260,47 @@ class CheckInRepository {
       return Left(ServerFailure(message: 'Unexpected error: $e'));
     }
   }
+
+  /// Update weekly scan day schedule at POST /api/checkins/schedule/
+  Future<Either<Failure, Map<String, dynamic>>> updateScanSchedule(
+    String scanDay,
+  ) async {
+    try {
+      final response = await _dio.post(
+        ApiEndpoint.updateScanSchedule,
+        data: {'scan_day': scanDay.toLowerCase()},
+      );
+
+      if ((response.statusCode == 200 || response.statusCode == 201) &&
+          response.data != null) {
+        if (response.data is Map<String, dynamic>) {
+          return Right(response.data as Map<String, dynamic>);
+        }
+        return const Right({});
+      }
+
+      return Left(ServerFailure());
+    } on DioException catch (e) {
+      if (e.response?.data is Map<String, dynamic>) {
+        final message = ApiFailure.parseMessage(
+          e.response!.data as Map<String, dynamic>,
+        );
+        return Left(ApiFailure(message: message));
+      }
+      final statusCode = e.response?.statusCode;
+      final rawData = e.response?.data?.toString();
+      if (statusCode != null) {
+        final detail =
+            (rawData != null && rawData.isNotEmpty && rawData.length < 200)
+                ? rawData
+                : e.response?.statusMessage ?? 'Server error';
+        return Left(
+          ServerFailure(message: 'Server error ($statusCode): $detail'),
+        );
+      }
+      return Left(NetworkFailure());
+    } catch (e) {
+      return Left(ServerFailure(message: 'Unexpected error: $e'));
+    }
+  }
 }

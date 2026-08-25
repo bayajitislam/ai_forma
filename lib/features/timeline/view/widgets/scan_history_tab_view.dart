@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
 import 'package:ai_forma/core/constants/app_images.dart';
-import 'package:ai_forma/core/widgets/app_shimmer.dart';
+import 'package:ai_forma/core/widgets/app_cached_image.dart';
 import 'package:ai_forma/features/timeline/controllers/timeline_controller.dart';
 import 'package:ai_forma/features/timeline/models/timeline_history_model.dart';
 import 'package:ai_forma/features/timeline/view/pages/scan_detail_view.dart';
@@ -80,14 +80,12 @@ class _ScanHistoryTabViewState extends State<ScanHistoryTabView> {
                     padding: const EdgeInsets.only(bottom: 20),
                     child: Row(
                       children: [
-                        AppShimmer(
-                          child: Container(
-                            width: 60,
-                            height: 16,
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFE5E7EB),
-                              borderRadius: BorderRadius.circular(4),
-                            ),
+                        Container(
+                          width: 60,
+                          height: 16,
+                          decoration: BoxDecoration(
+                            color: AppColors.surface,
+                            borderRadius: BorderRadius.circular(4),
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -97,14 +95,12 @@ class _ScanHistoryTabViewState extends State<ScanHistoryTabView> {
                               3,
                               (i) => Padding(
                                 padding: const EdgeInsets.only(right: 8),
-                                child: AppShimmer(
-                                  child: Container(
-                                    width: 76,
-                                    height: 100,
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFFE5E7EB),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
+                                child: Container(
+                                  width: 76,
+                                  height: 100,
+                                  decoration: BoxDecoration(
+                                    color: AppColors.surface,
+                                    borderRadius: BorderRadius.circular(8),
                                   ),
                                 ),
                               ),
@@ -232,7 +228,7 @@ class _ScanHistoryTabViewState extends State<ScanHistoryTabView> {
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(8),
                         child: isNetwork
-                            ? AppShimmerImage(
+                            ? AppCachedNetworkImage(
                                 imageUrl: urlOrAsset,
                                 fit: BoxFit.contain,
                                 errorWidget: Image.asset(

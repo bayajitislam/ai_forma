@@ -4,7 +4,7 @@ import 'package:ai_forma/core/theme/app_text_styles.dart';
 import 'package:ai_forma/core/widgets/app_icon.dart';
 import 'package:ai_forma/core/icons/app_icons.dart';
 import 'package:ai_forma/core/constants/app_images.dart';
-import 'package:ai_forma/core/widgets/app_shimmer.dart';
+import 'package:ai_forma/core/widgets/app_cached_image.dart';
 
 class CompareScanCard extends StatelessWidget {
   const CompareScanCard({
@@ -50,7 +50,7 @@ class CompareScanCard extends StatelessWidget {
                 height: 64,
                 color: AppColors.insightChartBackground,
                 child: (imageUrl != null && imageUrl!.isNotEmpty)
-                    ? AppShimmerImage(
+                    ? AppCachedNetworkImage(
                         imageUrl: imageUrl!,
                         fit: BoxFit.contain,
                         errorWidget: Image.asset(

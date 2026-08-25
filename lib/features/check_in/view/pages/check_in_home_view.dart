@@ -13,8 +13,7 @@ import 'package:ai_forma/features/check_in/view/widgets/check_in_streak_card.dar
 
 import 'package:ai_forma/features/auth/controllers/user_controller.dart';
 import 'package:ai_forma/features/check_in/view/pages/camera_position_view.dart';
-import 'package:ai_forma/features/dashboard/controllers/weight_controller.dart';
-import 'package:ai_forma/features/dashboard/view/widgets/weight_entry_bottom_sheet.dart';
+import 'package:ai_forma/features/check_in/view/widgets/choose_check_in_day_bottom_sheet.dart';
 
 class CheckInHomeView extends StatelessWidget {
   final void Function()? goInsightPage;
@@ -198,18 +197,6 @@ class CheckInHomeView extends StatelessWidget {
     );
   }
 
-  void _openWeightEntryBottomSheet(BuildContext context) {
-    if (!Get.isRegistered<WeightController>()) {
-      Get.put(WeightController());
-    }
-    final weightController = Get.find<WeightController>();
-
-    WeightEntryBottomSheet.show(
-      context,
-      initialWeightKg: weightController.currentWeight?.weightKg,
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final controller = Get.isRegistered<CheckInController>()
@@ -264,11 +251,24 @@ class CheckInHomeView extends StatelessWidget {
                         // Statistic Cards Row (Non-tappable Check Day)
                         Row(
                           children: [
-                            // 1. Check Day Card
+                            // 1. Check Day Card (Tappable to change weekly scan day)
                             CheckInStatCard(
                               icon: AppIcons.calendar,
                               value: currentDay,
                               label: CheckInStrings.statCheckDay,
+                              showChevron: true,
+                              onTap: () {
+                                ChooseCheckInDayBottomSheet.show(
+                                  context,
+                                  currentDay: currentDay,
+                                  onSaved: (selectedDay) {
+                                    controller.updateCheckInDay(
+                                      selectedDay,
+                                      context: context,
+                                    );
+                                  },
+                                );
+                              },
                             ),
                             const SizedBox(width: 10),
                             // 2. On-Time
@@ -307,11 +307,11 @@ class CheckInHomeView extends StatelessWidget {
                   return Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      PrimaryButton(
-                        onPressed: () => _openWeightEntryBottomSheet(context),
-                        label: 'UPDATE WEIGHT',
-                      ),
-                      const SizedBox(height: 12),
+                      // PrimaryButton(
+                      //   onPressed: () => _openWeightEntryBottomSheet(context),
+                      //   label: 'UPDATE WEIGHT',
+                      // ),
+                      // const SizedBox(height: 12),
                       PrimaryButton(
                         onPressed: () {
                           if (isAvailable) {

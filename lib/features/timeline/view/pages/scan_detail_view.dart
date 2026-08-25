@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
 import 'package:ai_forma/core/constants/app_images.dart';
 import 'package:ai_forma/core/widgets/app_brand_text.dart';
-import 'package:ai_forma/core/widgets/app_shimmer.dart';
+import 'package:ai_forma/core/widgets/app_cached_image.dart';
 import 'package:ai_forma/features/timeline/controllers/timeline_controller.dart';
 import 'package:ai_forma/features/timeline/models/timeline_scan_detail_model.dart';
 
@@ -344,17 +344,17 @@ class _ScanDetailViewState extends State<ScanDetailView>
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(16),
                     child: imageUrl != null && imageUrl.isNotEmpty
-                        ? AppShimmerImage(
+                        ? AppCachedNetworkImage(
                             imageUrl: imageUrl,
                             fit: BoxFit.contain,
                             errorWidget: Image.asset(
                               AppImages.frontView,
-                              fit: BoxFit.cover,
+                              fit: BoxFit.contain,
                             ),
                           )
                         : Image.asset(
                             AppImages.frontView,
-                            fit: BoxFit.cover,
+                            fit: BoxFit.contain,
                           ),
                   ),
                 ),

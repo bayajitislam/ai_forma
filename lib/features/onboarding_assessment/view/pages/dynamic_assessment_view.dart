@@ -11,6 +11,8 @@ import 'package:ai_forma/features/onboarding_assessment/models/onboarding_schema
 import 'package:ai_forma/features/onboarding_assessment/view/widgets/age_wheel_picker.dart';
 import 'package:ai_forma/features/onboarding_assessment/view/widgets/assessment_checkbox_tile.dart';
 import 'package:ai_forma/features/onboarding_assessment/view/widgets/assessment_flow_header.dart';
+import 'package:ai_forma/features/onboarding_assessment/view/widgets/assessment_grid_option_tile.dart';
+import 'package:ai_forma/features/onboarding_assessment/view/widgets/assessment_info_banner.dart';
 import 'package:ai_forma/features/onboarding_assessment/view/widgets/assessment_radio_tile.dart';
 import 'package:ai_forma/features/onboarding_assessment/view/widgets/assessment_unit_toggle.dart';
 import 'package:ai_forma/features/onboarding_assessment/view/widgets/measurement_wheel_picker.dart';
@@ -59,6 +61,11 @@ class DynamicAssessmentView extends GetView<AssessmentController> {
                     Text(step.title, style: AppTextStyles.authSectionTitle),
                     const SizedBox(height: 12),
                     Text(step.subtitle, style: AppTextStyles.authBody),
+                    if (step.infoNote != null &&
+                        step.infoNote!.isNotEmpty) ...[
+                      const SizedBox(height: 12),
+                      AssessmentInfoBanner(message: step.infoNote!),
+                    ],
                     const SizedBox(height: 20),
                     Expanded(child: _buildStepBody(step)),
                     // Inline error display
@@ -138,6 +145,8 @@ class DynamicAssessmentView extends GetView<AssessmentController> {
           return _buildSingleChoice(step);
         case 'multi_choice':
           return _buildMultiChoice(step);
+        case 'categorized_multi_choice':
+          return _buildCategorizedMultiChoice(step);
         case 'number_picker':
           return _buildNumberPicker(step);
         case 'unit_picker':
@@ -146,6 +155,208 @@ class DynamicAssessmentView extends GetView<AssessmentController> {
           return _buildSingleChoice(step);
       }
     });
+  }
+
+  Widget _buildCategorizedMultiChoice(OnboardingStepModel step) {
+    final rawStepAnswer = controller.answers[step.key];
+    final Map<String, dynamic> stepAnswerMap =
+        (rawStepAnswer is Map<String, dynamic>)
+            ? Map<String, dynamic>.from(rawStepAnswer)
+            : <String, dynamic>{};
+
+    return ListView.separated(
+      itemCount: step.categories.length,
+      separatorBuilder: (_, _) => const SizedBox(height: 24),
+      itemBuilder: (context, catIndex) {
+        final cat = step.categories[catIndex];
+        final rawCatList = stepAnswerMap[cat.key];
+        final selectedList = (rawCatList is List)
+            ? List<String>.from(rawCatList)
+            : <String>[];
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              cat.title,
+              style: AppTextStyles.featureDescription.copyWith(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 1,
+                color: AppColors.brandTealDark,
+              ),
+            ),
+            const SizedBox(height: 12),
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 3,
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
+                childAspectRatio: 1,
+              ),
+              itemCount: cat.options.length,
+              itemBuilder: (context, optIndex) {
+                final opt = cat.options[optIndex];
+                final isSelected = selectedList.contains(opt.value);
+                final iconData = _resolveDynamicIcon(
+                  opt.icon,
+                  opt.value,
+                  cat.key,
+                );
+
+                return AssessmentGridOptionTile(
+                  label: opt.label,
+                  icon: iconData,
+                  isSelected: isSelected,
+                  onTap: () {
+                    controller.toggleCategorizedMultiAnswer(
+                      step.key,
+                      cat.key,
+                      opt.value,
+                    );
+                  },
+                );
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  IconData _resolveDynamicIcon(String? rawIcon, String value, [String? stepKey]) {
+    // 1. Explicit icon string from backend JSON (e.g. "plant", "women", "fire")
+    if (rawIcon != null && rawIcon.isNotEmpty) {
+      final parsed = _mapNameToIcon(rawIcon);
+      if (parsed != null) return parsed;
+    }
+
+    // 2. Resolve by option value name
+    final valueIcon = _mapNameToIcon(value);
+    if (valueIcon != null) return valueIcon;
+
+    // 3. Fallback resolve by step key / context
+    if (stepKey != null && stepKey.isNotEmpty) {
+      switch (stepKey) {
+        case 'gender':
+          return value == 'female' ? AppIcons.women : AppIcons.men;
+        case 'age':
+          return AppIcons.cake;
+        case 'height':
+        case 'weight':
+          return AppIcons.scales;
+        case 'goal':
+          return AppIcons.fire;
+        case 'experience':
+          return AppIcons.star;
+        case 'sleep':
+          return AppIcons.moon;
+        case 'activity_level':
+          return AppIcons.run;
+        case 'nutrition_pattern':
+          return AppIcons.restaurant;
+        case 'confidence_level':
+          return AppIcons.sparkle;
+        case 'dietary_and_lifestyle':
+          return AppIcons.plant;
+        case 'health_notes':
+          return AppIcons.info;
+        case 'menstrual_cycle':
+          return AppIcons.refresh;
+        case 'supplements':
+          return AppIcons.shield;
+      }
+    }
+
+    return AppIcons.user;
+  }
+
+  IconData? _mapNameToIcon(String name) {
+    final lower = name.toLowerCase().replaceAll('-', '_');
+    switch (lower) {
+      case 'male':
+      case 'men':
+      case 'man':
+        return AppIcons.men;
+      case 'female':
+      case 'women':
+      case 'woman':
+        return AppIcons.women;
+      case 'plant':
+      case 'vegetarian':
+      case 'vegan':
+        return AppIcons.plant;
+      case 'fish':
+      case 'pescatarian':
+        return AppIcons.fish;
+      case 'weight':
+      case 'high_protein':
+      case 'protein_powder':
+        return AppIcons.weight;
+      case 'forbid':
+      case 'low_carb':
+      case 'gluten_free':
+      case 'dairy_free':
+        return AppIcons.forbid;
+      case 'timer':
+      case 'intermittent_fasting':
+        return AppIcons.timer;
+      case 'time':
+      case 'shift_worker':
+        return AppIcons.time;
+      case 'plane':
+      case 'frequent_traveller':
+        return AppIcons.plane;
+      case 'group':
+      case 'parent_young_children':
+        return AppIcons.group;
+      case 'briefcase':
+      case 'office_worker':
+        return AppIcons.briefcase;
+      case 'walk':
+      case 'physically_active_job':
+      case 'lightly_active':
+        return AppIcons.walk;
+      case 'run':
+      case 'moderately_active':
+      case 'very_active':
+        return AppIcons.run;
+      case 'subtract':
+      case 'none':
+      case 'none_of_the_above':
+        return AppIcons.subtract;
+      case 'creatine':
+      case 'pre_workout':
+      case 'fire':
+      case 'reduce_body_fat':
+        return AppIcons.fire;
+      case 'vitamins_minerals':
+      case 'omega_3':
+      case 'supplements':
+      case 'shield':
+        return AppIcons.shield;
+      case 'star':
+      case 'beginner':
+      case 'intermediate':
+      case 'advanced':
+        return AppIcons.star;
+      case 'sleep':
+      case 'poor':
+      case 'average':
+      case 'good':
+      case 'excellent':
+      case 'moon':
+        return AppIcons.moon;
+      case 'confidence':
+      case 'sparkle':
+      case 'very_confident':
+      case 'somewhat_confident':
+        return AppIcons.sparkle;
+      default:
+        return null;
+    }
   }
 
   Widget _buildSingleChoice(OnboardingStepModel step) {
@@ -157,9 +368,10 @@ class DynamicAssessmentView extends GetView<AssessmentController> {
       itemBuilder: (context, index) {
         final opt = step.options[index];
         final isSelected = currentSelected == opt.value;
+        final iconData = _resolveDynamicIcon(opt.icon, opt.value, step.key);
 
         return AssessmentRadioTile(
-          icon: AppIcons.user,
+          icon: iconData,
           title: opt.label,
           subtitle: opt.description,
           isSelected: isSelected,

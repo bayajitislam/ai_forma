@@ -1,6 +1,9 @@
 import 'dart:io';
 
+import 'package:ai_forma/core/theme/app_colors.dart';
+import 'package:ai_forma/core/theme/app_text_styles.dart';
 import 'package:ai_forma/core/widgets/app_bottom_sheet.dart';
+import 'package:ai_forma/core/widgets/primary_button.dart';
 import 'package:ai_forma/features/check_in/models/checkin_status_model.dart';
 import 'package:ai_forma/features/check_in/models/scan_validation_model.dart';
 import 'package:ai_forma/features/check_in/repositories/check_in_repository.dart';
@@ -9,6 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_devlog/flutter_devlog.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:image/image.dart' as img;
 
 import 'package:ai_forma/features/auth/controllers/user_controller.dart';
 
@@ -56,7 +60,6 @@ class CheckInController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    initCamera();
     fetchStatusData();
   }
 
@@ -83,10 +86,130 @@ class CheckInController extends GetxController {
     }
   }
 
+  /// Update weekly check-in day schedule at POST /api/checkins/schedule/
+  Future<bool> updateCheckInDay(
+    String newDay, {
+    BuildContext? context,
+  }) async {
+    final result = await repository.updateScanSchedule(newDay);
+    return result.fold(
+      (failure) {
+        errorMessage(failure.message);
+        final activeContext = context ?? Get.context;
+        if (activeContext != null) {
+          showScheduleErrorPopup(activeContext, failure.message);
+        } else {
+          Get.snackbar(
+            'Schedule Change Restricted',
+            failure.message.isNotEmpty
+                ? failure.message
+                : 'Failed to update check-in day',
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: Colors.redAccent,
+            colorText: Colors.white,
+            margin: const EdgeInsets.all(16),
+          );
+        }
+        return false;
+      },
+      (data) {
+        selectedCheckDay.value = newDay;
+        fetchStatusData(force: true);
+        Get.snackbar(
+          'Success',
+          'Weekly check-in day updated to $newDay',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: AppColors.brandTeal,
+          colorText: Colors.white,
+          margin: const EdgeInsets.all(16),
+        );
+        return true;
+      },
+    );
+  }
+
+  /// Show popup error dialog when schedule update fails (e.g. 7-day restriction)
+  void showScheduleErrorPopup(BuildContext context, String message) {
+    final cleanMsg = message.isNotEmpty
+        ? message
+        : 'You can only change your weekly check-in day once every 7 days.';
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 44,
+              height: 4,
+              decoration: BoxDecoration(
+                color: AppColors.border,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Container(
+              width: 64,
+              height: 64,
+              decoration: BoxDecoration(
+                color: Colors.red.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Center(
+                child: Icon(
+                  Icons.calendar_month_rounded,
+                  size: 32,
+                  color: Colors.redAccent,
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Schedule Change Restricted',
+              style: AppTextStyles.authSectionTitle,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 10),
+            Text(
+              cleanMsg,
+              style: const TextStyle(
+                fontSize: 14,
+                color: AppColors.textSecondary,
+                height: 1.4,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            PrimaryButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              label: 'GOT IT',
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   void onClose() {
     cameraController?.dispose();
     super.onClose();
+  }
+
+  /// Safely dispose camera hardware when leaving camera screen
+  Future<void> disposeCamera() async {
+    final controllerToDispose = cameraController;
+    cameraController = null;
+    isCameraInitialized.value = false;
+    await controllerToDispose?.dispose();
   }
 
   /// Initialize real device camera
@@ -207,7 +330,28 @@ class CheckInController extends GetxController {
     try {
       isCapturing(true);
       final xFile = await cameraController!.takePicture();
-      final file = File(xFile.path);
+      final rawBytes = await xFile.readAsBytes();
+
+      File file = File(xFile.path);
+
+      // Process image orientation & un-mirroring
+      final img.Image? decoded = img.decodeImage(rawBytes);
+      if (decoded != null) {
+        // 1. Bake EXIF orientation so image is 100% upright portrait mode (0° orientation)
+        img.Image processed = img.bakeOrientation(decoded);
+
+        // 2. Un-mirror front camera captures so final image matches true reality
+        if (availableCameraList.isNotEmpty &&
+            selectedCameraIndex < availableCameraList.length) {
+          final currentCam = availableCameraList[selectedCameraIndex];
+          if (currentCam.lensDirection == CameraLensDirection.front) {
+            processed = img.flipHorizontal(processed);
+          }
+        }
+
+        final encodedBytes = img.encodeJpg(processed, quality: 90);
+        file.writeAsBytesSync(encodedBytes);
+      }
 
       if (currentAngle.value == 'Front') {
         frontImage.value = file;
@@ -325,9 +469,14 @@ class CheckInController extends GetxController {
     isSubmittingScan(true);
     errorMessage('');
 
-    final bool isWeekly = isWeeklyCheckIn.value ||
+    final bool isWeekly =
+        isWeeklyCheckIn.value ||
         (Get.isRegistered<UserController>() &&
-            Get.find<UserController>().currentUser.value?.initialScanCompleted == true);
+            Get.find<UserController>()
+                    .currentUser
+                    .value
+                    ?.initialScanCompleted ==
+                true);
 
     final result = isWeekly
         ? await repository.createWeeklyCheckin(

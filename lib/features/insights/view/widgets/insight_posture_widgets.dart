@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
 import 'package:ai_forma/core/theme/app_fonts.dart';
 import 'package:ai_forma/core/constants/app_images.dart';
-import 'package:ai_forma/core/widgets/app_shimmer.dart';
+import 'package:ai_forma/core/widgets/app_cached_image.dart';
 import 'package:ai_forma/features/insights/models/posture_detail_model.dart';
 
 class InsightPostureSummaryCard extends StatelessWidget {
@@ -238,7 +238,7 @@ class _ComparisonCard extends StatelessWidget {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(14),
               child: primaryUrl != null
-                  ? AppShimmerImage(
+                  ? AppCachedNetworkImage(
                       imageUrl: primaryUrl,
                       fit: BoxFit.contain,
                       width: double.infinity,

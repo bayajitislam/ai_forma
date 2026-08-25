@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
 import 'package:ai_forma/core/theme/app_fonts.dart';
+import 'package:ai_forma/core/widgets/app_cached_image.dart';
 
 class ProfileAvatar extends StatelessWidget {
   const ProfileAvatar({
@@ -34,7 +35,7 @@ class ProfileAvatar extends StatelessWidget {
             ),
           ],
           image: DecorationImage(
-            image: NetworkImage(avatarUrl!),
+            image: AppCachedNetworkImage.provider(avatarUrl!),
             fit: BoxFit.cover,
           ),
         ),

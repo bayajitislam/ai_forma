@@ -1,5 +1,5 @@
 class ApiEndpoint {
-  static const String baseUrl = 'http://10.10.26.245:8000/';
+  static const String baseUrl = 'http://10.10.26.245:8000';
   // static const String baseUrl = 'https://aiformapi.dsrt321.online';
 
   //auth
@@ -54,6 +54,7 @@ class ApiEndpoint {
   static const String checkinStatus = '/api/checkins/status/';
   static const String dailyCheckIn = '/api/checkins/daily/';
   static const String weeklyCheckIn = '/api/checkins/weekly/';
+  static const String updateScanSchedule = '/api/checkins/schedule/';
 
   //weight trends & progress
   static const String weightTrends = '/api/checkins/weight-trends/';

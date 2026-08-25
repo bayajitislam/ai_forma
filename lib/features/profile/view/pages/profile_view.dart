@@ -1,4 +1,5 @@
 import 'package:ai_forma/core/storage/auth_storage.dart';
+import 'package:ai_forma/core/widgets/app_cached_image.dart';
 import 'package:ai_forma/features/profile/view/pages/edit_personal_details_view.dart';
 import 'package:ai_forma/features/profile/view/pages/report_bug_view.dart';
 import 'package:ai_forma/routes/routes_name.dart';
@@ -175,7 +176,7 @@ class ProfileView extends StatelessWidget {
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             image: DecorationImage(
-                              image: NetworkImage(imageUrl),
+                              image: AppCachedNetworkImage.provider(imageUrl),
                               fit: BoxFit.cover,
                             ),
                           ),

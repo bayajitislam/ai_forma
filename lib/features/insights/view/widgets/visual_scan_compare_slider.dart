@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:ai_forma/core/icons/app_icons.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
 import 'package:ai_forma/core/theme/app_fonts.dart';
+import 'package:ai_forma/core/widgets/app_cached_image.dart';
 import 'package:ai_forma/core/widgets/app_icon.dart';
 import 'package:ai_forma/features/insights/constants/insights_strings.dart';
 
@@ -35,16 +36,11 @@ class _VisualScanCompareSliderState extends State<VisualScanCompareSlider> {
 
   Widget _buildImage(String path, double width, double height) {
     if (path.startsWith('http://') || path.startsWith('https://')) {
-      return Image.network(
-        path,
+      return AppCachedNetworkImage(
+        imageUrl: path,
         fit: BoxFit.contain,
         width: width,
         height: height,
-        errorBuilder: (context, error, stackTrace) => Container(
-          color: AppColors.insightChartBackground,
-          alignment: Alignment.center,
-          child: const Icon(Icons.broken_image, color: AppColors.textSecondary),
-        ),
       );
     }
     return Image.asset(

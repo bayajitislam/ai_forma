@@ -5,7 +5,7 @@ import 'package:ai_forma/core/theme/app_colors.dart';
 import 'package:ai_forma/core/theme/app_fonts.dart';
 import 'package:ai_forma/core/theme/app_text_styles.dart';
 import 'package:ai_forma/core/widgets/app_icon.dart';
-import 'package:ai_forma/core/widgets/app_shimmer.dart';
+import 'package:ai_forma/core/widgets/app_cached_image.dart';
 import 'package:ai_forma/core/widgets/primary_button.dart';
 import 'package:ai_forma/features/check_in/view/widgets/check_in_header.dart';
 import 'package:ai_forma/features/insights/constants/insights_strings.dart';
@@ -225,7 +225,7 @@ class _ComparisonImageCard extends StatelessWidget {
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(12),
                     child: (imageUrl != null && imageUrl!.isNotEmpty)
-                        ? AppShimmerImage(
+                        ? AppCachedNetworkImage(
                             imageUrl: imageUrl!,
                             fit: BoxFit.contain,
                             errorWidget: Image.asset(imageAsset, fit: BoxFit.contain),

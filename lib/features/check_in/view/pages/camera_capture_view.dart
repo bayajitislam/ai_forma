@@ -18,10 +18,7 @@ import 'package:get/get.dart';
 enum ScanAngle { front, side, back }
 
 class CameraCaptureView extends StatefulWidget {
-  const CameraCaptureView({
-    super.key,
-    required this.angle,
-  });
+  const CameraCaptureView({super.key, required this.angle});
 
   final ScanAngle angle;
 
@@ -39,16 +36,16 @@ class _CameraCaptureViewState extends State<CameraCaptureView>
   late final Animation<double> _galleryFadeAnim;
 
   String get _title => switch (widget.angle) {
-        ScanAngle.front => CheckInStrings.angleFront,
-        ScanAngle.side => CheckInStrings.angleSide,
-        ScanAngle.back => CheckInStrings.angleBack,
-      };
+    ScanAngle.front => CheckInStrings.angleFront,
+    ScanAngle.side => CheckInStrings.angleSide,
+    ScanAngle.back => CheckInStrings.angleBack,
+  };
 
   String get _instruction => switch (widget.angle) {
-        ScanAngle.front => CheckInStrings.frontInstruction,
-        ScanAngle.side => CheckInStrings.sideInstruction,
-        ScanAngle.back => CheckInStrings.backInstruction,
-      };
+    ScanAngle.front => CheckInStrings.frontInstruction,
+    ScanAngle.side => CheckInStrings.sideInstruction,
+    ScanAngle.back => CheckInStrings.backInstruction,
+  };
 
   ScanAngle? get _nextAngle {
     if (!Get.isRegistered<CheckInController>()) return null;
@@ -96,13 +93,13 @@ class _CameraCaptureViewState extends State<CameraCaptureView>
       duration: const Duration(milliseconds: 550),
     );
 
-    _gallerySlideAnim = Tween<Offset>(
-      begin: const Offset(-0.8, 0.0),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _galleryAnimController,
-      curve: Curves.easeOutCubic,
-    ));
+    _gallerySlideAnim =
+        Tween<Offset>(begin: const Offset(-0.8, 0.0), end: Offset.zero).animate(
+          CurvedAnimation(
+            parent: _galleryAnimController,
+            curve: Curves.easeOutCubic,
+          ),
+        );
 
     _galleryFadeAnim = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _galleryAnimController, curve: Curves.easeIn),
@@ -112,7 +109,9 @@ class _CameraCaptureViewState extends State<CameraCaptureView>
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (Get.isRegistered<CheckInController>()) {
-        Get.find<CheckInController>().currentAngle.value = _title;
+        final c = Get.find<CheckInController>();
+        c.currentAngle.value = _title;
+        c.initCamera();
       }
     });
   }
@@ -120,6 +119,12 @@ class _CameraCaptureViewState extends State<CameraCaptureView>
   @override
   void dispose() {
     _galleryAnimController.dispose();
+    if (Get.isRegistered<CheckInController>()) {
+      final c = Get.find<CheckInController>();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        c.disposeCamera();
+      });
+    }
     super.dispose();
   }
 
@@ -148,15 +153,11 @@ class _CameraCaptureViewState extends State<CameraCaptureView>
     final next = _nextAngle;
     if (next != null) {
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute<void>(
-          builder: (_) => CameraCaptureView(angle: next),
-        ),
+        MaterialPageRoute<void>(builder: (_) => CameraCaptureView(angle: next)),
       );
     } else {
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute<void>(
-          builder: (_) => const ScanReviewView(),
-        ),
+        MaterialPageRoute<void>(builder: (_) => const ScanReviewView()),
       );
     }
   }
@@ -264,10 +265,7 @@ class _CameraCaptureViewState extends State<CameraCaptureView>
                         // 1. If photo was captured or picked -> Display Full Captured Photo Preview
                         if (preview != null) {
                           return Center(
-                            child: Image.file(
-                              preview,
-                              fit: BoxFit.contain,
-                            ),
+                            child: Image.file(preview, fit: BoxFit.contain),
                           );
                         }
 
@@ -282,7 +280,10 @@ class _CameraCaptureViewState extends State<CameraCaptureView>
                                 SizedBox(height: 12),
                                 Text(
                                   "Starting camera...",
-                                  style: TextStyle(color: Colors.white70, fontSize: 13),
+                                  style: TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 13,
+                                  ),
                                 ),
                               ],
                             ),
@@ -295,9 +296,15 @@ class _CameraCaptureViewState extends State<CameraCaptureView>
                                 fit: BoxFit.cover,
                                 child: SizedBox(
                                   width: constraints.maxWidth,
-                                  height: constraints.maxWidth *
-                                      controller.cameraController!.value.aspectRatio,
-                                  child: CameraPreview(controller.cameraController!),
+                                  height:
+                                      constraints.maxWidth *
+                                      controller
+                                          .cameraController!
+                                          .value
+                                          .aspectRatio,
+                                  child: CameraPreview(
+                                    controller.cameraController!,
+                                  ),
                                 ),
                               ),
                             );
@@ -339,7 +346,9 @@ class _CameraCaptureViewState extends State<CameraCaptureView>
                                     color: Colors.black.withValues(alpha: 0.6),
                                     borderRadius: BorderRadius.circular(24),
                                     border: Border.all(
-                                      color: Colors.white.withValues(alpha: 0.35),
+                                      color: Colors.white.withValues(
+                                        alpha: 0.35,
+                                      ),
                                       width: 1.2,
                                     ),
                                   ),
@@ -475,4 +484,3 @@ class _CameraCaptureViewState extends State<CameraCaptureView>
     );
   }
 }
-

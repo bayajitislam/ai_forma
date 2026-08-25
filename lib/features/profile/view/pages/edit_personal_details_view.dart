@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:ai_forma/core/widgets/app_cached_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
@@ -107,7 +108,7 @@ class _EditPersonalDetailsViewState extends State<EditPersonalDetailsView> {
     final url = _getProfileImageUrl();
     if (url == null || url.isEmpty) return null;
     return DecorationImage(
-      image: NetworkImage(url),
+      image: AppCachedNetworkImage.provider(url),
       fit: BoxFit.cover,
     );
   }

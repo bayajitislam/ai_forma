@@ -106,6 +106,47 @@ class AssessmentController extends GetxController {
     errorMessage('');
   }
 
+  /// Store categorized multi-choice answers as:
+  /// { "dietary_preferences": ["vegetarian"], "lifestyle_factors": ["office_worker"] }
+  void toggleCategorizedMultiAnswer(
+    String stepKey,
+    String categoryKey,
+    String optionValue,
+  ) {
+    final rawStepAnswer = answers[stepKey];
+    final Map<String, dynamic> stepAnswerMap =
+        (rawStepAnswer is Map<String, dynamic>)
+            ? Map<String, dynamic>.from(rawStepAnswer)
+            : <String, dynamic>{};
+
+    final rawCatList = stepAnswerMap[categoryKey];
+    final List<String> catSelectedList = (rawCatList is List)
+        ? List<String>.from(rawCatList)
+        : <String>[];
+
+    if (optionValue == 'none') {
+      if (catSelectedList.contains('none')) {
+        catSelectedList.remove('none');
+      } else {
+        catSelectedList
+          ..clear()
+          ..add('none');
+      }
+    } else {
+      catSelectedList.remove('none');
+      if (catSelectedList.contains(optionValue)) {
+        catSelectedList.remove(optionValue);
+      } else {
+        catSelectedList.add(optionValue);
+      }
+    }
+
+    stepAnswerMap[categoryKey] = catSelectedList;
+    answers[stepKey] = stepAnswerMap;
+    answers.refresh();
+    errorMessage('');
+  }
+
   /// Move to next step or submit on last step
   Future<void> nextStep() async {
     final step = currentStep;
@@ -142,7 +183,16 @@ class AssessmentController extends GetxController {
     final Map<String, dynamic> payload = {};
     for (final step in activeSteps) {
       if (answers.containsKey(step.key)) {
-        payload[step.key] = answers[step.key];
+        final val = answers[step.key];
+        if (step.type == 'categorized_multi_choice' && val is Map) {
+          // Flatten category entries onto root payload so backend receives
+          // dietary_preferences and lifestyle_factors as top-level keys!
+          val.forEach((catKey, catVal) {
+            payload[catKey.toString()] = catVal;
+          });
+        } else {
+          payload[step.key] = val;
+        }
       }
     }
 

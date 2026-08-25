@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
 import 'package:ai_forma/core/theme/app_text_styles.dart';
 import 'package:ai_forma/core/constants/app_images.dart';
-import 'package:ai_forma/core/widgets/app_shimmer.dart';
+import 'package:ai_forma/core/widgets/app_cached_image.dart';
 import 'package:ai_forma/features/timeline/models/timeline_overview_model.dart';
 
 class RecentScansSection extends StatelessWidget {
@@ -77,7 +77,7 @@ class RecentScansSection extends StatelessWidget {
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(12),
                         child: imageUrl != null && imageUrl.isNotEmpty
-                            ? AppShimmerImage(
+                            ? AppCachedNetworkImage(
                                 imageUrl: imageUrl,
                                 fit: BoxFit.contain,
                                 errorWidget: Image.asset(

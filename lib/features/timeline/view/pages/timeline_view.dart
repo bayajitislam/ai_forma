@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:ai_forma/core/network/dio_client.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
-import 'package:ai_forma/core/widgets/app_shimmer.dart';
 import 'package:ai_forma/features/timeline/controllers/timeline_controller.dart';
 import 'package:ai_forma/features/timeline/repositories/timeline_repository.dart';
 import 'package:ai_forma/features/timeline/view/pages/scan_detail_view.dart';
@@ -103,14 +102,12 @@ class _TimelineViewState extends State<TimelineView>
                       children: [
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 20),
-                          child: AppShimmer(
-                            child: Container(
-                              width: 140,
-                              height: 20,
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFE5E7EB),
-                                borderRadius: BorderRadius.circular(4),
-                              ),
+                          child: Container(
+                            width: 140,
+                            height: 20,
+                            decoration: BoxDecoration(
+                              color: AppColors.surface,
+                              borderRadius: BorderRadius.circular(4),
                             ),
                           ),
                         ),
@@ -126,25 +123,21 @@ class _TimelineViewState extends State<TimelineView>
                             itemBuilder: (context, index) {
                               return Column(
                                 children: [
-                                  AppShimmer(
-                                    child: Container(
-                                      width: 96,
-                                      height: 130,
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFFE5E5EA),
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
+                                  Container(
+                                    width: 96,
+                                    height: 130,
+                                    decoration: BoxDecoration(
+                                      color: AppColors.surface,
+                                      borderRadius: BorderRadius.circular(12),
                                     ),
                                   ),
                                   const SizedBox(height: 8),
-                                  AppShimmer(
-                                    child: Container(
-                                      width: 60,
-                                      height: 14,
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFFE5E7EB),
-                                        borderRadius: BorderRadius.circular(4),
-                                      ),
+                                  Container(
+                                    width: 60,
+                                    height: 14,
+                                    decoration: BoxDecoration(
+                                      color: AppColors.surface,
+                                      borderRadius: BorderRadius.circular(4),
                                     ),
                                   ),
                                 ],
@@ -155,14 +148,12 @@ class _TimelineViewState extends State<TimelineView>
                         const SizedBox(height: 28),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 20),
-                          child: AppShimmer(
-                            child: Container(
-                              width: double.infinity,
-                              height: 180,
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFE5E7EB),
-                                borderRadius: BorderRadius.circular(16),
-                              ),
+                          child: Container(
+                            width: double.infinity,
+                            height: 180,
+                            decoration: BoxDecoration(
+                              color: AppColors.surface,
+                              borderRadius: BorderRadius.circular(16),
                             ),
                           ),
                         ),
