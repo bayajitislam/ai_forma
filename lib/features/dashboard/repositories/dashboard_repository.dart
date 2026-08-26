@@ -49,11 +49,12 @@ class DashboardRepository {
     }
   }
 
-  /// Submit Daily Brief Answer to PATCH /api/checkins/daily/
+  /// Submit Daily Brief Answer to POST (new) or PATCH (update) /api/checkins/daily/
   Future<Either<Failure, Map<String, dynamic>>> submitDailyAnswer({
     required String questionKey,
     required String selectedOption,
     double? weightKg,
+    bool alreadyAnswered = false,
   }) async {
     try {
       final payload = <String, dynamic>{
@@ -64,10 +65,40 @@ class DashboardRepository {
         payload['weight_kg'] = weightKg;
       }
 
-      final response = await _dio.patch(
-        ApiEndpoint.dailyCheckIn,
-        data: payload,
-      );
+      late Response response;
+      if (alreadyAnswered) {
+        try {
+          response = await _dio.patch(
+            ApiEndpoint.dailyCheckIn,
+            data: payload,
+          );
+        } on DioException catch (e) {
+          if (e.response?.statusCode == 404) {
+            response = await _dio.post(
+              ApiEndpoint.dailyCheckIn,
+              data: payload,
+            );
+          } else {
+            rethrow;
+          }
+        }
+      } else {
+        try {
+          response = await _dio.post(
+            ApiEndpoint.dailyCheckIn,
+            data: payload,
+          );
+        } on DioException catch (e) {
+          if (e.response?.statusCode == 400 || e.response?.statusCode == 409) {
+            response = await _dio.patch(
+              ApiEndpoint.dailyCheckIn,
+              data: payload,
+            );
+          } else {
+            rethrow;
+          }
+        }
+      }
 
       if ((response.statusCode == 200 || response.statusCode == 201) &&
           response.data != null &&

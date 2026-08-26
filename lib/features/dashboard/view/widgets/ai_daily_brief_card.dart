@@ -165,6 +165,7 @@ class AIDailyBriefCard extends StatelessWidget {
                         questionKey: questionKey,
                         selectedOption: selectedValue,
                         weightKg: weight,
+                        alreadyAnswered: dailyBriefData?.alreadyAnswered ?? true,
                       );
 
                       if (context.mounted) {
@@ -251,6 +252,7 @@ class AIDailyBriefCard extends StatelessWidget {
                         questionKey: questionKey,
                         selectedOption: selectedValue,
                         weightKg: weight,
+                        alreadyAnswered: dailyBriefData?.alreadyAnswered ?? false,
                       );
 
                       // Pop the bottom sheet first

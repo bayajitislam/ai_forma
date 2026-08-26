@@ -37,18 +37,25 @@ class HomeController extends GetxController {
     }
   }
 
-  /// Submit Daily Brief Answer to POST /api/checkins/daily/ and refresh Home
+  /// Submit Daily Brief Answer to POST or PATCH /api/checkins/daily/ and refresh Home
   Future<({bool success, String message})> submitDailyBriefAnswer({
     required String questionKey,
     required String selectedOption,
     double? weightKg,
+    bool? alreadyAnswered,
   }) async {
     isSubmittingAnswer(true);
     try {
+      final isAlreadyAnswered = alreadyAnswered ??
+          homeData.value?.dailyBrief?.alreadyAnswered ??
+          homeData.value?.todayPriority?.alreadyAnswered ??
+          false;
+
       final result = await repository.submitDailyAnswer(
         questionKey: questionKey,
         selectedOption: selectedOption,
         weightKg: weightKg,
+        alreadyAnswered: isAlreadyAnswered,
       );
 
       return result.fold(
