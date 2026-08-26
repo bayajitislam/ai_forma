@@ -113,18 +113,113 @@ class CheckInController extends GetxController {
         return false;
       },
       (data) {
-        selectedCheckDay.value = newDay;
+        final String message = data['message']?.toString() ??
+            'Weekly scan day successfully updated.';
+        final String? scanDay = data['scan_day']?.toString();
+        final bool activeCycleExists = data['active_cycle_exists'] == true;
+        final String? pendingScanDay = data['pending_scan_day']?.toString();
+
+        if (scanDay != null && scanDay.isNotEmpty) {
+          selectedCheckDay.value = scanDay;
+        } else {
+          selectedCheckDay.value = newDay;
+        }
+
         fetchStatusData(force: true);
-        Get.snackbar(
-          'Success',
-          'Weekly check-in day updated to $newDay',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: AppColors.brandTeal,
-          colorText: Colors.white,
-          margin: const EdgeInsets.all(16),
-        );
+
+        final activeContext = context ?? Get.context;
+        if (activeContext != null) {
+          showScheduleSuccessPopup(
+            activeContext,
+            message: message,
+            activeCycleExists: activeCycleExists,
+            pendingScanDay: pendingScanDay,
+          );
+        } else {
+          Get.snackbar(
+            'Schedule Updated',
+            message,
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: AppColors.brandTeal,
+            colorText: Colors.white,
+            margin: const EdgeInsets.all(16),
+          );
+        }
         return true;
       },
+    );
+  }
+
+  /// Show popup confirmation dialog upon successful schedule change response
+  void showScheduleSuccessPopup(
+    BuildContext context, {
+    required String message,
+    bool activeCycleExists = false,
+    String? pendingScanDay,
+  }) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 44,
+              height: 4,
+              decoration: BoxDecoration(
+                color: AppColors.border,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Container(
+              width: 64,
+              height: 64,
+              decoration: const BoxDecoration(
+                color: AppColors.iconBackground,
+                shape: BoxShape.circle,
+              ),
+              child: const Center(
+                child: Icon(
+                  Icons.event_available_rounded,
+                  size: 32,
+                  color: AppColors.brandTeal,
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              activeCycleExists
+                  ? 'Scan Schedule Change Set'
+                  : 'Scan Schedule Updated',
+              style: AppTextStyles.authSectionTitle,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 10),
+            Text(
+              message,
+              style: const TextStyle(
+                fontSize: 14,
+                color: AppColors.textSecondary,
+                height: 1.4,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            PrimaryButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              label: 'GOT IT',
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
     );
   }
 

@@ -36,7 +36,7 @@ class OnboardingView extends StatelessWidget {
                     OnboardingStrings.meetPrefix,
                     style: AppTextStyles.onboardingTitle,
                   ),
-                  const AppBrandText(height: 32, width: 150),
+                  const AppBrandText(height: 42, width: 190),
                 ],
               ),
               const SizedBox(height: 12),

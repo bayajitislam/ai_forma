@@ -18,7 +18,7 @@ import 'package:get/get.dart';
 enum ScanAngle { front, side, back }
 
 class CameraCaptureView extends StatefulWidget {
-  const CameraCaptureView({super.key, required this.angle});
+  const CameraCaptureView({super.key, this.angle = ScanAngle.front});
 
   final ScanAngle angle;
 
@@ -28,6 +28,8 @@ class CameraCaptureView extends StatefulWidget {
 
 class _CameraCaptureViewState extends State<CameraCaptureView>
     with SingleTickerProviderStateMixin {
+  late ScanAngle _activeAngle;
+
   // Captured photo preview file state
   final Rx<File?> _previewFile = Rx<File?>(null);
 
@@ -35,13 +37,13 @@ class _CameraCaptureViewState extends State<CameraCaptureView>
   late final Animation<Offset> _gallerySlideAnim;
   late final Animation<double> _galleryFadeAnim;
 
-  String get _title => switch (widget.angle) {
+  String get _title => switch (_activeAngle) {
     ScanAngle.front => CheckInStrings.angleFront,
     ScanAngle.side => CheckInStrings.angleSide,
     ScanAngle.back => CheckInStrings.angleBack,
   };
 
-  String get _instruction => switch (widget.angle) {
+  String get _instruction => switch (_activeAngle) {
     ScanAngle.front => CheckInStrings.frontInstruction,
     ScanAngle.side => CheckInStrings.sideInstruction,
     ScanAngle.back => CheckInStrings.backInstruction,
@@ -69,13 +71,13 @@ class _CameraCaptureViewState extends State<CameraCaptureView>
       }
     }
 
-    if (widget.angle == ScanAngle.front) {
+    if (_activeAngle == ScanAngle.front) {
       if (needsCapture(ScanAngle.side)) return ScanAngle.side;
       if (needsCapture(ScanAngle.back)) return ScanAngle.back;
-    } else if (widget.angle == ScanAngle.side) {
+    } else if (_activeAngle == ScanAngle.side) {
       if (needsCapture(ScanAngle.back)) return ScanAngle.back;
       if (needsCapture(ScanAngle.front)) return ScanAngle.front;
-    } else if (widget.angle == ScanAngle.back) {
+    } else if (_activeAngle == ScanAngle.back) {
       if (needsCapture(ScanAngle.front)) return ScanAngle.front;
       if (needsCapture(ScanAngle.side)) return ScanAngle.side;
     }
@@ -86,6 +88,7 @@ class _CameraCaptureViewState extends State<CameraCaptureView>
   @override
   void initState() {
     super.initState();
+    _activeAngle = widget.angle;
     _previewFile.value = null;
 
     _galleryAnimController = AnimationController(
@@ -130,31 +133,38 @@ class _CameraCaptureViewState extends State<CameraCaptureView>
 
   /// Shutter tapped -> Snap photo and show inline preview on same screen
   Future<void> _onTakeSnap(CheckInController controller) async {
+    controller.currentAngle.value = _title;
     final photo = await controller.capturePhoto();
     if (photo != null) {
       _previewFile.value = photo;
-      if (widget.angle == ScanAngle.front) controller.frontImage.value = photo;
-      if (widget.angle == ScanAngle.side) controller.sideImage.value = photo;
-      if (widget.angle == ScanAngle.back) controller.backImage.value = photo;
+      if (_activeAngle == ScanAngle.front) controller.frontImage.value = photo;
+      if (_activeAngle == ScanAngle.side) controller.sideImage.value = photo;
+      if (_activeAngle == ScanAngle.back) controller.backImage.value = photo;
     }
   }
 
   /// User taps Retake -> Discard inline preview & resume live camera
   void _onRetakePhoto(CheckInController controller) {
     _previewFile.value = null;
-    if (widget.angle == ScanAngle.front) controller.frontImage.value = null;
-    if (widget.angle == ScanAngle.side) controller.sideImage.value = null;
-    if (widget.angle == ScanAngle.back) controller.backImage.value = null;
+    if (_activeAngle == ScanAngle.front) controller.frontImage.value = null;
+    if (_activeAngle == ScanAngle.side) controller.sideImage.value = null;
+    if (_activeAngle == ScanAngle.back) controller.backImage.value = null;
     _galleryAnimController.forward(from: 0);
   }
 
-  /// User accepts photo -> Proceed to next pose or Review screen
+  /// User accepts photo -> Proceed to next pose or Review screen INSTANTLY without page destruction or camera dispose!
   void _onAcceptPhoto() {
     final next = _nextAngle;
     if (next != null) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute<void>(builder: (_) => CameraCaptureView(angle: next)),
-      );
+      setState(() {
+        _activeAngle = next;
+        _previewFile.value = null;
+      });
+      if (Get.isRegistered<CheckInController>()) {
+        final c = Get.find<CheckInController>();
+        c.currentAngle.value = _title;
+      }
+      _galleryAnimController.forward(from: 0);
     } else {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute<void>(builder: (_) => const ScanReviewView()),
@@ -164,12 +174,13 @@ class _CameraCaptureViewState extends State<CameraCaptureView>
 
   /// Pick photo from gallery for dev/testing
   Future<void> _onPickFromGallery(CheckInController controller) async {
+    controller.currentAngle.value = _title;
     final photo = await controller.pickFromGallery();
     if (photo != null) {
       _previewFile.value = photo;
-      if (widget.angle == ScanAngle.front) controller.frontImage.value = photo;
-      if (widget.angle == ScanAngle.side) controller.sideImage.value = photo;
-      if (widget.angle == ScanAngle.back) controller.backImage.value = photo;
+      if (_activeAngle == ScanAngle.front) controller.frontImage.value = photo;
+      if (_activeAngle == ScanAngle.side) controller.sideImage.value = photo;
+      if (_activeAngle == ScanAngle.back) controller.backImage.value = photo;
     }
   }
 

@@ -210,6 +210,8 @@ class CheckinStatusModel {
   final List<StreakCycleModel> streakHistory;
   final int onTimePercent;
   final String checkDay;
+  final String? preferredScanDay;
+  final String? pendingScanDay;
   final String currentWeightKg;
   final String currentWeightLbs;
   final String weightChangeKg;
@@ -232,6 +234,8 @@ class CheckinStatusModel {
     required this.streakHistory,
     required this.onTimePercent,
     required this.checkDay,
+    this.preferredScanDay,
+    this.pendingScanDay,
     required this.currentWeightKg,
     required this.currentWeightLbs,
     required this.weightChangeKg,
@@ -260,6 +264,8 @@ class CheckinStatusModel {
           : [],
       onTimePercent: (json['on_time_percent'] as num?)?.toInt() ?? 0,
       checkDay: json['check_day']?.toString() ?? 'Sun',
+      preferredScanDay: json['preferred_scan_day']?.toString(),
+      pendingScanDay: json['pending_scan_day']?.toString(),
       currentWeightKg: json['current_weight_kg']?.toString() ?? '',
       currentWeightLbs: json['current_weight_lbs']?.toString() ?? '',
       weightChangeKg: json['weight_change_kg']?.toString() ?? '',
