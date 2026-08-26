@@ -1,6 +1,6 @@
 class ApiEndpoint {
-  static const String baseUrl = 'http://10.10.26.245:8000';
-  // static const String baseUrl = 'https://aiformapi.dsrt321.online';
+  // static const String baseUrl = 'http://10.10.26.245:8000';
+  static const String baseUrl = 'https://aiformapi.dsrt321.online';
 
   //auth
   static const String login = '/api/auth/login/';

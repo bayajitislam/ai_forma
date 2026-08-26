@@ -62,9 +62,11 @@ class ConsistencyView extends StatelessWidget {
       final badgeText = (data?.status.isNotEmpty ?? false)
           ? data!.status
           : InsightsStrings.excellent;
-      final badgeType = (data?.statusTone.toLowerCase() == 'warning' || data?.statusTone.toLowerCase() == 'positive')
-          ? InsightScoreBadgeType.warning
-          : InsightScoreBadgeType.excellent;
+      final badgeType = InsightScoreBadgeType.fromTone(
+        data?.statusTone,
+        data?.status,
+        fallback: InsightScoreBadgeType.excellent,
+      );
       final summaryText = (data?.summary.isNotEmpty ?? false)
           ? data!.summary
           : InsightsStrings.consistencySummary;

@@ -4,7 +4,44 @@ import 'package:ai_forma/core/theme/app_fonts.dart';
 import 'package:ai_forma/core/theme/app_text_styles.dart';
 import 'package:ai_forma/features/insights/constants/insights_strings.dart';
 
-enum InsightScoreBadgeType { positive, warning, good, excellent }
+enum InsightScoreBadgeType {
+  positive,
+  warning,
+  good,
+  excellent;
+
+  static InsightScoreBadgeType fromTone(
+    String? statusTone,
+    String? statusText, {
+    InsightScoreBadgeType fallback = InsightScoreBadgeType.positive,
+  }) {
+    final tone = statusTone?.toLowerCase().trim() ?? '';
+    final text = statusText?.toLowerCase().trim() ?? '';
+
+    if (tone == 'warning' ||
+        tone == 'needs_attention' ||
+        tone == 'attention' ||
+        tone == 'negative' ||
+        text.contains('warning') ||
+        text.contains('attention')) {
+      return InsightScoreBadgeType.warning;
+    }
+
+    if (tone == 'excellent' || text == 'excellent') {
+      return InsightScoreBadgeType.excellent;
+    }
+
+    if (tone == 'good' || text == 'good') {
+      return InsightScoreBadgeType.good;
+    }
+
+    if (text.contains('progressing') || tone == 'positive') {
+      return InsightScoreBadgeType.positive;
+    }
+
+    return fallback;
+  }
+}
 
 class InsightScoreSection extends StatelessWidget {
   const InsightScoreSection({
@@ -24,11 +61,13 @@ class InsightScoreSection extends StatelessWidget {
 
   Color get _badgeBackground => switch (badgeType) {
     InsightScoreBadgeType.warning => AppColors.insightBadgeWarningBg,
+    InsightScoreBadgeType.positive => AppColors.insightBadgeWarningBg,
     _ => AppColors.insightBadgePositiveBg,
   };
 
   Color get _badgeTextColor => switch (badgeType) {
     InsightScoreBadgeType.warning => AppColors.insightWarning,
+    InsightScoreBadgeType.positive => AppColors.insightWarning,
     _ => AppColors.brandTealDark,
   };
 
