@@ -89,6 +89,18 @@ class _AnswerDailyBriefBottomSheetState
     }
   }
 
+  bool _isVerticalLayout(List<Map<String, dynamic>> options) {
+    if (options.length > 4) return true;
+    for (final opt in options) {
+      final label = opt['label']?.toString() ?? '';
+      final desc = opt['description']?.toString() ?? '';
+      if (label.length > 20 || desc.length > 32) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   Future<void> _handleSave() async {
     final questionKey = widget.dailyBriefData?.questionKey ??
         widget.dailyBriefData?.step?['key']?.toString();
@@ -235,28 +247,49 @@ class _AnswerDailyBriefBottomSheetState
 
           // Dynamic Option Cards Grid/Row
           if (options.isNotEmpty)
-            Row(
-              children: List.generate(options.length, (index) {
-                final opt = options[index];
-                final value = opt['value']?.toString() ?? '';
-                final label = opt['label']?.toString() ?? '';
-                final desc = opt['description']?.toString() ?? '';
-                final iconStr = opt['icon']?.toString();
-                final isLast = index == options.length - 1;
+            _isVerticalLayout(options)
+                ? Column(
+                    children: options.asMap().entries.map((entry) {
+                      final index = entry.key;
+                      final opt = entry.value;
+                      final value = opt['value']?.toString() ?? '';
+                      final label = opt['label']?.toString() ?? '';
+                      final desc = opt['description']?.toString() ?? '';
+                      final iconStr = opt['icon']?.toString();
 
-                return Expanded(
-                  child: Padding(
-                    padding: EdgeInsets.only(right: isLast ? 0 : 8),
-                    child: _buildOptionCard(
-                      value: value,
-                      label: label,
-                      description: desc,
-                      icon: _getIconData(iconStr, index),
+                      return _buildVerticalOptionCard(
+                        value: value,
+                        label: label,
+                        description: desc,
+                        icon: _getIconData(iconStr, index),
+                      );
+                    }).toList(),
+                  )
+                : IntrinsicHeight(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: List.generate(options.length, (index) {
+                        final opt = options[index];
+                        final value = opt['value']?.toString() ?? '';
+                        final label = opt['label']?.toString() ?? '';
+                        final desc = opt['description']?.toString() ?? '';
+                        final iconStr = opt['icon']?.toString();
+                        final isLast = index == options.length - 1;
+
+                        return Expanded(
+                          child: Padding(
+                            padding: EdgeInsets.only(right: isLast ? 0 : 8),
+                            child: _buildOptionCard(
+                              value: value,
+                              label: label,
+                              description: desc,
+                              icon: _getIconData(iconStr, index),
+                            ),
+                          ),
+                        );
+                      }),
                     ),
                   ),
-                );
-              }),
-            ),
           const SizedBox(height: 28),
 
           // Save Button with Loading State
@@ -331,7 +364,7 @@ class _AnswerDailyBriefBottomSheetState
             },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
-        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 4),
+        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 6),
         decoration: BoxDecoration(
           color: isSelected ? const Color(0xFFEBF7F6) : Colors.white,
           borderRadius: BorderRadius.circular(16),
@@ -351,22 +384,26 @@ class _AnswerDailyBriefBottomSheetState
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Icon(
               icon,
-              size: 28,
+              size: 26,
               color: isSelected ? AppColors.brandTeal : AppColors.textSecondary,
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 8),
             Text(
               label,
               style: const TextStyle(
                 fontFamily: 'Nunito',
-                fontSize: 13,
+                fontSize: 12,
                 fontWeight: FontWeight.bold,
                 color: AppColors.textPrimary,
+                height: 1.2,
               ),
               textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
             if (description.isNotEmpty) ...[
               const SizedBox(height: 4),
@@ -379,8 +416,109 @@ class _AnswerDailyBriefBottomSheetState
                   height: 1.2,
                 ),
                 textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
             ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildVerticalOptionCard({
+    required String value,
+    required String label,
+    required String description,
+    required IconData icon,
+  }) {
+    final isSelected = _selectedOptionValue == value;
+
+    return GestureDetector(
+      onTap: _isSubmitting
+          ? null
+          : () {
+              setState(() {
+                _selectedOptionValue = value;
+              });
+            },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        margin: const EdgeInsets.only(bottom: 10),
+        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFFEBF7F6) : Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isSelected ? AppColors.brandTeal : AppColors.cardBorder,
+            width: isSelected ? 1.5 : 1,
+          ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: AppColors.brandTeal.withValues(alpha: 0.1),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+              : [],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 38,
+              height: 38,
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? AppColors.brandTeal.withValues(alpha: 0.12)
+                    : const Color(0xFFF1F5F9),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                icon,
+                size: 20,
+                color: isSelected ? AppColors.brandTeal : AppColors.textSecondary,
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style: const TextStyle(
+                      fontFamily: 'Nunito',
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  if (description.isNotEmpty) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      description,
+                      style: TextStyle(
+                        fontFamily: 'Nunito',
+                        fontSize: 12,
+                        color: isSelected
+                            ? AppColors.brandTeal
+                            : AppColors.textSecondary,
+                        height: 1.25,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            const SizedBox(width: 10),
+            Icon(
+              isSelected
+                  ? Icons.check_circle_rounded
+                  : Icons.radio_button_unchecked_rounded,
+              size: 22,
+              color: isSelected ? AppColors.brandTeal : AppColors.border,
+            ),
           ],
         ),
       ),
