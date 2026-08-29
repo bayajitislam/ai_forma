@@ -10,14 +10,21 @@ import 'package:ai_forma/core/models/weight_record.dart';
 class WeightEntryBottomSheet extends StatefulWidget {
   final WeightRecord? initialRecord;
   final double? initialWeightKg;
+  final ValueChanged<double>? onWeightSaved;
 
   const WeightEntryBottomSheet({
     super.key,
     this.initialRecord,
     this.initialWeightKg,
+    this.onWeightSaved,
   });
 
-  static Future<void> show(BuildContext context, {WeightRecord? record, double? initialWeightKg}) {
+  static Future<void> show(
+    BuildContext context, {
+    WeightRecord? record,
+    double? initialWeightKg,
+    ValueChanged<double>? onWeightSaved,
+  }) {
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -28,6 +35,7 @@ class WeightEntryBottomSheet extends StatefulWidget {
       builder: (_) => WeightEntryBottomSheet(
         initialRecord: record,
         initialWeightKg: initialWeightKg,
+        onWeightSaved: onWeightSaved,
       ),
     );
   }
@@ -48,14 +56,16 @@ class _WeightEntryBottomSheetState extends State<WeightEntryBottomSheet> {
   }
 
   void _save() {
-    final controller = Get.find<WeightController>();
-
-    if (widget.initialRecord != null) {
-      controller.updateRecord(widget.initialRecord!.id, _selectedWeightKg);
-    } else {
-      controller.addRecord(_selectedWeightKg);
+    if (Get.isRegistered<WeightController>()) {
+      final controller = Get.find<WeightController>();
+      if (widget.initialRecord != null) {
+        controller.updateRecord(widget.initialRecord!.id, _selectedWeightKg);
+      } else {
+        controller.addRecord(_selectedWeightKg);
+      }
     }
 
+    widget.onWeightSaved?.call(_selectedWeightKg);
     Navigator.of(context).pop();
   }
 
@@ -97,7 +107,7 @@ class _WeightEntryBottomSheetState extends State<WeightEntryBottomSheet> {
           const SizedBox(height: 32),
           PrimaryButton(
             onPressed: _save,
-            label: 'SAVE',
+            label: 'Save Weight',
           ),
         ],
       ),

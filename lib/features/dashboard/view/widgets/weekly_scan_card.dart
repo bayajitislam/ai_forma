@@ -9,9 +9,14 @@ import 'package:ai_forma/features/dashboard/controllers/daily_brief_controller.d
 import 'package:ai_forma/features/dashboard/models/home_response_model.dart';
 
 class WeeklyScanCard extends StatelessWidget {
-  const WeeklyScanCard({super.key, this.weeklyScanData});
+  const WeeklyScanCard({
+    super.key,
+    this.weeklyScanData,
+    this.forceVisible = false,
+  });
 
   final HomeWeeklyScanModel? weeklyScanData;
+  final bool forceVisible;
 
   void _beginScan(BuildContext context) {
     final user = Get.isRegistered<UserController>()
@@ -39,7 +44,7 @@ class WeeklyScanCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (weeklyScanData != null && !weeklyScanData!.visible) {
+    if (!forceVisible && weeklyScanData != null && !weeklyScanData!.visible) {
       return const SizedBox.shrink();
     }
 
