@@ -7,6 +7,8 @@ import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
 import 'package:get/get.dart' hide FormData, MultipartFile;
 
+import 'package:ai_forma/core/services/push_notification_service.dart';
+
 class UserController extends GetxController {
   final DioClient _dio;
   UserController(this._dio);
@@ -27,6 +29,9 @@ class UserController extends GetxController {
   Future<void> _loadUserFromStorage() async {
     final user = await AuthStorage.getUser();
     currentUser.value = user;
+    if (user != null) {
+      PushNotificationService.instance.registerCurrentToken();
+    }
   }
 
   /// Fetch updated user profile from GET /api/auth/me/
@@ -225,10 +230,12 @@ class UserController extends GetxController {
   Future<void> setUser(UserModel user) async {
     currentUser.value = user;
     await AuthStorage.saveUser(user);
+    PushNotificationService.instance.registerCurrentToken();
   }
 
   /// Logout and clear user session
   Future<void> logout() async {
+    await PushNotificationService.instance.unregisterTokenFromBackend();
     currentUser.value = null;
     await AuthStorage.clearSession();
   }

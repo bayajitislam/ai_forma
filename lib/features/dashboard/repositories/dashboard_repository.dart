@@ -130,4 +130,42 @@ class DashboardRepository {
       return Left(ServerFailure(message: 'Unexpected error: $e'));
     }
   }
+
+  /// Submit Scan Day Weight to POST /api/checkins/cycle-weight/
+  Future<Either<Failure, Map<String, dynamic>>> submitScanDayWeight({
+    required double weightKg,
+    int? cycleId,
+  }) async {
+    try {
+      final payload = <String, dynamic>{
+        'weight_kg': weightKg,
+      };
+      if (cycleId != null) {
+        payload['cycle_id'] = cycleId;
+      }
+
+      final response = await _dio.post(
+        ApiEndpoint.scanDayWeight,
+        data: payload,
+      );
+
+      if ((response.statusCode == 200 || response.statusCode == 201) &&
+          response.data != null &&
+          response.data is Map<String, dynamic>) {
+        return Right(response.data as Map<String, dynamic>);
+      }
+
+      return Left(ServerFailure());
+    } on DioException catch (e) {
+      if (e.response?.data is Map<String, dynamic>) {
+        final message = ApiFailure.parseMessage(
+          e.response!.data as Map<String, dynamic>,
+        );
+        return Left(ApiFailure(message: message));
+      }
+      return Left(ServerFailure(message: 'Failed to record weight'));
+    } catch (e) {
+      return Left(ServerFailure(message: 'Unexpected error: $e'));
+    }
+  }
 }

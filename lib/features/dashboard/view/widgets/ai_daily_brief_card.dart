@@ -60,20 +60,31 @@ class _AIDailyBriefCardState extends State<AIDailyBriefCard> {
     WeightEntryBottomSheet.show(
       context,
       initialWeightKg: initialVal,
-      onWeightSaved: (weight) {
+      onWeightSaved: (weight) async {
         setState(() {
           _savedScanWeightKg = weight;
         });
+
+        if (Get.isRegistered<HomeController>()) {
+          final homeController = Get.find<HomeController>();
+          final result = await homeController.submitScanDayWeight(weightKg: weight);
+          if (result.success) {
+            Get.snackbar(
+              'Success',
+              'Scan day weight saved',
+              snackPosition: SnackPosition.BOTTOM,
+              backgroundColor: AppColors.brandTeal,
+              colorText: Colors.white,
+              margin: const EdgeInsets.all(16),
+            );
+          }
+        }
       },
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    if (widget.dailyBriefData != null && !widget.dailyBriefData!.visible) {
-      return const SizedBox.shrink();
-    }
-
     final controller = DailyBriefController.to;
 
     return Obx(() {
@@ -87,22 +98,57 @@ class _AIDailyBriefCardState extends State<AIDailyBriefCard> {
 
       final badgeNum = widget.dailyBriefData?.badge ?? daysLeft;
 
-      final isScanDay = widget.forceScanDay ||
-          (badgeNum == 0) ||
-          (widget.dailyBriefData?.heading?.toLowerCase().contains('scan') ??
-              false);
+      final ctaLabelText = widget.dailyBriefData?.ctaLabel ??
+          widget.priorityData?.ctaLabel;
 
-      final isScanComplete =
-          widget.dailyBriefData?.heading?.toLowerCase().contains('complete') ??
-              false;
+      final kindStr = widget.dailyBriefData?.kind ?? widget.priorityData?.kind;
+
+      final lowerHeading = widget.dailyBriefData?.heading?.toLowerCase() ?? '';
+      final titleText = widget.dailyBriefData?.title?.toLowerCase() ?? '';
+
+      final todayDate = homeData?.header?.today;
+      final scanDate = homeData?.latestAnalysis?.scanDate;
+      final isScanDateToday = (todayDate != null &&
+          scanDate != null &&
+          todayDate.isNotEmpty &&
+          todayDate == scanDate);
+
+      final isPriorityNone = widget.priorityData?.kind == 'none';
+      final isBriefHidden = widget.dailyBriefData?.visible == false;
+
+      final isScanDay = widget.forceScanDay ||
+          kindStr == 'scan_day' ||
+          badgeNum == 0 ||
+          isScanDateToday ||
+          (isBriefHidden && isPriorityNone) ||
+          lowerHeading == 'scan day';
+
+      final isScanComplete = kindStr == 'scan_complete' ||
+          lowerHeading.contains('scan complete') ||
+          titleText.contains('analysis is ready');
 
       if (isScanComplete) {
         return _buildScanCompleteCard(context);
       }
 
+      final hasLoggedWeightToday = _savedScanWeightKg != null ||
+          (widget.dailyBriefData?.weightKgPrefill != null &&
+              widget.dailyBriefData!.weightKgPrefill!.isNotEmpty) ||
+          (homeData?.weeklyScan?.weightLogged == true) ||
+          (homeData?.weeklyScan?.cycleWeightKg != null);
+
+      final displayWeight = _savedScanWeightKg ??
+          (widget.dailyBriefData?.weightKgPrefill != null
+              ? double.tryParse(widget.dailyBriefData!.weightKgPrefill!)
+              : (homeData?.weeklyScan?.cycleWeightKg != null
+                  ? double.tryParse(homeData!.weeklyScan!.cycleWeightKg!)
+                  : (homeData?.weight?.currentKg != null
+                      ? double.tryParse(homeData!.weight!.currentKg!)
+                      : null)));
+
       if (isScanDay) {
-        if (_savedScanWeightKg != null) {
-          return _buildScanDayWeightUpdatedCard(context);
+        if (hasLoggedWeightToday && displayWeight != null) {
+          return _buildScanDayWeightUpdatedCard(context, displayWeight);
         } else {
           return _buildScanDayWeightPendingCard(context);
         }
@@ -113,7 +159,7 @@ class _AIDailyBriefCardState extends State<AIDailyBriefCard> {
       final aiDescription = widget.dailyBriefData?.aiFeedback?.description ??
           homeData?.todayAiFeedback?.description;
 
-      final headingText = widget.dailyBriefData?.heading ?? 'AI DAILY BRIEF';
+      final headingDisplay = widget.dailyBriefData?.heading ?? 'AI DAILY BRIEF';
 
       final cardTitle = isAnswered && aiTitle != null && aiTitle.isNotEmpty
           ? aiTitle
@@ -128,9 +174,9 @@ class _AIDailyBriefCardState extends State<AIDailyBriefCard> {
           : (widget.dailyBriefData?.subtitle ??
               'Your answers help AiFORMA build a more accurate understanding of your recovery before your next scan.');
 
-      final ctaLabelText = widget.dailyBriefData?.ctaLabel ??
-          widget.priorityData?.ctaLabel ??
-          "Answer today's question";
+      final ctaButtonLabel = (ctaLabelText != null && ctaLabelText.isNotEmpty)
+          ? ctaLabelText
+          : "Answer today's question";
 
       return Container(
         width: double.infinity,
@@ -159,7 +205,7 @@ class _AIDailyBriefCardState extends State<AIDailyBriefCard> {
                     ),
                     const SizedBox(width: 6),
                     Text(
-                      headingText,
+                      headingDisplay,
                       style: const TextStyle(
                         fontFamily: 'Nunito',
                         fontSize: 11,
@@ -252,7 +298,7 @@ class _AIDailyBriefCardState extends State<AIDailyBriefCard> {
                   ),
                 ),
               ),
-            ] else if (ctaLabelText.isNotEmpty) ...[
+            ] else if (ctaButtonLabel.isNotEmpty) ...[
               const SizedBox(height: 16),
               GestureDetector(
                 onTap: () => _openAnswerSheet(context),
@@ -267,7 +313,7 @@ class _AIDailyBriefCardState extends State<AIDailyBriefCard> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        ctaLabelText,
+                        ctaButtonLabel,
                         style: const TextStyle(
                           fontFamily: 'Nunito',
                           fontSize: 14,
@@ -408,12 +454,13 @@ class _AIDailyBriefCardState extends State<AIDailyBriefCard> {
   }
 
   // Scan Day State 2: Weight Updated
-  Widget _buildScanDayWeightUpdatedCard(BuildContext context) {
+  Widget _buildScanDayWeightUpdatedCard(BuildContext context, [double? displayWeight]) {
     final headingText = widget.dailyBriefData?.heading ?? 'AI DAILY BRIEF';
     final cardTitle =
         widget.dailyBriefData?.title ?? "You're ready for today's scan.";
     final cardSubtitle = widget.dailyBriefData?.subtitle ??
         "Your weight and Daily Brief responses are ready to be considered alongside today's physique scan.";
+    final weightVal = displayWeight ?? _savedScanWeightKg ?? 0.0;
 
     return Container(
       width: double.infinity,
@@ -524,7 +571,7 @@ class _AIDailyBriefCardState extends State<AIDailyBriefCard> {
                   ),
                   const Spacer(),
                   Text(
-                    '${_savedScanWeightKg!.toStringAsFixed(1)} kg',
+                    '${weightVal.toStringAsFixed(1)} kg',
                     style: const TextStyle(
                       fontFamily: 'Nunito',
                       fontSize: 14,

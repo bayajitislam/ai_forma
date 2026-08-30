@@ -199,6 +199,7 @@ class DailyBriefAiFeedbackModel {
 
 class HomeDailyBriefModel {
   final bool visible;
+  final String? kind;
   final String? heading;
   final int? badge;
   final int? answeredCount;
@@ -217,6 +218,7 @@ class HomeDailyBriefModel {
 
   const HomeDailyBriefModel({
     required this.visible,
+    this.kind,
     this.heading,
     this.badge,
     this.answeredCount,
@@ -237,6 +239,7 @@ class HomeDailyBriefModel {
   factory HomeDailyBriefModel.fromJson(Map<String, dynamic> json) {
     return HomeDailyBriefModel(
       visible: json['visible'] as bool? ?? false,
+      kind: json['kind']?.toString(),
       heading: json['heading']?.toString(),
       badge: safeParseInt(json['badge']),
       answeredCount: safeParseInt(json['answered_count']),
@@ -270,6 +273,8 @@ class HomeWeeklyScanModel {
   final String? ctaLabel;
   final String? attachedBriefsLabel;
   final bool paywallRequired;
+  final bool weightLogged;
+  final String? cycleWeightKg;
 
   const HomeWeeklyScanModel({
     required this.visible,
@@ -279,6 +284,8 @@ class HomeWeeklyScanModel {
     this.ctaLabel,
     this.attachedBriefsLabel,
     this.paywallRequired = false,
+    this.weightLogged = false,
+    this.cycleWeightKg,
   });
 
   factory HomeWeeklyScanModel.fromJson(Map<String, dynamic> json) {
@@ -290,6 +297,8 @@ class HomeWeeklyScanModel {
       ctaLabel: json['cta_label']?.toString(),
       attachedBriefsLabel: json['attached_briefs_label']?.toString(),
       paywallRequired: json['paywall_required'] as bool? ?? false,
+      weightLogged: json['weight_logged'] as bool? ?? false,
+      cycleWeightKg: json['cycle_weight_kg']?.toString(),
     );
   }
 }

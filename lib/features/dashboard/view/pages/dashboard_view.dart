@@ -92,8 +92,7 @@ class DashboardView extends StatelessWidget {
                 priorityData: homeData?.todayPriority,
                 dailyBriefData: homeData?.dailyBrief,
               ),
-              if (homeData?.dailyBrief?.visible == true)
-                const SizedBox(height: 16),
+              const SizedBox(height: 16),
 
               // Weekly Scan Widget
               WeeklyScanCard(weeklyScanData: homeData?.weeklyScan),

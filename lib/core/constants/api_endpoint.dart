@@ -60,4 +60,9 @@ class ApiEndpoint {
   static const String weightTrends = '/api/checkins/weight-trends/';
   static const String weightProgress = '/api/checkins/weight-progress/';
   static const String weightHistory = '/api/checkins/weight-history/';
+  static const String scanDayWeight = '/api/checkins/cycle-weight/';
+
+  //devices & push notifications
+  static const String registerPushToken = '/api/devices/push-token/register/';
+  static const String unregisterPushToken = '/api/devices/push-token/unregister/';
 }

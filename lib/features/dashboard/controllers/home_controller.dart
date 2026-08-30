@@ -73,4 +73,35 @@ class HomeController extends GetxController {
       isSubmittingAnswer(false);
     }
   }
+
+  /// Submit Scan Day Weight to POST /api/checkins/cycle-weight/ and refresh Home
+  Future<({bool success, String message})> submitScanDayWeight({
+    required double weightKg,
+    int? cycleId,
+  }) async {
+    isSubmittingAnswer(true);
+    try {
+      final result = await repository.submitScanDayWeight(
+        weightKg: weightKg,
+        cycleId: cycleId,
+      );
+
+      return result.fold(
+        (failure) {
+          return (success: false, message: failure.message);
+        },
+        (data) {
+          fetchHomeData(force: true);
+          return (
+            success: true,
+            message: 'Scan day weight recorded successfully.'
+          );
+        },
+      );
+    } catch (e) {
+      return (success: false, message: 'Failed to record weight.');
+    } finally {
+      isSubmittingAnswer(false);
+    }
+  }
 }
