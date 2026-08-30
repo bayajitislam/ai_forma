@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:ai_forma/core/common/app_loader.dart';
+import 'package:ai_forma/core/widgets/app_loader.dart';
 import 'package:ai_forma/features/check_in/controllers/check_in_controller.dart';
 import 'package:ai_forma/features/check_in/models/scan_validation_model.dart';
 import 'package:flutter/material.dart';
@@ -10,7 +10,6 @@ import 'package:ai_forma/core/widgets/app_secondary_button.dart';
 import 'package:ai_forma/core/widgets/primary_button.dart';
 import 'package:ai_forma/features/check_in/constants/check_in_strings.dart';
 import 'package:ai_forma/features/check_in/view/pages/camera_capture_view.dart';
-import 'package:ai_forma/features/check_in/view/pages/check_in_weight_view.dart';
 import 'package:ai_forma/features/check_in/view/widgets/check_in_header.dart';
 import 'package:ai_forma/features/check_in/view/widgets/check_in_widgets.dart';
 import 'package:get/get.dart';
@@ -48,7 +47,7 @@ class _ScanReviewViewState extends State<ScanReviewView> {
     if (_isNavigating) return;
     if (controller.validationResult.value?.allValid == true) {
       setState(() => _isNavigating = true);
-      Get.offNamed(RoutesName.analysing);
+      Get.toNamed(RoutesName.analysing);
     }
   }
 
@@ -86,6 +85,9 @@ class _ScanReviewViewState extends State<ScanReviewView> {
                     title = 'Scan Quality Issues';
                     subtitle = 'Some photos failed quality checks. Please retake.';
                   }
+                } else if (controller?.errorMessage.value.isNotEmpty == true) {
+                  title = 'Connection Issue';
+                  subtitle = 'Unable to validate photos due to network error. Tap Retry to try again.';
                 }
 
                 return Column(
@@ -224,15 +226,34 @@ class _ScanReviewViewState extends State<ScanReviewView> {
                               ),
 
                           if (errorMessage.isNotEmpty && result == null && !isValidating)
-                            Padding(
-                              padding: const EdgeInsets.only(top: 8),
-                              child: Text(
-                                errorMessage,
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  color: Colors.red.shade400,
-                                  fontWeight: FontWeight.w500,
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: Colors.red.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: Colors.redAccent.withValues(alpha: 0.5),
                                 ),
+                              ),
+                              child: Row(
+                                children: [
+                                  const Icon(
+                                    Icons.cloud_off_rounded,
+                                    color: Colors.redAccent,
+                                    size: 20,
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: Text(
+                                      errorMessage,
+                                      style: const TextStyle(
+                                        fontSize: 13,
+                                        color: Colors.redAccent,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                         ],
@@ -266,9 +287,21 @@ class _ScanReviewViewState extends State<ScanReviewView> {
               if (controller != null)
                 Obx(() {
                   final isValidating = controller.isValidating.value;
-                  final allValid = controller.validationResult.value?.allValid ?? false;
+                  final result = controller.validationResult.value;
+                  final errorMessage = controller.errorMessage.value;
+                  final allValid = result?.allValid ?? false;
 
+                  final bool hasNetworkError =
+                      errorMessage.isNotEmpty && result == null && !isValidating;
                   final bool canProceed = !isValidating && allValid;
+
+                  if (hasNetworkError) {
+                    return PrimaryButton(
+                      isLoading: isValidating,
+                      onPressed: () => controller.validateImages(),
+                      label: 'RETRY VALIDATION',
+                    );
+                  }
 
                   return PrimaryButton(
                     isLoading: false,
@@ -278,7 +311,7 @@ class _ScanReviewViewState extends State<ScanReviewView> {
                 })
               else
                 PrimaryButton(
-                  onPressed: () => Get.to(() => const CheckInWeightView()),
+                  onPressed: () => Get.toNamed(RoutesName.checkInWeight),
                   label: CheckInStrings.looksGood,
                 ),
               const SizedBox(height: 12),
@@ -299,7 +332,10 @@ class _ScanReviewViewState extends State<ScanReviewView> {
                       startAngle = ScanAngle.front;
                     }
 
-                    Get.off(() => CameraCaptureView(angle: startAngle));
+                    Get.offNamed(
+                      RoutesName.cameraCapture,
+                      arguments: startAngle,
+                    );
                   }
                 },
                 label: CheckInStrings.retakePhotos,
@@ -391,33 +427,33 @@ class _ScanReviewViewState extends State<ScanReviewView> {
                 const Icon(Icons.check_circle_outline, color: AppColors.textSecondary, size: 24),
             ],
           ),
-          // if (hasError) ...[
-          //   const SizedBox(height: 8),
-          //   Container(
-          //     width: double.infinity,
-          //     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-          //     decoration: BoxDecoration(
-          //       color: Colors.red.withValues(alpha: 0.1),
-          //       borderRadius: BorderRadius.circular(8),
-          //     ),
-          //     child: Row(
-          //       children: [
-          //         const Icon(Icons.info_outline, size: 14, color: Colors.redAccent),
-          //         const SizedBox(width: 6),
-          //         Expanded(
-          //           child: Text(
-          //             checkDetail.displayReason,
-          //             style: const TextStyle(
-          //               fontSize: 12,
-          //               color: Colors.redAccent,
-          //               fontWeight: FontWeight.w500,
-          //             ),
-          //           ),
-          //         ),
-          //       ],
-          //     ),
-          //   ),
-          // ],
+          if (hasError) ...[
+            const SizedBox(height: 8),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: Colors.red.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.info_outline, size: 14, color: Colors.redAccent),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      checkDetail.displayReason,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Colors.redAccent,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ],
       ),
     );

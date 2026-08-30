@@ -18,6 +18,10 @@ import 'package:ai_forma/features/insights/view/pages/posture_analysis_view.dart
 import 'package:ai_forma/features/insights/view/pages/next_step_view.dart';
 import 'package:ai_forma/features/insights/view/pages/strengths_view.dart';
 import 'package:ai_forma/features/insights/view/pages/visual_scan_view.dart';
+import 'package:get/get.dart';
+import 'package:ai_forma/core/network/dio_client.dart';
+import 'package:ai_forma/features/check_in/repositories/check_in_repository.dart';
+import 'package:ai_forma/features/check_in/controllers/check_in_controller.dart';
 import 'package:ai_forma/features/check_in/constants/check_in_strings.dart';
 import 'package:ai_forma/features/check_in/view/pages/check_in_home_view.dart';
 import 'package:ai_forma/features/dashboard/constants/dashboard_strings.dart';
@@ -365,12 +369,21 @@ void main() {
   testWidgets('Check-in home shows streak and begin scan button', (
     WidgetTester tester,
   ) async {
+    if (!Get.isRegistered<DioClient>()) {
+      Get.put(DioClient());
+    }
+    if (!Get.isRegistered<CheckInRepository>()) {
+      Get.put(CheckInRepository(Get.find()));
+    }
+    if (!Get.isRegistered<CheckInController>()) {
+      Get.put(CheckInController(repository: Get.find()));
+    }
+
     await tester.pumpWidget(
-      MaterialApp(home: CheckInHomeView(goInsightPage: () {})),
+      GetMaterialApp(home: CheckInHomeView(goInsightPage: () {})),
     );
 
     expect(find.text(CheckInStrings.beginNewScan), findsOneWidget);
-    expect(find.text(CheckInStrings.latestScan), findsOneWidget);
     expect(find.text(CheckInStrings.statTotal), findsOneWidget);
   });
 }

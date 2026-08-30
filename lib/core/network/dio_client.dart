@@ -5,16 +5,32 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 
 class DioClient {
+  // Standard timeouts for normal API calls.
+  static const Duration _kConnectTimeout = Duration(seconds: 20);
+  static const Duration _kReceiveTimeout = Duration(seconds: 20);
+  static const Duration _kSendTimeout = Duration(seconds: 30);
+
+  // Extended send timeout for heavy multipart scan uploads.
+  static const Duration _kUploadSendTimeout = Duration(seconds: 120);
+
+  /// Returns [Options] to pass to [post]/[put]/[patch] for multipart uploads.
+  static Options uploadOptions({Map<String, dynamic>? headers}) {
+    return Options(
+      sendTimeout: _kUploadSendTimeout,
+      headers: headers,
+    );
+  }
+
   DioClient() {
-    // Dio Configaration
+    // Dio Configuration
     _dio = Dio(
       BaseOptions(
         baseUrl: ApiEndpoint.baseUrl,
         headers: {'Content-Type': 'application/json'},
         responseType: ResponseType.json,
-        sendTimeout: const Duration(seconds: 120),
-        receiveTimeout: const Duration(seconds: 120),
-        connectTimeout: const Duration(seconds: 120),
+        connectTimeout: _kConnectTimeout,
+        receiveTimeout: _kReceiveTimeout,
+        sendTimeout: _kSendTimeout,
       ),
     );
     _dio.interceptors.addAll([

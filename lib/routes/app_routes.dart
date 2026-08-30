@@ -16,8 +16,12 @@ import 'package:ai_forma/features/auth/view/pages/verify_email_view.dart';
 import 'package:ai_forma/features/check_in/bindings/check_in_binding.dart';
 import 'package:ai_forma/features/check_in/view/pages/analysing_view.dart';
 import 'package:ai_forma/features/check_in/view/pages/analysis_complete_view.dart';
+import 'package:ai_forma/features/check_in/view/pages/camera_capture_view.dart';
+import 'package:ai_forma/features/check_in/view/pages/camera_position_view.dart';
 import 'package:ai_forma/features/check_in/view/pages/check_in_intro_view.dart';
+import 'package:ai_forma/features/check_in/view/pages/check_in_weight_view.dart';
 import 'package:ai_forma/features/check_in/view/pages/scan_review_view.dart';
+import 'package:ai_forma/features/check_in/view/pages/step_into_frame_view.dart';
 import 'package:ai_forma/features/onboarding/view/pages/onboarding_view.dart';
 import 'package:ai_forma/features/onboarding/view/pages/privacy_onboarding_view.dart';
 import 'package:ai_forma/features/shell/view/pages/app_shell_view.dart';
@@ -88,12 +92,39 @@ class AppRoutes {
       binding: CheckInBinding(),
     ),
     GetPage(
+      name: RoutesName.cameraPosition,
+      page: () => const CameraPositionView(),
+      binding: CheckInBinding(),
+    ),
+    GetPage(
+      name: RoutesName.stepIntoFrame,
+      page: () => const StepIntoFrameView(),
+      binding: CheckInBinding(),
+    ),
+    GetPage(
+      name: RoutesName.cameraCapture,
+      page: () {
+        final angle = Get.arguments is ScanAngle
+            ? Get.arguments as ScanAngle
+            : ScanAngle.front;
+        return CameraCaptureView(angle: angle);
+      },
+      binding: CheckInBinding(),
+    ),
+    GetPage(
       name: RoutesName.scanReview,
       page: () => const ScanReviewView(),
+      binding: CheckInBinding(),
+    ),
+    GetPage(
+      name: RoutesName.checkInWeight,
+      page: () => const CheckInWeightView(),
+      binding: CheckInBinding(),
     ),
     GetPage(
       name: RoutesName.analysing,
       page: () => const AnalysingView(),
+      binding: CheckInBinding(),
     ),
     GetPage(
       name: RoutesName.analysisComplete,

@@ -24,7 +24,7 @@ class _AnalysisCompleteViewState extends State<AnalysisCompleteView> {
     super.initState();
     // Dispose CheckInController and release memory/camera resources when reaching this view
     if (Get.isRegistered<CheckInController>()) {
-      Get.delete<CheckInController>();
+      Get.delete<CheckInController>(force: true);
     }
   }
 

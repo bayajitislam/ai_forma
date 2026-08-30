@@ -92,6 +92,7 @@ class CheckInRepository {
       final response = await _dio.post(
         ApiEndpoint.validateImages,
         data: formData,
+        options: DioClient.uploadOptions(),
       );
 
       if (response.statusCode == 200 && response.data != null) {
@@ -155,7 +156,11 @@ class CheckInRepository {
 
       final formData = FormData.fromMap(formDataMap);
 
-      final response = await _dio.post(ApiEndpoint.createScan, data: formData);
+      final response = await _dio.post(
+        ApiEndpoint.createScan,
+        data: formData,
+        options: DioClient.uploadOptions(),
+      );
 
       if ((response.statusCode == 200 || response.statusCode == 201) &&
           response.data != null) {
@@ -226,6 +231,7 @@ class CheckInRepository {
       final response = await _dio.post(
         ApiEndpoint.weeklyCheckin,
         data: formData,
+        options: DioClient.uploadOptions(),
       );
 
       if ((response.statusCode == 200 || response.statusCode == 201) &&

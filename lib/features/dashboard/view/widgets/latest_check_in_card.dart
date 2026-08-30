@@ -166,30 +166,59 @@ class _LatestCheckInCardState extends State<LatestCheckInCard>
                   Semantics(
                     label: 'Toggle photos visibility',
                     value: _showPhotos ? 'Photos visible' : 'Photos hidden',
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          _showPhotos
-                              ? Icons.visibility_outlined
-                              : Icons.visibility_off_outlined,
-                          size: 16,
-                          color: AppColors.brandTeal,
-                        ),
-                        const SizedBox(width: 4),
-                        Switch(
-                          value: _showPhotos,
-                          onChanged: _setShowPhotos,
-                          activeThumbColor: AppColors.brandTeal,
-                          activeTrackColor: AppColors.brandTeal.withValues(
-                            alpha: 0.25,
+                    child: GestureDetector(
+                      onTap: () => _setShowPhotos(!_showPhotos),
+                      behavior: HitTestBehavior.opaque,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            _showPhotos
+                                ? Icons.visibility_outlined
+                                : Icons.visibility_off_outlined,
+                            size: 15,
+                            color: _showPhotos
+                                ? AppColors.brandTeal
+                                : AppColors.textSecondary,
                           ),
-                          inactiveThumbColor: AppColors.navInactive,
-                          inactiveTrackColor: AppColors.cardBorder,
-                          materialTapTargetSize:
-                              MaterialTapTargetSize.shrinkWrap,
-                        ),
-                      ],
+                          const SizedBox(width: 6),
+                          AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            curve: Curves.easeInOut,
+                            width: 32,
+                            height: 18,
+                            padding: const EdgeInsets.all(2),
+                            decoration: BoxDecoration(
+                              color: _showPhotos
+                                  ? AppColors.brandTeal
+                                  : const Color(0xFFD1D5DB),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: AnimatedAlign(
+                              duration: const Duration(milliseconds: 200),
+                              curve: Curves.easeInOut,
+                              alignment: _showPhotos
+                                  ? Alignment.centerRight
+                                  : Alignment.centerLeft,
+                              child: Container(
+                                width: 14,
+                                height: 14,
+                                decoration: const BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Colors.white,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Color(0x29000000),
+                                      blurRadius: 2,
+                                      offset: Offset(0, 1),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ],

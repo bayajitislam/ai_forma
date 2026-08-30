@@ -1,9 +1,9 @@
 import 'dart:io';
 
-import 'package:ai_forma/core/common/app_loader.dart';
+import 'package:ai_forma/core/widgets/app_loader.dart';
 import 'package:ai_forma/features/check_in/controllers/check_in_controller.dart';
 import 'package:ai_forma/features/check_in/repositories/check_in_repository.dart';
-import 'package:ai_forma/features/check_in/view/pages/scan_review_view.dart';
+import 'package:ai_forma/routes/routes_name.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:ai_forma/core/icons/app_icons.dart';
@@ -166,9 +166,7 @@ class _CameraCaptureViewState extends State<CameraCaptureView>
       }
       _galleryAnimController.forward(from: 0);
     } else {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute<void>(builder: (_) => const ScanReviewView()),
-      );
+      Get.offNamed(RoutesName.scanReview);
     }
   }
 
@@ -209,7 +207,7 @@ class _CameraCaptureViewState extends State<CameraCaptureView>
                           (c.frontImage.value != null ||
                               c.sideImage.value != null ||
                               c.backImage.value != null)) {
-                        Get.off(() => const ScanReviewView());
+                        Get.offNamed(RoutesName.scanReview);
                       } else {
                         Get.back();
                       }

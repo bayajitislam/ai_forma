@@ -13,11 +13,13 @@ class AIDailyBriefCard extends StatefulWidget {
     this.priorityData,
     this.dailyBriefData,
     this.forceScanDay = false,
+    this.onScanCompleteTap,
   });
 
   final HomeTodayPriorityModel? priorityData;
   final HomeDailyBriefModel? dailyBriefData;
   final bool forceScanDay;
+  final VoidCallback? onScanCompleteTap;
 
   @override
   State<AIDailyBriefCard> createState() => _AIDailyBriefCardState();
@@ -34,8 +36,32 @@ class _AIDailyBriefCardState extends State<AIDailyBriefCard> {
 
   void _initWeightPrefill() {
     final prefill = widget.dailyBriefData?.weightKgPrefill;
-    if (prefill != null && prefill.isNotEmpty) {
-      _savedScanWeightKg = double.tryParse(prefill);
+    if (prefill != null && prefill.trim().isNotEmpty) {
+      final parsed = double.tryParse(prefill);
+      if (parsed != null && parsed > 0) {
+        _savedScanWeightKg = parsed;
+        return;
+      }
+    }
+
+    if (Get.isRegistered<HomeController>()) {
+      final homeData = Get.find<HomeController>().homeData.value;
+      if (homeData?.weeklyScan?.cycleWeightKg != null &&
+          homeData!.weeklyScan!.cycleWeightKg!.trim().isNotEmpty) {
+        final parsed = double.tryParse(homeData.weeklyScan!.cycleWeightKg!);
+        if (parsed != null && parsed > 0) {
+          _savedScanWeightKg = parsed;
+          return;
+        }
+      }
+      if (homeData?.weeklyScan?.weightLogged == true &&
+          homeData?.weight?.currentKg != null) {
+        final parsed = double.tryParse(homeData!.weight!.currentKg!);
+        if (parsed != null && parsed > 0) {
+          _savedScanWeightKg = parsed;
+          return;
+        }
+      }
     }
   }
 
@@ -43,7 +69,9 @@ class _AIDailyBriefCardState extends State<AIDailyBriefCard> {
   void didUpdateWidget(covariant AIDailyBriefCard oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.dailyBriefData?.weightKgPrefill !=
-        oldWidget.dailyBriefData?.weightKgPrefill) {
+            oldWidget.dailyBriefData?.weightKgPrefill ||
+        widget.dailyBriefData?.alreadyAnswered !=
+            oldWidget.dailyBriefData?.alreadyAnswered) {
       _initWeightPrefill();
     }
   }
@@ -116,20 +144,20 @@ class _AIDailyBriefCardState extends State<AIDailyBriefCard> {
       final isPriorityNone = widget.priorityData?.kind == 'none';
       final isBriefHidden = widget.dailyBriefData?.visible == false;
 
-      final isScanDay = widget.forceScanDay ||
-          kindStr == 'scan_day' ||
-          badgeNum == 0 ||
-          isScanDateToday ||
+      final isScanComplete = isScanDateToday ||
+          kindStr == 'scan_complete' ||
           (isBriefHidden && isPriorityNone) ||
-          lowerHeading == 'scan day';
-
-      final isScanComplete = kindStr == 'scan_complete' ||
           lowerHeading.contains('scan complete') ||
           titleText.contains('analysis is ready');
 
       if (isScanComplete) {
         return _buildScanCompleteCard(context);
       }
+
+      final isScanDay = widget.forceScanDay ||
+          kindStr == 'scan_day' ||
+          badgeNum == 0 ||
+          lowerHeading == 'scan day';
 
       final hasLoggedWeightToday = _savedScanWeightKg != null ||
           (widget.dailyBriefData?.weightKgPrefill != null &&
@@ -340,10 +368,23 @@ class _AIDailyBriefCardState extends State<AIDailyBriefCard> {
 
   // Scan Day State 1: Weight Needed
   Widget _buildScanDayWeightPendingCard(BuildContext context) {
-    final headingText = widget.dailyBriefData?.heading ?? 'AI DAILY BRIEF';
-    final cardTitle = widget.dailyBriefData?.title ?? 'One final step today.';
-    final cardSubtitle = widget.dailyBriefData?.subtitle ??
-        "Add today's weight before your scan so AiFORMA can compare it with your previous check-in and understand your progress in context.";
+    final data = widget.dailyBriefData;
+    final headingText = (data?.heading?.trim().isNotEmpty == true)
+        ? data!.heading!
+        : 'AI DAILY BRIEF';
+    final cardTitle = (data?.title?.trim().isNotEmpty == true)
+        ? data!.title!
+        : 'One final step today.';
+    final cardSubtitle = (data?.subtitle?.trim().isNotEmpty == true)
+        ? data!.subtitle!
+        : "Add today's weight before your scan so AiFORMA can compare it with your previous check-in and understand your progress in context.";
+    final ctaText = (data?.ctaLabel?.trim().isNotEmpty == true)
+        ? data!.ctaLabel!
+        : 'Update Weight';
+    final badgeText = (data?.kind?.trim().isNotEmpty == true &&
+            data!.kind != 'none')
+        ? data.kind!.replaceAll('_', ' ').toUpperCase()
+        : 'SCAN DAY';
 
     return Container(
       width: double.infinity,
@@ -382,7 +423,7 @@ class _AIDailyBriefCardState extends State<AIDailyBriefCard> {
                   ),
                 ],
               ),
-              _buildBadgeChip('SCAN DAY'),
+              _buildBadgeChip(badgeText),
             ],
           ),
           const SizedBox(height: 12),
@@ -430,10 +471,10 @@ class _AIDailyBriefCardState extends State<AIDailyBriefCard> {
                 color: AppColors.brandTeal,
                 borderRadius: BorderRadius.circular(22),
               ),
-              child: const Center(
+              child: Center(
                 child: Text(
-                  'Update Weight',
-                  style: TextStyle(
+                  ctaText,
+                  style: const TextStyle(
                     fontFamily: 'Nunito',
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
@@ -455,11 +496,20 @@ class _AIDailyBriefCardState extends State<AIDailyBriefCard> {
 
   // Scan Day State 2: Weight Updated
   Widget _buildScanDayWeightUpdatedCard(BuildContext context, [double? displayWeight]) {
-    final headingText = widget.dailyBriefData?.heading ?? 'AI DAILY BRIEF';
-    final cardTitle =
-        widget.dailyBriefData?.title ?? "You're ready for today's scan.";
-    final cardSubtitle = widget.dailyBriefData?.subtitle ??
-        "Your weight and Daily Brief responses are ready to be considered alongside today's physique scan.";
+    final data = widget.dailyBriefData;
+    final headingText = (data?.heading?.trim().isNotEmpty == true)
+        ? data!.heading!
+        : 'AI DAILY BRIEF';
+    final cardTitle = (data?.title?.trim().isNotEmpty == true)
+        ? data!.title!
+        : "You're ready for today's scan.";
+    final cardSubtitle = (data?.subtitle?.trim().isNotEmpty == true)
+        ? data!.subtitle!
+        : "Your weight and Daily Brief responses are ready to be considered alongside today's physique scan.";
+    final badgeText = (data?.kind?.trim().isNotEmpty == true &&
+            data!.kind != 'none')
+        ? data.kind!.replaceAll('_', ' ').toUpperCase()
+        : 'SCAN DAY';
     final weightVal = displayWeight ?? _savedScanWeightKg ?? 0.0;
 
     return Container(
@@ -499,7 +549,7 @@ class _AIDailyBriefCardState extends State<AIDailyBriefCard> {
                   ),
                 ],
               ),
-              _buildBadgeChip('SCAN DAY'),
+              _buildBadgeChip(badgeText),
             ],
           ),
           const SizedBox(height: 12),
@@ -601,11 +651,22 @@ class _AIDailyBriefCardState extends State<AIDailyBriefCard> {
 
   // Scan Complete State
   Widget _buildScanCompleteCard(BuildContext context) {
-    final headingText = widget.dailyBriefData?.heading ?? 'AI DAILY BRIEF';
-    final cardTitle =
-        widget.dailyBriefData?.title ?? 'Your new analysis is ready.';
-    final cardSubtitle = widget.dailyBriefData?.subtitle ??
-        'Nice work completing your scan. Your latest insights are in and ready for you to review.';
+    final headingText = (widget.dailyBriefData?.heading?.trim().isNotEmpty == true)
+        ? widget.dailyBriefData!.heading!
+        : 'AI DAILY BRIEF';
+    final cardTitle = (widget.dailyBriefData?.title?.trim().isNotEmpty == true)
+        ? widget.dailyBriefData!.title!
+        : 'Your new analysis is ready.';
+    final priorityText = widget.priorityData?.text;
+    final cardSubtitle = (widget.dailyBriefData?.subtitle?.trim().isNotEmpty == true)
+        ? widget.dailyBriefData!.subtitle!
+        : ((priorityText != null && priorityText.trim().isNotEmpty)
+            ? priorityText
+            : 'Nice work completing your scan. Your latest insights are in and ready for you to review.');
+
+    final ctaText = (widget.dailyBriefData?.ctaLabel?.trim().isNotEmpty == true)
+        ? widget.dailyBriefData!.ctaLabel!
+        : 'View Your New Analysis';
 
     return Container(
       width: double.infinity,
@@ -683,38 +744,45 @@ class _AIDailyBriefCardState extends State<AIDailyBriefCard> {
             ],
           ),
           const SizedBox(height: 16),
-          Container(
-            width: double.infinity,
-            height: 44,
-            decoration: BoxDecoration(
-              color: AppColors.brandTeal,
-              borderRadius: BorderRadius.circular(22),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: const [
-                Text(
-                  'View Your New Analysis',
-                  style: TextStyle(
-                    fontFamily: 'Nunito',
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
+          GestureDetector(
+            onTap: () {
+              if (widget.onScanCompleteTap != null) {
+                widget.onScanCompleteTap!();
+              }
+            },
+            child: Container(
+              width: double.infinity,
+              height: 44,
+              decoration: BoxDecoration(
+                color: AppColors.brandTeal,
+                borderRadius: BorderRadius.circular(22),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    ctaText,
+                    style: const TextStyle(
+                      fontFamily: 'Nunito',
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  const Icon(
+                    Icons.chevron_right,
+                    size: 18,
                     color: Colors.white,
                   ),
-                ),
-                SizedBox(width: 6),
-                Icon(
-                  Icons.chevron_right,
-                  size: 18,
-                  color: Colors.white,
-                ),
-              ],
+                ],
+              ),
             ),
           ),
           const SizedBox(height: 12),
           _buildHelperPill(
             icon: Icons.check_circle_outline,
-            text: 'Scan completed on today',
+            text: widget.priorityData?.text ?? 'Scan completed for today',
           ),
         ],
       ),

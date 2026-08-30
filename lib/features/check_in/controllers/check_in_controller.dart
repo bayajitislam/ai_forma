@@ -1,4 +1,6 @@
 import 'dart:io';
+import 'dart:isolate';
+import 'dart:typed_data';
 
 import 'package:ai_forma/core/theme/app_colors.dart';
 import 'package:ai_forma/core/theme/app_text_styles.dart';
@@ -15,6 +17,31 @@ import 'package:image_picker/image_picker.dart';
 import 'package:image/image.dart' as img;
 
 import 'package:ai_forma/features/auth/controllers/user_controller.dart';
+
+/// Background isolate image processing helper to prevent main UI thread jank.
+Uint8List? processCapturedImageBytes({
+  required Uint8List rawBytes,
+  required bool isFrontCamera,
+  int quality = 90,
+}) {
+  try {
+    final img.Image? decoded = img.decodeImage(rawBytes);
+    if (decoded == null) return null;
+
+    // 1. Bake EXIF orientation so image is 100% upright portrait mode (0° orientation)
+    img.Image processed = img.bakeOrientation(decoded);
+
+    // 2. Un-mirror front camera captures so final image matches true reality
+    if (isFrontCamera) {
+      processed = img.flipHorizontal(processed);
+    }
+
+    final encoded = img.encodeJpg(processed, quality: quality);
+    return Uint8List.fromList(encoded);
+  } catch (e) {
+    return null;
+  }
+}
 
 class CheckInController extends GetxController {
   final CheckInRepository repository;
@@ -429,23 +456,20 @@ class CheckInController extends GetxController {
 
       File file = File(xFile.path);
 
-      // Process image orientation & un-mirroring
-      final img.Image? decoded = img.decodeImage(rawBytes);
-      if (decoded != null) {
-        // 1. Bake EXIF orientation so image is 100% upright portrait mode (0° orientation)
-        img.Image processed = img.bakeOrientation(decoded);
+      final bool isFrontCamera = availableCameraList.isNotEmpty &&
+          selectedCameraIndex < availableCameraList.length &&
+          availableCameraList[selectedCameraIndex].lensDirection ==
+              CameraLensDirection.front;
 
-        // 2. Un-mirror front camera captures so final image matches true reality
-        if (availableCameraList.isNotEmpty &&
-            selectedCameraIndex < availableCameraList.length) {
-          final currentCam = availableCameraList[selectedCameraIndex];
-          if (currentCam.lensDirection == CameraLensDirection.front) {
-            processed = img.flipHorizontal(processed);
-          }
-        }
+      // Offload orientation baking, un-mirroring, and JPEG re-encoding to a background isolate
+      final processedBytes = await Isolate.run(() => processCapturedImageBytes(
+            rawBytes: rawBytes,
+            isFrontCamera: isFrontCamera,
+            quality: 90,
+          ));
 
-        final encodedBytes = img.encodeJpg(processed, quality: 90);
-        file.writeAsBytesSync(encodedBytes);
+      if (processedBytes != null) {
+        await file.writeAsBytes(processedBytes);
       }
 
       if (currentAngle.value == 'Front') {
@@ -588,14 +612,38 @@ class CheckInController extends GetxController {
           );
 
     return result.fold(
-      (failure) {
+      (failure) async {
+        // If there was a network drop or gateway timeout, verify if the backend
+        // successfully processed the scan in the background before reporting failure.
+        try {
+          final statusResult = await repository.getCheckInStatus();
+          final bool isScanSavedOnBackend = statusResult.fold(
+            (_) => false,
+            (status) {
+              if (isWeekly) {
+                return status.today?.alreadyAnswered == true ||
+                    status.latestScan != null;
+              } else {
+                return status.phase != 'initial_checkin_required' ||
+                    status.latestScan != null;
+              }
+            },
+          );
+
+          if (isScanSavedOnBackend) {
+            statusData.value = statusResult.getOrElse(() => statusData.value!);
+            isSubmittingScan(false);
+            return true;
+          }
+        } catch (_) {}
+
         errorMessage(failure.message);
         isSubmittingScan(false);
         return false;
       },
-      (data) {
+      (data) async {
         scanResultData.value = data;
-        fetchStatusData(force: true);
+        await fetchStatusData(force: true);
         isSubmittingScan(false);
         return true;
       },

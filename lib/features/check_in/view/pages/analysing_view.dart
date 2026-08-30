@@ -69,7 +69,7 @@ class _AnalysingViewState extends State<AnalysingView> {
         await Future<void>.delayed(const Duration(milliseconds: 600));
 
         // Dispose CheckInController and free camera/images memory
-        Get.delete<CheckInController>();
+        Get.delete<CheckInController>(force: true);
 
         if (!mounted) return;
         Get.offNamed(RoutesName.analysisComplete);
@@ -85,6 +85,25 @@ class _AnalysingViewState extends State<AnalysingView> {
   }
 
   void _showRedesignedErrorDialog(String message) {
+    final lowerMsg = message.toLowerCase();
+    final bool isWindowClosed =
+        lowerMsg.contains('window') ||
+        lowerMsg.contains('closed') ||
+        lowerMsg.contains('not available') ||
+        lowerMsg.contains('schedule') ||
+        lowerMsg.contains('subscription') ||
+        lowerMsg.contains('paywall');
+
+    final String dialogTitle = isWindowClosed
+        ? 'Check-In Window Closed'
+        : 'Analysis Failed';
+    final IconData dialogIcon = isWindowClosed
+        ? Icons.event_busy_rounded
+        : Icons.warning_amber_rounded;
+    final Color dialogAccentColor = isWindowClosed
+        ? AppColors.brandTeal
+        : Colors.redAccent;
+
     Get.dialog(
       Dialog(
         backgroundColor: Colors.transparent,
@@ -95,7 +114,7 @@ class _AnalysingViewState extends State<AnalysingView> {
             color: AppColors.surface,
             borderRadius: BorderRadius.circular(24),
             border: Border.all(
-              color: Colors.redAccent.withValues(alpha: 0.3),
+              color: dialogAccentColor.withValues(alpha: 0.3),
               width: 1.2,
             ),
             boxShadow: [
@@ -113,20 +132,16 @@ class _AnalysingViewState extends State<AnalysingView> {
                 width: 60,
                 height: 60,
                 decoration: BoxDecoration(
-                  color: Colors.red.withValues(alpha: 0.15),
+                  color: dialogAccentColor.withValues(alpha: 0.15),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
-                  Icons.warning_amber_rounded,
-                  color: Colors.redAccent,
-                  size: 32,
-                ),
+                child: Icon(dialogIcon, color: dialogAccentColor, size: 32),
               ),
               const SizedBox(height: 16),
-              const Text(
-                'Analysis Failed',
+              Text(
+                dialogTitle,
                 textAlign: TextAlign.center,
-                style: TextStyle(
+                style: const TextStyle(
                   fontFamily: AppFonts.family,
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -148,22 +163,66 @@ class _AnalysingViewState extends State<AnalysingView> {
                 ),
               ),
               const SizedBox(height: 24),
-              PrimaryButton(
-                onPressed: () {
-                  _stepTimer?.cancel();
-                  Navigator.of(context, rootNavigator: true).pop();
-                  Get.offNamed(RoutesName.scanReview);
-                },
-                label: 'Back to Review',
-              ),
-              const SizedBox(height: 10),
-              AppSecondaryButton(
-                onPressed: () {
-                  Navigator.of(context, rootNavigator: true).pop();
-                  _startAnalysisProcess();
-                },
-                label: 'Try Again',
-              ),
+
+              if (isWindowClosed) ...[
+                PrimaryButton(
+                  onPressed: () {
+                    _stepTimer?.cancel();
+                    if (Get.isRegistered<CheckInController>()) {
+                      Get.delete<CheckInController>(force: true);
+                    }
+                    Navigator.of(context, rootNavigator: true).pop();
+                    Get.offAllNamed(RoutesName.appShell);
+                  },
+                  label: 'Return to Dashboard',
+                ),
+                const SizedBox(height: 10),
+                AppSecondaryButton(
+                  onPressed: () {
+                    _stepTimer?.cancel();
+                    Navigator.of(context, rootNavigator: true).pop();
+                    Get.offNamed(RoutesName.scanReview);
+                  },
+                  label: 'Back to Review',
+                ),
+              ] else ...[
+                PrimaryButton(
+                  onPressed: () {
+                    Navigator.of(context, rootNavigator: true).pop();
+                    _startAnalysisProcess();
+                  },
+                  label: 'Try Again',
+                ),
+                const SizedBox(height: 10),
+                AppSecondaryButton(
+                  onPressed: () {
+                    _stepTimer?.cancel();
+                    Navigator.of(context, rootNavigator: true).pop();
+                    Get.offNamed(RoutesName.scanReview);
+                  },
+                  label: 'Back to Review',
+                ),
+                const SizedBox(height: 8),
+                TextButton(
+                  onPressed: () {
+                    _stepTimer?.cancel();
+                    if (Get.isRegistered<CheckInController>()) {
+                      Get.delete<CheckInController>(force: true);
+                    }
+                    Navigator.of(context, rootNavigator: true).pop();
+                    Get.offAllNamed(RoutesName.appShell);
+                  },
+                  child: const Text(
+                    'Return to Dashboard',
+                    style: TextStyle(
+                      fontFamily: AppFonts.family,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ),
+              ],
             ],
           ),
         ),
@@ -189,9 +248,7 @@ class _AnalysingViewState extends State<AnalysingView> {
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Column(
             children: [
-              const CheckInHeader(
-                title: CheckInStrings.analysing,
-              ),
+              const CheckInHeader(title: CheckInStrings.analysing),
               const SizedBox(height: 48),
               const Text(
                 CheckInStrings.analysingTitle,

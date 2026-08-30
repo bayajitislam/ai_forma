@@ -5,7 +5,11 @@ import 'package:get/get.dart';
 class CheckInBinding extends Bindings {
   @override
   void dependencies() {
-    Get.lazyPut(() => CheckInRepository(Get.find()));
-    Get.lazyPut(() => CheckInController(repository: Get.find()));
+    if (!Get.isRegistered<CheckInRepository>()) {
+      Get.put<CheckInRepository>(CheckInRepository(Get.find()), permanent: true);
+    }
+    if (!Get.isRegistered<CheckInController>()) {
+      Get.put<CheckInController>(CheckInController(repository: Get.find()), permanent: true);
+    }
   }
 }

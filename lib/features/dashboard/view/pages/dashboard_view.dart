@@ -91,6 +91,7 @@ class DashboardView extends StatelessWidget {
               AIDailyBriefCard(
                 priorityData: homeData?.todayPriority,
                 dailyBriefData: homeData?.dailyBrief,
+                onScanCompleteTap: goInsight,
               ),
               const SizedBox(height: 16),
 

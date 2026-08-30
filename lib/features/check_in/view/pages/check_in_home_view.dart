@@ -8,12 +8,10 @@ import 'package:ai_forma/core/widgets/primary_button.dart';
 import 'package:ai_forma/features/check_in/constants/check_in_strings.dart';
 import 'package:ai_forma/features/check_in/controllers/check_in_controller.dart';
 import 'package:ai_forma/features/check_in/repositories/check_in_repository.dart';
-import 'package:ai_forma/features/check_in/view/pages/check_in_intro_view.dart';
 import 'package:ai_forma/features/check_in/view/widgets/check_in_streak_card.dart';
-
 import 'package:ai_forma/features/auth/controllers/user_controller.dart';
-import 'package:ai_forma/features/check_in/view/pages/camera_position_view.dart';
 import 'package:ai_forma/features/check_in/view/widgets/choose_check_in_day_bottom_sheet.dart';
+import 'package:ai_forma/routes/routes_name.dart';
 
 class CheckInHomeView extends StatelessWidget {
   final void Function()? goInsightPage;
@@ -77,14 +75,10 @@ class CheckInHomeView extends StatelessWidget {
 
     if (isInitialScanCompleted) {
       controller?.isWeeklyCheckIn(true);
-      Navigator.of(context).push(
-        MaterialPageRoute<void>(builder: (_) => const CameraPositionView()),
-      );
+      Get.toNamed(RoutesName.cameraPosition);
     } else {
       controller?.isWeeklyCheckIn(false);
-      Navigator.of(
-        context,
-      ).push(MaterialPageRoute<void>(builder: (_) => const CheckInIntroView()));
+      Get.toNamed(RoutesName.checkInIntro);
     }
   }
 

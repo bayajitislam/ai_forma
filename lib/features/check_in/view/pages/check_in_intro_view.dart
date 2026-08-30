@@ -4,9 +4,10 @@ import 'package:ai_forma/core/theme/app_colors.dart';
 import 'package:ai_forma/core/theme/app_text_styles.dart';
 import 'package:ai_forma/core/widgets/primary_button.dart';
 import 'package:ai_forma/features/check_in/constants/check_in_strings.dart';
-import 'package:ai_forma/features/check_in/view/pages/camera_position_view.dart';
 import 'package:ai_forma/features/check_in/view/widgets/check_in_header.dart';
 import 'package:ai_forma/features/onboarding/view/widgets/onboarding_feature_item.dart';
+import 'package:ai_forma/routes/routes_name.dart';
+import 'package:get/get.dart';
 
 class CheckInIntroView extends StatelessWidget {
   const CheckInIntroView({super.key});
@@ -53,11 +54,7 @@ class CheckInIntroView extends StatelessWidget {
               const Spacer(),
               PrimaryButton(
                 onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute<void>(
-                      builder: (_) => const CameraPositionView(),
-                    ),
-                  );
+                  Get.toNamed(RoutesName.cameraPosition);
                 },
                 label: CheckInStrings.beginFirstCheckIn,
               ),

@@ -7,6 +7,8 @@ import 'package:ai_forma/features/check_in/constants/check_in_strings.dart';
 import 'package:ai_forma/features/check_in/view/pages/camera_capture_view.dart';
 import 'package:ai_forma/features/check_in/view/widgets/camera_guide_frame.dart';
 import 'package:ai_forma/features/check_in/view/widgets/check_in_header.dart';
+import 'package:ai_forma/routes/routes_name.dart';
+import 'package:get/get.dart';
 
 class StepIntoFrameView extends StatelessWidget {
   const StepIntoFrameView({super.key});
@@ -37,12 +39,9 @@ class StepIntoFrameView extends StatelessWidget {
               const Spacer(),
               PrimaryButton(
                 onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute<void>(
-                      builder: (_) => const CameraCaptureView(
-                        angle: ScanAngle.front,
-                      ),
-                    ),
+                  Get.toNamed(
+                    RoutesName.cameraCapture,
+                    arguments: ScanAngle.front,
                   );
                 },
                 label: CheckInStrings.continueButton,
