@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:ai_forma/core/widgets/app_loader.dart';
+import 'package:ai_forma/core/network/dio_client.dart';
 import 'package:ai_forma/features/check_in/controllers/check_in_controller.dart';
 import 'package:ai_forma/features/check_in/repositories/check_in_repository.dart';
 import 'package:ai_forma/routes/routes_name.dart';
@@ -186,7 +187,15 @@ class _CameraCaptureViewState extends State<CameraCaptureView>
   Widget build(BuildContext context) {
     final controller = Get.isRegistered<CheckInController>()
         ? Get.find<CheckInController>()
-        : Get.put(CheckInController(repository: CheckInRepository(Get.find())));
+        : Get.put(
+            CheckInController(
+              repository: CheckInRepository(
+                Get.isRegistered<DioClient>()
+                    ? Get.find<DioClient>()
+                    : Get.put(DioClient(), permanent: true),
+              ),
+            ),
+          );
 
     return Scaffold(
       backgroundColor: AppColors.cameraBackground,

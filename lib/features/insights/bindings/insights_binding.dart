@@ -8,12 +8,18 @@ class InsightsBinding extends Bindings {
   void dependencies() {
     if (!Get.isRegistered<InsightsRepository>()) {
       Get.put<InsightsRepository>(
-        InsightsRepository(Get.find<DioClient>()),
+        InsightsRepository(
+          Get.isRegistered<DioClient>()
+              ? Get.find<DioClient>()
+              : Get.put(DioClient(), permanent: true),
+        ),
+        permanent: true,
       );
     }
     if (!Get.isRegistered<InsightsController>()) {
       Get.put<InsightsController>(
         InsightsController(repository: Get.find<InsightsRepository>()),
+        permanent: true,
       );
     }
   }

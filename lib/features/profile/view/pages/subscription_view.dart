@@ -168,7 +168,7 @@ class SubscriptionView extends StatelessWidget {
                 onPressed: () {
                   Navigator.pop(context);
                 },
-                label: 'LOGOUT',
+                label: 'Upgrade Premium',
               ),
             ],
           ),

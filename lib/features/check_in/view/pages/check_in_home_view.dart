@@ -11,6 +11,9 @@ import 'package:ai_forma/features/check_in/repositories/check_in_repository.dart
 import 'package:ai_forma/features/check_in/view/widgets/check_in_streak_card.dart';
 import 'package:ai_forma/features/auth/controllers/user_controller.dart';
 import 'package:ai_forma/features/check_in/view/widgets/choose_check_in_day_bottom_sheet.dart';
+import 'package:ai_forma/core/network/dio_client.dart';
+import 'package:ai_forma/features/dashboard/controllers/home_controller.dart';
+import 'package:ai_forma/features/dashboard/view/widgets/weight_entry_bottom_sheet.dart';
 import 'package:ai_forma/routes/routes_name.dart';
 
 class CheckInHomeView extends StatelessWidget {
@@ -73,6 +76,52 @@ class CheckInHomeView extends StatelessWidget {
       return;
     }
 
+    final homeData = Get.isRegistered<HomeController>()
+        ? Get.find<HomeController>().homeData.value
+        : null;
+
+    final dailyBrief = homeData?.dailyBrief;
+    final bool isAnswered = dailyBrief?.alreadyAnswered ?? true;
+    final bool briefVisible = dailyBrief?.visible ?? false;
+
+    // If daily brief / weight has not been answered yet, prompt weight bottom sheet first!
+    if (briefVisible && !isAnswered) {
+      final prefill = dailyBrief?.weightKgPrefill ?? homeData?.weight?.currentKg;
+      final initialWeight = prefill != null ? double.tryParse(prefill) : null;
+
+      WeightEntryBottomSheet.show(
+        context,
+        initialWeightKg: initialWeight,
+        onWeightSaved: (savedWeight) async {
+          if (Get.isRegistered<HomeController>()) {
+            final hController = Get.find<HomeController>();
+            if (dailyBrief?.step != null) {
+              await hController.submitDailyBriefAnswer(
+                questionKey: dailyBrief?.questionKey ?? 'weight',
+                selectedOption: dailyBrief?.selectedOption ?? '',
+                weightKg: savedWeight,
+                alreadyAnswered: false,
+              );
+            } else {
+              await hController.submitScanDayWeight(weightKg: savedWeight);
+            }
+          }
+
+          if (context.mounted) {
+            _proceedToScan(controller, isInitialScanCompleted);
+          }
+        },
+      );
+      return;
+    }
+
+    _proceedToScan(controller, isInitialScanCompleted);
+  }
+
+  void _proceedToScan(
+    CheckInController? controller,
+    bool isInitialScanCompleted,
+  ) {
     if (isInitialScanCompleted) {
       controller?.isWeeklyCheckIn(true);
       Get.toNamed(RoutesName.cameraPosition);
@@ -195,7 +244,15 @@ class CheckInHomeView extends StatelessWidget {
   Widget build(BuildContext context) {
     final controller = Get.isRegistered<CheckInController>()
         ? Get.find<CheckInController>()
-        : Get.put(CheckInController(repository: CheckInRepository(Get.find())));
+        : Get.put(
+            CheckInController(
+              repository: CheckInRepository(
+                Get.isRegistered<DioClient>()
+                    ? Get.find<DioClient>()
+                    : Get.put(DioClient(), permanent: true),
+              ),
+            ),
+          );
 
     return SafeArea(
       child: Padding(

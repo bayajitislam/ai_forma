@@ -8,7 +8,7 @@ import 'package:ai_forma/core/theme/app_text_styles.dart';
 import 'package:ai_forma/core/widgets/app_icon.dart';
 
 class AiInsightCard extends StatelessWidget {
-  final void Function()? goInsightPage;
+  final VoidCallback? goInsightPage;
   final HomeAiInsightModel? aiInsightData;
 
   const AiInsightCard({
@@ -19,9 +19,13 @@ class AiInsightCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bodyText = (aiInsightData?.text?.isNotEmpty ?? false)
-        ? aiInsightData!.text!
-        : DashboardStrings.aiInsightBody;
+    if (aiInsightData == null ||
+        aiInsightData!.text == null ||
+        aiInsightData!.text!.trim().isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    final bodyText = aiInsightData!.text!;
 
     final ctaText = (aiInsightData?.ctaLabel?.isNotEmpty ?? false)
         ? aiInsightData!.ctaLabel!
@@ -78,6 +82,7 @@ class AiInsightCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 GestureDetector(
+                  behavior: HitTestBehavior.opaque,
                   onTap: goInsightPage,
                   child: Row(
                     mainAxisSize: MainAxisSize.min,

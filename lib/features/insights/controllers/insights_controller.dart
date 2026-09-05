@@ -6,18 +6,19 @@ class InsightsController extends GetxController {
   final InsightsRepository repository;
   InsightsController({required this.repository});
 
-  final Rx<ScanLatestResponseModel?> latestScan =
-      Rx<ScanLatestResponseModel?>(null);
+  final Rx<ScanLatestResponseModel?> latestScan = Rx<ScanLatestResponseModel?>(
+    null,
+  );
   final RxBool isLoading = false.obs;
   final RxString errorMessage = ''.obs;
 
-
-  /// Fetch latest scan insights from backend GET /api/scans/latest/
-  Future<void> fetchLatestScan() async {
-    isLoading(true);
-    errorMessage('');
+  /// Fetch latest scan insights from backend GET /api/scans/latest/ (optional scanId)
+  Future<void> fetchLatestScan({String? scanId, bool force = false}) async {
+    if (isLoading.value && !force) return;
     try {
-      final result = await repository.getLatestScan();
+      isLoading(true);
+      errorMessage('');
+      final result = await repository.getLatestScan(scanId: scanId);
       result.fold(
         (failure) => errorMessage(failure.message),
         (data) => latestScan.value = data,

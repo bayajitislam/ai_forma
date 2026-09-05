@@ -224,18 +224,39 @@ class AnalysisResultModel {
             )
           : null,
       strength: (json['strength'] as List<dynamic>?)
-              ?.map((e) =>
-                  InsightTitleSubtitleItem.fromJson(e as Map<String, dynamic>))
+              ?.map((e) {
+                if (e is Map<String, dynamic>) {
+                  return InsightTitleSubtitleItem.fromJson(e);
+                }
+                return InsightTitleSubtitleItem(
+                  title: e?.toString() ?? '',
+                  subtitle: '',
+                );
+              })
               .toList() ??
           [],
       focusArea: (json['focus_area'] as List<dynamic>?)
-              ?.map((e) =>
-                  InsightTitleSubtitleItem.fromJson(e as Map<String, dynamic>))
+              ?.map((e) {
+                if (e is Map<String, dynamic>) {
+                  return InsightTitleSubtitleItem.fromJson(e);
+                }
+                return InsightTitleSubtitleItem(
+                  title: e?.toString() ?? '',
+                  subtitle: '',
+                );
+              })
               .toList() ??
           [],
       nextSteps: (json['next_steps'] as List<dynamic>?)
-              ?.map((e) =>
-                  InsightTitleSubtitleItem.fromJson(e as Map<String, dynamic>))
+              ?.map((e) {
+                if (e is Map<String, dynamic>) {
+                  return InsightTitleSubtitleItem.fromJson(e);
+                }
+                return InsightTitleSubtitleItem(
+                  title: e?.toString() ?? '',
+                  subtitle: '',
+                );
+              })
               .toList() ??
           [],
       overallWeeklyInsight: json['overall_weekly_insight']?.toString() ?? '',
@@ -257,6 +278,8 @@ class ScanLatestResponseModel {
   final String? backThumbUrl;
   final String? sideThumbUrl;
   final AnalysisResultModel? analysisResult;
+  final bool analysisLocked;
+  final List<String> analysisHeadings;
   final String? errorMessage;
   final String? createdAt;
   final String? updatedAt;
@@ -275,6 +298,8 @@ class ScanLatestResponseModel {
     this.backThumbUrl,
     this.sideThumbUrl,
     this.analysisResult,
+    this.analysisLocked = false,
+    this.analysisHeadings = const [],
     this.errorMessage,
     this.createdAt,
     this.updatedAt,
@@ -299,6 +324,12 @@ class ScanLatestResponseModel {
               json['analysis_result'] as Map<String, dynamic>,
             )
           : null,
+      analysisLocked: json['analysis_locked'] as bool? ??
+          (json['analysis_result'] == null && json['status'] == 'completed'),
+      analysisHeadings: (json['analysis_headings'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          const [],
       errorMessage: json['error_message']?.toString(),
       createdAt: json['created_at']?.toString(),
       updatedAt: json['updated_at']?.toString(),

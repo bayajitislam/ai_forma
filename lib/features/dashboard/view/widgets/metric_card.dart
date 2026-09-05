@@ -12,6 +12,7 @@ class MetricCard extends StatelessWidget {
     this.value,
     this.trendText,
     this.caption,
+    this.captionColor,
     this.child,
     this.height = 156,
   });
@@ -20,6 +21,7 @@ class MetricCard extends StatelessWidget {
   final String? value;
   final String? trendText;
   final String? caption;
+  final Color? captionColor;
   final Widget? child;
   final double height;
 
@@ -88,11 +90,11 @@ class MetricCard extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               caption!,
-              style: const TextStyle(
+              style: TextStyle(
                 fontFamily: AppFonts.family,
                 fontSize: 11,
-                fontWeight: FontWeight.w500,
-                color: AppColors.textSecondary,
+                fontWeight: FontWeight.w600,
+                color: captionColor ?? AppColors.textSecondary,
               ),
             ),
           ],

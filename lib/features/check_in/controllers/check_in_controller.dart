@@ -140,11 +140,29 @@ class CheckInController extends GetxController {
         return false;
       },
       (data) {
-        final String message = data['message']?.toString() ??
-            'Weekly scan day successfully updated.';
-        final String? scanDay = data['scan_day']?.toString();
-        final bool activeCycleExists = data['active_cycle_exists'] == true;
+        final confirmation = data['confirmation'] is Map<String, dynamic>
+            ? data['confirmation'] as Map<String, dynamic>
+            : null;
+
+        final bool activeCycleExists = data['active_cycle_exists'] == true ||
+            (confirmation?['has_bridge_days'] == true);
         final String? pendingScanDay = data['pending_scan_day']?.toString();
+        final String? scanDay = data['scan_day']?.toString();
+
+        final String popupTitle = confirmation?['title']?.toString() ??
+            (activeCycleExists
+                ? 'Scan Schedule Change Set'
+                : 'Scan Schedule Updated');
+
+        final String? nextScanLine = confirmation?['next_scan_line']?.toString();
+        final List<dynamic>? bodyList = confirmation?['body'] as List<dynamic>?;
+        final String bodyJoined = bodyList != null && bodyList.isNotEmpty
+            ? bodyList.join('\n\n')
+            : '';
+
+        final String message = nextScanLine != null
+            ? (bodyJoined.isNotEmpty ? '$nextScanLine\n\n$bodyJoined' : nextScanLine)
+            : (data['message']?.toString() ?? 'Weekly scan day successfully updated.');
 
         if (scanDay != null && scanDay.isNotEmpty) {
           selectedCheckDay.value = scanDay;
@@ -158,14 +176,15 @@ class CheckInController extends GetxController {
         if (activeContext != null) {
           showScheduleSuccessPopup(
             activeContext,
+            title: popupTitle,
             message: message,
             activeCycleExists: activeCycleExists,
             pendingScanDay: pendingScanDay,
           );
         } else {
           Get.snackbar(
-            'Schedule Updated',
-            message,
+            popupTitle,
+            nextScanLine ?? message,
             snackPosition: SnackPosition.BOTTOM,
             backgroundColor: AppColors.brandTeal,
             colorText: Colors.white,
@@ -180,10 +199,16 @@ class CheckInController extends GetxController {
   /// Show popup confirmation dialog upon successful schedule change response
   void showScheduleSuccessPopup(
     BuildContext context, {
+    String? title,
     required String message,
     bool activeCycleExists = false,
     String? pendingScanDay,
   }) {
+    final displayTitle = title ??
+        (activeCycleExists
+            ? 'Scan Schedule Change Set'
+            : 'Scan Schedule Updated');
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -222,9 +247,7 @@ class CheckInController extends GetxController {
             ),
             const SizedBox(height: 16),
             Text(
-              activeCycleExists
-                  ? 'Scan Schedule Change Set'
-                  : 'Scan Schedule Updated',
+              displayTitle,
               style: AppTextStyles.authSectionTitle,
               textAlign: TextAlign.center,
             ),
@@ -535,7 +558,11 @@ class CheckInController extends GetxController {
   }
 
   /// Call POST /api/scans/validate-images/ with 3 captured files
-  Future<bool> validateImages() async {
+  Future<bool> validateImages({bool force = false}) async {
+    if (isValidating.value) return false;
+    if (!force && validationResult.value != null && validationResult.value!.allValid) {
+      return true;
+    }
     if (frontImage.value == null ||
         sideImage.value == null ||
         backImage.value == null) {

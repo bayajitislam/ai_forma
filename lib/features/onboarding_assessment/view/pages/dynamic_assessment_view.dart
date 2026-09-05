@@ -12,7 +12,6 @@ import 'package:ai_forma/features/onboarding_assessment/view/widgets/age_wheel_p
 import 'package:ai_forma/features/onboarding_assessment/view/widgets/assessment_checkbox_tile.dart';
 import 'package:ai_forma/features/onboarding_assessment/view/widgets/assessment_flow_header.dart';
 import 'package:ai_forma/features/onboarding_assessment/view/widgets/assessment_grid_option_tile.dart';
-import 'package:ai_forma/features/onboarding_assessment/view/widgets/assessment_info_banner.dart';
 import 'package:ai_forma/features/onboarding_assessment/view/widgets/assessment_radio_tile.dart';
 import 'package:ai_forma/features/onboarding_assessment/view/widgets/assessment_unit_toggle.dart';
 import 'package:ai_forma/features/onboarding_assessment/view/widgets/measurement_wheel_picker.dart';
@@ -61,11 +60,11 @@ class DynamicAssessmentView extends GetView<AssessmentController> {
                     Text(step.title, style: AppTextStyles.authSectionTitle),
                     const SizedBox(height: 12),
                     Text(step.subtitle, style: AppTextStyles.authBody),
-                    if (step.infoNote != null &&
-                        step.infoNote!.isNotEmpty) ...[
-                      const SizedBox(height: 12),
-                      AssessmentInfoBanner(message: step.infoNote!),
-                    ],
+                    // if (step.infoNote != null &&
+                    //     step.infoNote!.isNotEmpty) ...[
+                    //   const SizedBox(height: 12),
+                    //   AssessmentInfoBanner(message: step.infoNote!),
+                    // ],
                     const SizedBox(height: 20),
                     Expanded(child: _buildStepBody(step)),
                     // Inline error display

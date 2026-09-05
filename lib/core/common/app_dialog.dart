@@ -9,6 +9,7 @@ class AppDialog extends StatelessWidget {
   final String? title;
   final String message;
   final DialogType type;
+  final IconData? icon;
   final VoidCallback? onCancel;
   final VoidCallback? onConfirm;
   final String confirmText;
@@ -19,6 +20,7 @@ class AppDialog extends StatelessWidget {
     this.title,
     required this.message,
     this.type = DialogType.info,
+    this.icon,
     this.onCancel,
     this.onConfirm,
     this.confirmText = "OK",
@@ -27,41 +29,61 @@ class AppDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Get colors based on type
     final Color iconColor = type == DialogType.warning
         ? AppColors.insightWarning
-        : AppColors.accent;
+        : AppColors.brandTeal;
+
+    final Color iconBgColor = (type == DialogType.warning
+            ? AppColors.insightWarning
+            : AppColors.brandTeal)
+        .withValues(alpha: 0.1);
+
+    final IconData displayIcon = icon ??
+        (type == DialogType.warning
+            ? Icons.warning_amber_rounded
+            : Icons.info_outline_rounded);
 
     return Dialog(
-      backgroundColor: AppColors.primary,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      backgroundColor: AppColors.surface,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             // 1. Icon
-            Icon(
-              type == DialogType.warning
-                  ? Icons.warning_amber_rounded
-                  : Icons.info_outline_rounded,
-              color: iconColor,
-              size: 48,
+            Container(
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(
+                color: iconBgColor,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                displayIcon,
+                color: iconColor,
+                size: 28,
+              ),
             ),
             const SizedBox(height: 16),
 
             // 2. Title
-            Text(
-              title ?? (type == DialogType.warning ? "Warning" : "Coming Soon"),
-              style: AppTextStyles.requirementLabel,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 12),
+            if (title != null)
+              Text(
+                title!,
+                style: AppTextStyles.authSectionTitle.copyWith(fontSize: 18),
+                textAlign: TextAlign.center,
+              ),
+            if (title != null) const SizedBox(height: 10),
 
             // 3. Message
             Text(
               message,
-              style: AppTextStyles.successTitle,
+              style: AppTextStyles.authBody.copyWith(
+                fontSize: 14,
+                color: AppColors.textSecondary,
+                height: 1.4,
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
@@ -74,15 +96,23 @@ class AppDialog extends StatelessWidget {
                   Expanded(
                     child: OutlinedButton(
                       style: OutlinedButton.styleFrom(
-                        side: BorderSide(color: AppColors.accent),
+                        side: BorderSide(
+                          color: AppColors.brandTeal.withValues(alpha: 0.5),
+                        ),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(33),
                         ),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
                       ),
                       onPressed: onCancel ?? () => Navigator.pop(context),
                       child: Text(
                         cancelText,
-                        style: AppTextStyles.authSectionTitle,
+                        style: const TextStyle(
+                          fontFamily: 'Nunito',
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.brandTeal,
+                        ),
                       ),
                     ),
                   ),

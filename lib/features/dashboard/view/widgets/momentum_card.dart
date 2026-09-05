@@ -12,22 +12,17 @@ class MomentumCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final score = momentumData?.displayedScore ?? 82;
+    final score = momentumData?.displayedScore;
     final maxScore = momentumData?.max ?? 100;
-    final progressValue = (maxScore > 0) ? (score / maxScore).clamp(0.0, 1.0) : 0.0;
+    final progressValue = (score != null && maxScore > 0) ? (score / maxScore).clamp(0.0, 1.0) : 0.0;
 
     final changeVal = momentumData?.change;
     final changeBadgeText = changeVal != null
         ? (changeVal > 0 ? '+$changeVal this week' : '$changeVal this week')
-        : DashboardStrings.momentumBadge;
+        : null;
 
-    final stateTitle = (momentumData?.stateLabel.isNotEmpty ?? false)
-        ? momentumData!.stateLabel
-        : DashboardStrings.momentumTitle;
-
-    final insightText = (momentumData?.insight.isNotEmpty ?? false)
-        ? momentumData!.insight
-        : DashboardStrings.momentumSubtitle;
+    final stateTitle = momentumData?.stateLabel ?? '';
+    final insightText = momentumData?.insight ?? '';
 
     final pills = momentumData?.pills ?? [];
 
@@ -57,30 +52,30 @@ class MomentumCard extends StatelessWidget {
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              // Badge with arrow + text
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 4,
-                ),
-                decoration: BoxDecoration(
-                  color: AppColors.brandTeal.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: AppColors.brandTeal.withValues(alpha: 0.25),
-                    width: 1,
+              if (changeBadgeText != null)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.brandTeal.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: AppColors.brandTeal.withValues(alpha: 0.25),
+                      width: 1,
+                    ),
+                  ),
+                  child: Text(
+                    changeBadgeText,
+                    style: const TextStyle(
+                      fontFamily: AppFonts.family,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.brandTeal,
+                    ),
                   ),
                 ),
-                child: Text(
-                  changeBadgeText,
-                  style: const TextStyle(
-                    fontFamily: AppFonts.family,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.brandTeal,
-                  ),
-                ),
-              ),
             ],
           ),
           const SizedBox(height: 20),
@@ -140,7 +135,7 @@ class MomentumCard extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          '$score',
+                          score != null ? '$score' : '--',
                           style: const TextStyle(
                             fontFamily: AppFonts.family,
                             fontSize: 28,
@@ -192,20 +187,14 @@ class MomentumCard extends StatelessWidget {
             ],
           ),
 
-          const SizedBox(height: 16),
-
-          // ── Chips row ──────────────────────────────────────
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: pills.isNotEmpty
-                ? pills.map((pill) => _MomentumChip(label: pill.label)).toList()
-                : const [
-                    _MomentumChip(label: DashboardStrings.momentumChipMuscle),
-                    _MomentumChip(label: DashboardStrings.momentumChipFat),
-                    _MomentumChip(label: DashboardStrings.momentumChipStreak),
-                  ],
-          ),
+          if (pills.isNotEmpty) ...[
+            const SizedBox(height: 16),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: pills.map((pill) => _MomentumChip(label: pill.label)).toList(),
+            ),
+          ],
         ],
       ),
     );

@@ -7,7 +7,7 @@ import 'package:ai_forma/core/widgets/primary_button.dart';
 import 'package:ai_forma/features/check_in/constants/check_in_strings.dart';
 import 'package:ai_forma/features/check_in/controllers/check_in_controller.dart';
 import 'package:ai_forma/features/check_in/view/widgets/check_in_header.dart';
-import 'package:ai_forma/features/shell/view/pages/app_shell_view.dart';
+import 'package:ai_forma/routes/routes_name.dart';
 import 'package:get/get.dart';
 import 'package:lottie/lottie.dart';
 
@@ -32,7 +32,7 @@ class _AnalysisCompleteViewState extends State<AnalysisCompleteView> {
     // Mark 1st Check-In as completed locally
     await AuthStorage.setFirstCheckInCompleted(true);
     // Navigate to AppShell with Insights tab active
-    Get.offAll(() => const AppShellView(initialTab: AppNavItem.insights));
+    Get.offAllNamed(RoutesName.appShell, arguments: AppNavItem.insights);
   }
 
   @override

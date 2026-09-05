@@ -84,9 +84,10 @@ void main() {
       expect(model.sideCheck?.displayReason, 'Pose mismatch (detected: front)');
     });
 
-    test('DioClient.uploadOptions sets extended 120-second sendTimeout', () {
+    test('DioClient.uploadOptions sets extended 120-second sendTimeout and receiveTimeout', () {
       final options = DioClient.uploadOptions();
       expect(options.sendTimeout, const Duration(seconds: 120));
+      expect(options.receiveTimeout, const Duration(seconds: 120));
     });
 
     test('CheckInController maintains front, side, and back image state', () {

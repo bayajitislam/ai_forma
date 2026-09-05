@@ -16,10 +16,19 @@ class InsightsRepository {
   final DioClient _dio;
   InsightsRepository(this._dio);
 
-  /// Fetch latest scan insights from GET /api/scans/latest/
-  Future<Either<Failure, ScanLatestResponseModel>> getLatestScan() async {
+  /// Fetch latest scan insights from GET /api/scans/latest/ (optional scanId)
+  Future<Either<Failure, ScanLatestResponseModel>> getLatestScan({
+    String? scanId,
+  }) async {
     try {
-      final response = await _dio.get(ApiEndpoint.latestScan);
+      final queryParams = <String, dynamic>{};
+      if (scanId != null && scanId.isNotEmpty) {
+        queryParams['scan_id'] = scanId;
+      }
+      final response = await _dio.get(
+        ApiEndpoint.latestScan,
+        queryParameters: queryParams.isNotEmpty ? queryParams : null,
+      );
 
       if ((response.statusCode == 200 || response.statusCode == 201) &&
           response.data != null &&
@@ -44,8 +53,8 @@ class InsightsRepository {
       if (statusCode != null) {
         final detail =
             (rawData != null && rawData.isNotEmpty && rawData.length < 200)
-                ? rawData
-                : e.response?.statusMessage ?? 'Server error';
+            ? rawData
+            : e.response?.statusMessage ?? 'Server error';
         return Left(
           ServerFailure(message: 'Server error ($statusCode): $detail'),
         );
@@ -58,7 +67,7 @@ class InsightsRepository {
 
   /// Fetch muscle growth detail insight from GET /api/insights/muscle-growth/
   Future<Either<Failure, MuscleGrowthDetailResponseModel>>
-      getMuscleGrowthDetail() async {
+  getMuscleGrowthDetail() async {
     try {
       final response = await _dio.get(ApiEndpoint.muscleGrowthInsight);
 
@@ -85,8 +94,8 @@ class InsightsRepository {
       if (statusCode != null) {
         final detail =
             (rawData != null && rawData.isNotEmpty && rawData.length < 200)
-                ? rawData
-                : e.response?.statusMessage ?? 'Server error';
+            ? rawData
+            : e.response?.statusMessage ?? 'Server error';
         return Left(
           ServerFailure(message: 'Server error ($statusCode): $detail'),
         );
@@ -125,8 +134,8 @@ class InsightsRepository {
       if (statusCode != null) {
         final detail =
             (rawData != null && rawData.isNotEmpty && rawData.length < 200)
-                ? rawData
-                : e.response?.statusMessage ?? 'Server error';
+            ? rawData
+            : e.response?.statusMessage ?? 'Server error';
         return Left(
           ServerFailure(message: 'Server error ($statusCode): $detail'),
         );
@@ -165,8 +174,8 @@ class InsightsRepository {
       if (statusCode != null) {
         final detail =
             (rawData != null && rawData.isNotEmpty && rawData.length < 200)
-                ? rawData
-                : e.response?.statusMessage ?? 'Server error';
+            ? rawData
+            : e.response?.statusMessage ?? 'Server error';
         return Left(
           ServerFailure(message: 'Server error ($statusCode): $detail'),
         );
@@ -178,7 +187,8 @@ class InsightsRepository {
   }
 
   /// Fetch symmetry detail insight from GET /api/insights/symmetry/
-  Future<Either<Failure, SymmetryDetailResponseModel>> getSymmetryDetail() async {
+  Future<Either<Failure, SymmetryDetailResponseModel>>
+  getSymmetryDetail() async {
     try {
       final response = await _dio.get(ApiEndpoint.symmetryInsight);
 
@@ -205,8 +215,8 @@ class InsightsRepository {
       if (statusCode != null) {
         final detail =
             (rawData != null && rawData.isNotEmpty && rawData.length < 200)
-                ? rawData
-                : e.response?.statusMessage ?? 'Server error';
+            ? rawData
+            : e.response?.statusMessage ?? 'Server error';
         return Left(
           ServerFailure(message: 'Server error ($statusCode): $detail'),
         );
@@ -218,7 +228,8 @@ class InsightsRepository {
   }
 
   /// Fetch consistency detail insight from GET /api/insights/consistency/
-  Future<Either<Failure, ConsistencyDetailResponseModel>> getConsistencyDetail() async {
+  Future<Either<Failure, ConsistencyDetailResponseModel>>
+  getConsistencyDetail() async {
     try {
       final response = await _dio.get(ApiEndpoint.consistencyInsight);
 
@@ -245,8 +256,8 @@ class InsightsRepository {
       if (statusCode != null) {
         final detail =
             (rawData != null && rawData.isNotEmpty && rawData.length < 200)
-                ? rawData
-                : e.response?.statusMessage ?? 'Server error';
+            ? rawData
+            : e.response?.statusMessage ?? 'Server error';
         return Left(
           ServerFailure(message: 'Server error ($statusCode): $detail'),
         );
@@ -291,8 +302,8 @@ class InsightsRepository {
       if (statusCode != null) {
         final detail =
             (rawData != null && rawData.isNotEmpty && rawData.length < 200)
-                ? rawData
-                : e.response?.statusMessage ?? 'Server error';
+            ? rawData
+            : e.response?.statusMessage ?? 'Server error';
         return Left(
           ServerFailure(message: 'Server error ($statusCode): $detail'),
         );
@@ -303,7 +314,7 @@ class InsightsRepository {
     }
   }
 
-  /// Fetch scan comparison 
+  /// Fetch scan comparison
   Future<Either<Failure, CompareResultResponseModel>> getScanComparison({
     required String thenId,
     required String nowId,
@@ -337,8 +348,8 @@ class InsightsRepository {
       if (statusCode != null) {
         final detail =
             (rawData != null && rawData.isNotEmpty && rawData.length < 200)
-                ? rawData
-                : e.response?.statusMessage ?? 'Server error';
+            ? rawData
+            : e.response?.statusMessage ?? 'Server error';
         return Left(
           ServerFailure(message: 'Server error ($statusCode): $detail'),
         );

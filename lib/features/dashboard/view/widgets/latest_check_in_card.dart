@@ -88,7 +88,7 @@ class _LatestCheckInCardState extends State<LatestCheckInCard>
   }
 
   String _formatDate(String? isoDate) {
-    if (isoDate == null || isoDate.isEmpty) return 'May 18 2025';
+    if (isoDate == null || isoDate.isEmpty) return '';
     try {
       final dt = DateTime.parse(isoDate);
       return DateFormat('MMMM d, yyyy').format(dt);
@@ -99,6 +99,10 @@ class _LatestCheckInCardState extends State<LatestCheckInCard>
 
   @override
   Widget build(BuildContext context) {
+    if (widget.analysisData == null) {
+      return const SizedBox.shrink();
+    }
+
     final displayDate = _formatDate(widget.analysisData?.scanDate);
     final viewsList = widget.analysisData?.views ?? [];
 

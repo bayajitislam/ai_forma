@@ -5,8 +5,10 @@ import 'package:ai_forma/core/theme/app_colors.dart';
 import 'package:ai_forma/core/theme/app_text_styles.dart';
 import 'package:ai_forma/core/widgets/app_network_error_widget.dart';
 import 'package:ai_forma/core/widgets/primary_button.dart';
+import 'package:ai_forma/core/network/dio_client.dart';
 import 'package:ai_forma/features/insights/constants/insights_strings.dart';
 import 'package:ai_forma/features/insights/controllers/insights_controller.dart';
+import 'package:ai_forma/features/insights/repositories/insights_repository.dart';
 import 'package:ai_forma/features/insights/view/pages/compare_scans_view.dart';
 import 'package:ai_forma/features/insights/view/pages/consistency_view.dart';
 import 'package:ai_forma/features/insights/view/pages/fat_loss_view.dart';
@@ -45,9 +47,23 @@ class _InsightsViewState extends State<InsightsView> {
 
   @override
   Widget build(BuildContext context) {
-    // InsightsController is always pre-registered by AppShellView.initState
-    // via InsightsBinding().dependencies() before IndexedStack builds this widget.
-    final controller = Get.find<InsightsController>();
+    final controller = Get.isRegistered<InsightsController>()
+        ? Get.find<InsightsController>()
+        : Get.put<InsightsController>(
+            InsightsController(
+              repository: Get.isRegistered<InsightsRepository>()
+                  ? Get.find<InsightsRepository>()
+                  : Get.put<InsightsRepository>(
+                      InsightsRepository(
+                        Get.isRegistered<DioClient>()
+                            ? Get.find<DioClient>()
+                            : Get.put(DioClient(), permanent: true),
+                      ),
+                      permanent: true,
+                    ),
+            ),
+            permanent: true,
+          );
 
     return Obx(() {
       // Eagerly capture all observables so Obx subscribes to all on first build.
@@ -114,6 +130,64 @@ class _InsightsViewState extends State<InsightsView> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // if (scan?.analysisLocked == true) ...[
+            //   Container(
+            //     margin: const EdgeInsets.only(bottom: 16),
+            //     padding: const EdgeInsets.all(16),
+            //     decoration: BoxDecoration(
+            //       color: AppColors.surface,
+            //       borderRadius: BorderRadius.circular(16),
+            //       border: Border.all(
+            //         color: AppColors.brandTeal.withValues(alpha: 0.3),
+            //       ),
+            //     ),
+            //     child: Column(
+            //       crossAxisAlignment: CrossAxisAlignment.start,
+            //       children: [
+            //         Row(
+            //           children: [
+            //             const Icon(
+            //               AppIcons.lock,
+            //               color: AppColors.brandTeal,
+            //               size: 20,
+            //             ),
+            //             const SizedBox(width: 8),
+            //             Expanded(
+            //               child: Text(
+            //                 'Your Progress Analysis Is Ready',
+            //                 style: AppTextStyles.authSectionTitle.copyWith(
+            //                   fontSize: 16,
+            //                 ),
+            //               ),
+            //             ),
+            //           ],
+            //         ),
+            //         const SizedBox(height: 8),
+            //         Text(
+            //           'Unlock your progress analysis to see your detailed physique changes, muscle growth, and personalized recommendations.',
+            //           style: AppTextStyles.authBody.copyWith(fontSize: 13),
+            //         ),
+            //         const SizedBox(height: 14),
+            //         SizedBox(
+            //           width: double.infinity,
+            //           child: PrimaryButton(
+            //             label: 'UNLOCK ANALYSIS',
+            //             onPressed: () {
+            //               Get.snackbar(
+            //                 'Subscription Required',
+            //                 'Please subscribe to unlock your full progress analysis.',
+            //                 snackPosition: SnackPosition.BOTTOM,
+            //                 backgroundColor: AppColors.brandTeal,
+            //                 colorText: Colors.white,
+            //                 margin: const EdgeInsets.all(16),
+            //               );
+            //             },
+            //           ),
+            //         ),
+            //       ],
+            //     ),
+            //   ),
+            // ],
             Row(
               children: [
                 InsightCategoryCard(

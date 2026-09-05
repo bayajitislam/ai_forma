@@ -5,20 +5,146 @@ import 'package:ai_forma/features/auth/controllers/user_controller.dart';
 import 'package:ai_forma/features/check_in/controllers/check_in_controller.dart';
 import 'package:ai_forma/features/check_in/view/pages/camera_position_view.dart';
 import 'package:ai_forma/features/check_in/view/pages/check_in_intro_view.dart';
-import 'package:ai_forma/features/dashboard/controllers/daily_brief_controller.dart';
+import 'package:ai_forma/features/dashboard/controllers/home_controller.dart';
 import 'package:ai_forma/features/dashboard/models/home_response_model.dart';
+import 'package:ai_forma/features/dashboard/view/widgets/weight_entry_bottom_sheet.dart';
+
+import 'package:ai_forma/core/common/app_dialog.dart';
+import 'package:ai_forma/features/profile/view/pages/subscription_view.dart';
 
 class WeeklyScanCard extends StatelessWidget {
   const WeeklyScanCard({
     super.key,
     this.weeklyScanData,
     this.forceVisible = false,
+    this.onPaywallTap,
   });
 
   final HomeWeeklyScanModel? weeklyScanData;
   final bool forceVisible;
+  final VoidCallback? onPaywallTap;
+
+  bool _isPremiumUser() {
+    final user = Get.isRegistered<UserController>()
+        ? Get.find<UserController>().currentUser.value
+        : null;
+
+    if (user?.isPaid == true) return true;
+    if (user?.membershipStatus?.toLowerCase() == 'premium') return true;
+
+    // If weeklyScanData explicitly marks paywallRequired == true, definitely free
+    if (weeklyScanData?.paywallRequired == true) {
+      return false;
+    }
+
+    return false;
+  }
 
   void _beginScan(BuildContext context) {
+    if (!_isPremiumUser()) {
+      if (onPaywallTap != null) {
+        onPaywallTap!();
+      } else {
+        _showPremiumDialog(context);
+      }
+      return;
+    }
+
+    final homeData = Get.isRegistered<HomeController>()
+        ? Get.find<HomeController>().homeData.value
+        : null;
+
+    final dailyBrief = homeData?.dailyBrief;
+    final bool isAnswered = dailyBrief?.alreadyAnswered ?? true;
+    final bool briefVisible = dailyBrief?.visible ?? false;
+
+    // If daily brief / weight has not been answered yet, prompt via AppDialog first!
+    if (briefVisible && !isAnswered) {
+      _showWeightPromptDialog(context, homeData, dailyBrief);
+      return;
+    }
+
+    _proceedToScan(context);
+  }
+
+  void _showPremiumDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AppDialog(
+        icon: Icons.workspace_premium_rounded,
+        title: 'AiFORMA Premium',
+        message:
+            'Weekly body scans and AI physique analysis are available exclusively for Premium members. Upgrade now to track your transformation.',
+        confirmText: 'Buy Premium',
+        cancelText: 'Cancel',
+        onConfirm: () {
+          Navigator.pop(ctx);
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => const SubscriptionView(),
+            ),
+          );
+        },
+        onCancel: () => Navigator.pop(ctx),
+      ),
+    );
+  }
+
+  void _showWeightPromptDialog(
+    BuildContext context,
+    HomeResponseModel? homeData,
+    HomeDailyBriefModel? dailyBrief,
+  ) {
+    showDialog(
+      context: context,
+      builder: (dialogCtx) => AppDialog(
+        icon: Icons.scale_rounded,
+        title: 'Log Weight Before Scan',
+        message:
+            'Logging your weight before scanning helps AiFORMA calculate more accurate body composition changes. Would you like to log your weight now, or skip to scan?',
+        confirmText: 'Log Weight',
+        cancelText: 'Skip',
+        onConfirm: () {
+          Navigator.pop(dialogCtx);
+          final prefill =
+              dailyBrief?.weightKgPrefill ?? homeData?.weight?.currentKg;
+          final initialWeight =
+              prefill != null ? double.tryParse(prefill) : null;
+
+          WeightEntryBottomSheet.show(
+            context,
+            initialWeightKg: initialWeight,
+            onWeightSaved: (savedWeight) async {
+              if (Get.isRegistered<HomeController>()) {
+                final controller = Get.find<HomeController>();
+                if (dailyBrief?.step != null) {
+                  await controller.submitDailyBriefAnswer(
+                    questionKey: dailyBrief?.questionKey ?? 'weight',
+                    selectedOption: dailyBrief?.selectedOption ?? '',
+                    weightKg: savedWeight,
+                    alreadyAnswered: false,
+                  );
+                } else {
+                  await controller.submitScanDayWeight(weightKg: savedWeight);
+                }
+              }
+
+              if (context.mounted) {
+                _proceedToScan(context);
+              }
+            },
+          );
+        },
+        onCancel: () {
+          Navigator.pop(dialogCtx);
+          // User chose to skip! Proceed directly to scan
+          _proceedToScan(context);
+        },
+      ),
+    );
+  }
+
+  void _proceedToScan(BuildContext context) {
     final user = Get.isRegistered<UserController>()
         ? Get.find<UserController>().currentUser.value
         : null;
@@ -44,27 +170,18 @@ class WeeklyScanCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (!forceVisible && weeklyScanData != null && !weeklyScanData!.visible) {
+    if (!forceVisible && (weeklyScanData == null || !weeklyScanData!.visible)) {
       return const SizedBox.shrink();
     }
 
-    final controller = DailyBriefController.to;
-
-    return Obx(() {
-      final isOverdue = controller.isScanOverdue.value;
-
-      if (isOverdue) {
-        return _buildOverdueCard(context);
-      }
-      return _buildScanReadyCard(context);
-    });
+    return _buildScanReadyCard(context);
   }
 
   Widget _buildScanReadyCard(BuildContext context) {
-    final cardTitle = weeklyScanData?.title ?? 'Your weekly scan is ready.';
-    final cardSubtitle = weeklyScanData?.subtitle ??
-        'Complete your photos and measurements to see how your body has changed.';
-    final ctaText = weeklyScanData?.ctaLabel ?? 'Begin Weekly Scan';
+    final cardTitle = weeklyScanData?.title ?? '';
+    final cardSubtitle = weeklyScanData?.subtitle ?? '';
+    final ctaText = weeklyScanData?.ctaLabel ??
+        (weeklyScanData?.paywallRequired == true ? 'Subscribe' : '');
     final attachedLabel = weeklyScanData?.attachedBriefsLabel;
 
     return Container(
@@ -164,40 +281,40 @@ class WeeklyScanCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 16),
-
-          // CTA Button
-          GestureDetector(
-            onTap: () => _beginScan(context),
-            child: Container(
-              width: double.infinity,
-              height: 44,
-              decoration: BoxDecoration(
-                color: AppColors.brandTeal,
-                borderRadius: BorderRadius.circular(22),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    ctaText,
-                    style: const TextStyle(
-                      fontFamily: 'Nunito',
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
+          if (ctaText.isNotEmpty) ...[
+            const SizedBox(height: 16),
+            GestureDetector(
+              onTap: () => _beginScan(context),
+              child: Container(
+                width: double.infinity,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: AppColors.brandTeal,
+                  borderRadius: BorderRadius.circular(22),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      ctaText,
+                      style: const TextStyle(
+                        fontFamily: 'Nunito',
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    const Icon(
+                      Icons.chevron_right,
+                      size: 18,
                       color: Colors.white,
                     ),
-                  ),
-                  const SizedBox(width: 6),
-                  const Icon(
-                    Icons.chevron_right,
-                    size: 18,
-                    color: Colors.white,
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
-          ),
+          ],
           if (attachedLabel != null && attachedLabel.isNotEmpty) ...[
             const SizedBox(height: 12),
             Row(
@@ -221,124 +338,6 @@ class WeeklyScanCard extends StatelessWidget {
               ],
             ),
           ],
-        ],
-      ),
-    );
-  }
-
-  Widget _buildOverdueCard(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF1F5F9),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: AppColors.cardBorder,
-          width: 1,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: const [
-              Icon(
-                Icons.warning_amber_rounded,
-                size: 16,
-                color: AppColors.textSecondary,
-              ),
-              SizedBox(width: 6),
-              Text(
-                'SCAN OVERDUE',
-                style: TextStyle(
-                  fontFamily: 'Nunito',
-                  fontSize: 11,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 0.8,
-                  color: AppColors.textSecondary,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
-                    Text(
-                      "Yesterday's weekly scan has not been completed.",
-                      style: TextStyle(
-                        fontFamily: 'Nunito',
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.textPrimary,
-                        height: 1.25,
-                      ),
-                    ),
-                    SizedBox(height: 4),
-                    Text(
-                      'Complete it today to preserve your progress timeline.',
-                      style: TextStyle(
-                        fontFamily: 'Nunito',
-                        fontSize: 12,
-                        color: AppColors.textSecondary,
-                        height: 1.35,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 12),
-              Container(
-                width: 56,
-                height: 56,
-                decoration: const BoxDecoration(
-                  color: Color(0xFFE2E8F0),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.calendar_month,
-                  size: 24,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 14),
-          GestureDetector(
-            onTap: () => _beginScan(context),
-            child: Container(
-              width: double.infinity,
-              height: 42,
-              decoration: BoxDecoration(
-                color: const Color(0xFF0C191B),
-                borderRadius: BorderRadius.circular(21),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: const [
-                  Text(
-                    'Complete Missed Scan',
-                    style: TextStyle(
-                      fontFamily: 'Nunito',
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  SizedBox(width: 6),
-                  Icon(
-                    Icons.chevron_right,
-                    size: 18,
-                    color: Colors.white,
-                  ),
-                ],
-              ),
-            ),
-          ),
         ],
       ),
     );

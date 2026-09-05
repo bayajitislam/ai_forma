@@ -46,32 +46,43 @@ class _AppShellViewState extends State<AppShellView> {
     InsightsBinding().dependencies();
     TimelineBinding().dependencies();
 
-    // If app deep-links directly to Insights or Timeline tab, fetch immediately.
-    if (_selectedItem == AppNavItem.insights) {
-      _triggerInsightsFetch();
-    } else if (_selectedItem == AppNavItem.timeline) {
-      _triggerTimelineFetch();
-    }
+    // If app deep-links directly to Insights or Timeline tab, fetch after initial frame renders.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      if (_selectedItem == AppNavItem.insights) {
+        _triggerInsightsFetch(force: true);
+      } else if (_selectedItem == AppNavItem.timeline) {
+        _triggerTimelineFetch(force: true);
+      }
+    });
   }
 
-  /// Triggers fetchLatestScan only once per shell lifetime.
-  void _triggerInsightsFetch() {
-    if (_insightsFetched) return;
+  /// Triggers fetchLatestScan (supports force refresh and optional scanId).
+  void _triggerInsightsFetch({bool force = false, String? scanId}) {
+    if (_insightsFetched && !force) return;
     _insightsFetched = true;
-    Get.find<InsightsController>().fetchLatestScan();
+    if (!Get.isRegistered<InsightsController>()) {
+      InsightsBinding().dependencies();
+    }
+    if (Get.isRegistered<InsightsController>()) {
+      Get.find<InsightsController>().fetchLatestScan(scanId: scanId);
+    }
   }
 
   /// Triggers Timeline fetch on demand when navigating to Timeline tab.
   void _triggerTimelineFetch({bool force = false}) {
     if (_timelineFetched && !force) return;
     _timelineFetched = true;
+    if (!Get.isRegistered<TimelineController>()) {
+      TimelineBinding().dependencies();
+    }
     if (Get.isRegistered<TimelineController>()) {
       Get.find<TimelineController>().fetchTimelineData(force: force);
     }
   }
 
-  void navigateToInsights() {
-    _triggerInsightsFetch();
+  void navigateToInsights({String? scanId}) {
+    _triggerInsightsFetch(force: true, scanId: scanId);
     setState(() {
       _selectedItem = AppNavItem.insights;
     });
@@ -106,8 +117,10 @@ class _AppShellViewState extends State<AppShellView> {
               child: IndexedStack(
                 index: _selectedItem.index,
                 children: [
-                  DashboardView(goInsight: navigateToInsights),
-                  CheckInHomeView(goInsightPage: navigateToInsights),
+                  DashboardView(
+                    goInsight: ({scanId}) => navigateToInsights(scanId: scanId),
+                  ),
+                  CheckInHomeView(goInsightPage: () => navigateToInsights()),
                   const InsightsView(),
                   const TimelineView(),
                   const ProfileView(),
@@ -145,7 +158,11 @@ class _AppShellViewState extends State<AppShellView> {
               } else if (item == AppNavItem.insights) {
                 if (_selectedItem == AppNavItem.insights) {
                   // User tapped Insights tab again while already on it → refresh
-                  Get.find<InsightsController>().fetchLatestScan();
+                  if (Get.isRegistered<InsightsController>()) {
+                    Get.find<InsightsController>().fetchLatestScan();
+                  } else {
+                    _triggerInsightsFetch(force: true);
+                  }
                 } else {
                   // First time navigating to Insights → trigger initial fetch
                   _triggerInsightsFetch();
@@ -153,7 +170,11 @@ class _AppShellViewState extends State<AppShellView> {
               } else if (item == AppNavItem.timeline) {
                 if (_selectedItem == AppNavItem.timeline) {
                   // User tapped Timeline tab again while already on it → refresh
-                  _triggerTimelineFetch(force: true);
+                  if (Get.isRegistered<TimelineController>()) {
+                    Get.find<TimelineController>().fetchTimelineData(force: true);
+                  } else {
+                    _triggerTimelineFetch(force: true);
+                  }
                 } else {
                   // First time navigating to Timeline → trigger initial fetch
                   _triggerTimelineFetch();

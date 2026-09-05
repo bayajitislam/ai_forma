@@ -12,9 +12,10 @@ class TimelineBinding extends Bindings {
           repository: TimelineRepository(
             Get.isRegistered<DioClient>()
                 ? Get.find<DioClient>()
-                : DioClient(),
+                : Get.put(DioClient(), permanent: true),
           ),
         ),
+        permanent: true,
       );
     }
   }
