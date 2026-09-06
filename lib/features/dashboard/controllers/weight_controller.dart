@@ -70,14 +70,10 @@ class WeightController extends GetxController {
         if (response.statusCode == 200 && response.data != null) {
           final data = response.data as Map<String, dynamic>;
           _parsePayload(data);
-        } else {
-          records.clear();
         }
-      } else {
-        records.clear();
       }
     } catch (e) {
-      records.clear();
+      errorMessage(e.toString());
     } finally {
       isLoading(false);
     }
@@ -103,14 +99,10 @@ class WeightController extends GetxController {
           final data = response.data as Map<String, dynamic>;
           _parsePayload(data);
           _parseSummary(data['summary']);
-        } else {
-          records.clear();
         }
-      } else {
-        records.clear();
       }
     } catch (e) {
-      records.clear();
+      errorMessage(e.toString());
     } finally {
       isLoading(false);
     }
@@ -310,56 +302,113 @@ class WeightController extends GetxController {
 
   Future<void> addRecord(double weight) async {
     final roundedWeight = double.parse(weight.toStringAsFixed(1));
-    final newRecord = WeightRecord(
-      id: _uuid.v4(),
-      weightKg: roundedWeight,
-      date: DateTime.now(),
-    );
-    records.insert(0, newRecord);
+    isLoading(true);
+
+    try {
+      if (Get.isRegistered<DioClient>()) {
+        final dio = Get.find<DioClient>();
+        final response = await dio.post(
+          ApiEndpoint.weightTrends,
+          data: {
+            'weight_kg': roundedWeight,
+            'source': 'manual',
+          },
+        );
+
+        if (response.statusCode == 200 || response.statusCode == 201) {
+          if (response.data is Map<String, dynamic>) {
+            _parsePayload(response.data as Map<String, dynamic>);
+          }
+        }
+
+        // Re-sync with backend to get updated charts and calculations
+        await fetchWeightProgress(range: selectedRange.value);
+        await fetchWeightTrends(range: selectedRange.value);
+
+        if (Get.isRegistered<HomeController>()) {
+          Get.find<HomeController>().fetchHomeData(force: true);
+        }
+      } else {
+        // In-memory fallback only when network client is not present
+        final newRecord = WeightRecord(
+          id: _uuid.v4(),
+          weightKg: roundedWeight,
+          date: DateTime.now(),
+        );
+        records.insert(0, newRecord);
+        _sortRecords();
+      }
+    } catch (e) {
+      errorMessage(e.toString());
+    } finally {
+      isLoading(false);
+    }
+  }
+
+  Future<void> updateRecord(String id, double newWeight) async {
+    final roundedWeight = double.parse(newWeight.toStringAsFixed(1));
+    isLoading(true);
+
+    try {
+      if (Get.isRegistered<DioClient>()) {
+        final dio = Get.find<DioClient>();
+        final response = await dio.post(
+          ApiEndpoint.weightTrends,
+          data: {
+            'weight_kg': roundedWeight,
+            'source': 'manual',
+          },
+        );
+
+        if (response.statusCode == 200 || response.statusCode == 201) {
+          if (response.data is Map<String, dynamic>) {
+            _parsePayload(response.data as Map<String, dynamic>);
+          }
+        }
+
+        // Re-sync with backend to get updated charts and calculations
+        await fetchWeightProgress(range: selectedRange.value);
+        await fetchWeightTrends(range: selectedRange.value);
+
+        if (Get.isRegistered<HomeController>()) {
+          Get.find<HomeController>().fetchHomeData(force: true);
+        }
+      } else {
+        final index = records.indexWhere((r) => r.id == id);
+        if (index != -1) {
+          final oldRecord = records[index];
+          records[index] = oldRecord.copyWith(weightKg: roundedWeight);
+          _sortRecords();
+        }
+      }
+    } catch (e) {
+      errorMessage(e.toString());
+    } finally {
+      isLoading(false);
+    }
+  }
+
+  Future<void> deleteRecord(String id) async {
+    records.removeWhere((r) => r.id == id);
     _sortRecords();
 
     try {
       if (Get.isRegistered<DioClient>()) {
         final dio = Get.find<DioClient>();
-        await dio.post(
-          ApiEndpoint.weightTrends,
-          data: {
-            'weight_kg': roundedWeight,
-            'source': 'manual',
-          },
-        );
+        // Attempt backend deletion if endpoint supported
+        await dio.delete('${ApiEndpoint.weightTrends}$id/');
 
         if (Get.isRegistered<HomeController>()) {
           Get.find<HomeController>().fetchHomeData(force: true);
         }
       }
-    } catch (_) {}
-  }
-
-  Future<void> updateRecord(String id, double newWeight) async {
-    final roundedWeight = double.parse(newWeight.toStringAsFixed(1));
-    final index = records.indexWhere((r) => r.id == id);
-    if (index != -1) {
-      final oldRecord = records[index];
-      records[index] = oldRecord.copyWith(weightKg: roundedWeight);
-      _sortRecords();
+    } catch (_) {
+      try {
+        if (Get.isRegistered<DioClient>()) {
+          final dio = Get.find<DioClient>();
+          await dio.delete('/api/checkins/weight-history/$id/');
+        }
+      } catch (_) {}
     }
-
-    try {
-      if (Get.isRegistered<DioClient>()) {
-        final dio = Get.find<DioClient>();
-        await dio.post(
-          ApiEndpoint.weightTrends,
-          data: {
-            'weight_kg': roundedWeight,
-            'source': 'manual',
-          },
-        );
-
-        if (Get.isRegistered<HomeController>()) {
-          Get.find<HomeController>().fetchHomeData(force: true);
-        }
-      }
-    } catch (_) {}
   }
 }

@@ -48,9 +48,17 @@ class WeightTrendsView extends StatelessWidget {
         child: Column(
           children: [
             Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Column(
+              child: RefreshIndicator(
+                onRefresh: () async {
+                  await controller.fetchWeightTrends(
+                    range: controller.selectedRange.value,
+                  );
+                },
+                color: AppColors.brandTeal,
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const SizedBox(height: 16),
@@ -93,6 +101,7 @@ class WeightTrendsView extends StatelessWidget {
                 ),
               ),
             ),
+          ),
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: PrimaryButton(
@@ -170,18 +179,57 @@ class WeightTrendsView extends StatelessWidget {
       return const Center(child: Text('No data for this period.'));
     }
 
-    final spots = data
-        .map(
-          (e) => FlSpot(e.date.millisecondsSinceEpoch.toDouble(), e.weightKg),
-        )
-        .toList();
-    final minX = spots.first.x;
-    final maxX = spots.last.x;
+    final spots = List.generate(
+      data.length,
+      (i) => FlSpot(i.toDouble(), data[i].weightKg),
+    );
+    final minX = 0.0;
+    final maxX = (data.length - 1).toDouble();
 
-    double minY =
-        data.map((e) => e.weightKg).reduce((a, b) => a < b ? a : b) - 2;
-    double maxY =
-        data.map((e) => e.weightKg).reduce((a, b) => a > b ? a : b) + 2;
+    final double rawMinY =
+        data.map((e) => e.weightKg).reduce((a, b) => a < b ? a : b);
+    final double rawMaxY =
+        data.map((e) => e.weightKg).reduce((a, b) => a > b ? a : b);
+
+    final double minY;
+    final double maxY;
+    if (rawMinY == rawMaxY) {
+      minY = rawMinY - 1.0;
+      maxY = rawMaxY + 1.0;
+    } else {
+      final pad = (rawMaxY - rawMinY) * 0.15;
+      final effectivePad = pad > 0.5 ? pad : 0.5;
+      minY = rawMinY - effectivePad;
+      maxY = rawMaxY + effectivePad;
+    }
+
+    // Build unique, non-overlapping label map by spot index
+    final Map<int, String> labelBySpotIndex = {};
+    if (data.length == 1) {
+      labelBySpotIndex[0] = DateFormat('d MMM').format(data[0].date);
+    } else if (data.length <= 5) {
+      String? lastDate;
+      for (int i = 0; i < data.length; i++) {
+        final dateStr = DateFormat('d MMM').format(data[i].date);
+        if (dateStr != lastDate) {
+          labelBySpotIndex[i] = dateStr;
+          lastDate = dateStr;
+        }
+      }
+    } else {
+      final int targetLabels =
+          controller.selectedRange.value == TimeRange.week1 ? 4 : 4;
+      final step = (data.length - 1) / (targetLabels - 1);
+      final usedDates = <String>{};
+      for (int k = 0; k < targetLabels; k++) {
+        final idx = (k * step).round().clamp(0, data.length - 1);
+        final dateStr = DateFormat('d MMM').format(data[idx].date);
+        if (!usedDates.contains(dateStr)) {
+          labelBySpotIndex[idx] = dateStr;
+          usedDates.add(dateStr);
+        }
+      }
+    }
 
     return LineChart(
       LineChartData(
@@ -198,32 +246,33 @@ class WeightTrendsView extends StatelessWidget {
             sideTitles: SideTitles(
               showTitles: true,
               reservedSize: 30,
-              interval: maxX == minX ? 1 : (maxX - minX) / 4,
+              interval: 1,
               getTitlesWidget: (value, meta) {
-                if (value == maxX || value == minX) {
-                  return const SizedBox.shrink();
-                }
-                final date = DateTime.fromMillisecondsSinceEpoch(value.toInt());
-                return Padding(
-                  padding: const EdgeInsets.only(top: 8.0),
-                  child: Text(
-                    DateFormat('MMM d').format(date),
-                    style: const TextStyle(
-                      color: AppColors.textSecondary,
-                      fontSize: 12,
+                final index = value.round();
+                if (value == index.toDouble() &&
+                    labelBySpotIndex.containsKey(index)) {
+                  return Padding(
+                    padding: const EdgeInsets.only(top: 8.0),
+                    child: Text(
+                      labelBySpotIndex[index]!,
+                      style: const TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 12,
+                      ),
                     ),
-                  ),
-                );
+                  );
+                }
+                return const SizedBox.shrink();
               },
             ),
           ),
           leftTitles: AxisTitles(
             sideTitles: SideTitles(
               showTitles: true,
-              interval: 1,
+              interval: ((maxY - minY) / 4).clamp(0.5, 10.0),
               getTitlesWidget: (value, meta) {
                 return Text(
-                  value.toInt().toString(),
+                  value.toStringAsFixed(value % 1 == 0 ? 0 : 1),
                   style: const TextStyle(
                     color: AppColors.textSecondary,
                     fontSize: 12,
@@ -237,13 +286,13 @@ class WeightTrendsView extends StatelessWidget {
         ),
         borderData: FlBorderData(show: false),
         minX: minX,
-        maxX: maxX,
+        maxX: maxX == minX ? minX + 1 : maxX,
         minY: minY,
         maxY: maxY,
         lineBarsData: [
           LineChartBarData(
             spots: spots,
-            isCurved: false,
+            isCurved: data.length > 1,
             color: AppColors.brandTeal,
             barWidth: 2,
             isStrokeCapRound: true,
@@ -256,22 +305,20 @@ class WeightTrendsView extends StatelessWidget {
         ],
         lineTouchData: LineTouchData(
           touchTooltipData: LineTouchTooltipData(
-            // Use getTooltipColor instead of tooltipBgColor
             getTooltipColor: (touchedSpot) => AppColors.brandTeal,
             getTooltipItems: (touchedSpots) {
               return touchedSpots.map((LineBarSpot touchedSpot) {
-                final date = DateTime.fromMillisecondsSinceEpoch(
-                  touchedSpot.x.toInt(),
-                );
+                final idx = touchedSpot.x.round().clamp(0, data.length - 1);
+                final record = data[idx];
                 return LineTooltipItem(
-                  '${touchedSpot.y.toStringAsFixed(1)} kg\n',
+                  '${record.weightKg.toStringAsFixed(1)} kg\n',
                   const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
                   ),
                   children: [
                     TextSpan(
-                      text: DateFormat('MMM d, yyyy').format(date),
+                      text: DateFormat('MMM d, yyyy').format(record.date),
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 10,
@@ -332,27 +379,13 @@ class WeightTrendsView extends StatelessWidget {
                 fontSize: 12,
               ),
             ),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  '${record.weightKg.toStringAsFixed(1)} kg',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                const Icon(
-                  Icons.chevron_right,
-                  color: AppColors.textSecondary,
-                  size: 20,
-                ),
-              ],
+            trailing: Text(
+              '${record.weightKg.toStringAsFixed(1)} kg',
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
             ),
-            onTap: () {
-              WeightEntryBottomSheet.show(context, record: record);
-            },
           );
         },
       ),
