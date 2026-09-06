@@ -25,28 +25,36 @@ class InsightMetricRow extends StatelessWidget {
   final InsightStatusType statusType;
   final VoidCallback? onTap;
 
-  /// Derives color from the status string first.
-  /// "Good" / "Excellent" → brandTeal
-  /// "Progressing Well" → insightWarning
-  /// Falls back to statusType if no match.
+  /// Derives color from the status string first, then falls back to statusType.
   Color get _accentColor {
     final s = status.toLowerCase();
-    if (s.contains('good') || s.contains('excellent')) {
-      return AppColors.brandTeal;
-    }
-    if (s.contains('progress')) {
+    if (s.contains('attention') ||
+        s.contains('warning') ||
+        s.contains('negative') ||
+        s.contains('imbalance')) {
       return AppColors.insightWarning;
+    }
+    if (s.contains('good') ||
+        s.contains('excellent') ||
+        s.contains('on track') ||
+        s.contains('positive') ||
+        s.contains('balanced')) {
+      return AppColors.brandTeal;
     }
     return statusType == InsightStatusType.warning
         ? AppColors.insightWarning
         : AppColors.brandTeal;
   }
 
-  /// Uses passed icon by default.
-  /// Overrides to alert icon when status is "Progressing Well".
+  /// Uses passed icon by default, but switches to alert icon when status is warning/needs attention.
   IconData get _resolvedIcon {
     final s = status.toLowerCase();
-    if (s.contains('progress')) return Remix.alert_line;
+    if (s.contains('attention') ||
+        s.contains('warning') ||
+        s.contains('imbalance') ||
+        statusType == InsightStatusType.warning) {
+      return Remix.alert_line;
+    }
     return icon;
   }
 
@@ -81,11 +89,14 @@ class InsightMetricRow extends StatelessWidget {
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  const SizedBox(height: 2),
-                  Text(status, style: AppTextStyles.featureDescription),
+                  if (subtitle.isNotEmpty) ...[
+                    const SizedBox(height: 2),
+                    Text(subtitle, style: AppTextStyles.featureDescription),
+                  ],
                 ],
               ),
             ),
+            const SizedBox(width: 8),
             Text(
               status,
               style: TextStyle(

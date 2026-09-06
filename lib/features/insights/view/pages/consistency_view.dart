@@ -57,43 +57,65 @@ class ConsistencyView extends StatelessWidget {
         );
       }
 
+      // First scan check
+      final isFirstScan = (data?.checkinNumber ?? 1) <= 1 || (data?.grid.length ?? 0) <= 1;
+
       // Map values with fallback defaults
       final score = data?.score ?? 100;
-      final badgeText = (data?.status.isNotEmpty ?? false)
-          ? data!.status
-          : InsightsStrings.excellent;
+      final rawStatus = data?.status ?? '';
+      final badgeText = rawStatus.isNotEmpty ? rawStatus : InsightsStrings.excellent;
       final badgeType = InsightScoreBadgeType.fromTone(
         data?.statusTone,
         data?.status,
         fallback: InsightScoreBadgeType.excellent,
       );
-      final summaryText = (data?.summary.isNotEmpty ?? false)
-          ? data!.summary
-          : InsightsStrings.consistencySummary;
+      final rawSummary = data?.summary ?? '';
+      final summaryText = isFirstScan
+          ? (rawSummary.isNotEmpty &&
+                  !rawSummary.toLowerCase().contains('week') &&
+                  !rawSummary.toLowerCase().contains('stable') &&
+                  !rawSummary.toLowerCase().contains('12'))
+              ? rawSummary
+              : InsightsStrings.consistencySummaryFirstScan
+          : (rawSummary.isNotEmpty ? rawSummary : InsightsStrings.consistencySummary);
 
       // Consistency Grid & Metrics
-      final completedScans = data?.grid.length ?? 1;
+      final completedScans = isFirstScan ? 1 : (data?.grid.length ?? 1);
       final totalWeeks = data?.window?.weeks ?? 8;
 
       final streakWeeks = data?.metrics?.currentStreakWeeks;
-      final streakStr = streakWeeks != null ? '$streakWeeks weeks' : '1 weeks';
+      final streakStr = isFirstScan
+          ? '1 scan'
+          : (streakWeeks != null ? '$streakWeeks weeks' : '1 weeks');
 
       final onTimePercent = data?.metrics?.onTimePercent;
       final onTimeStr = onTimePercent != null ? '$onTimePercent%' : '100%';
 
       final momentum = data?.metrics?.momentumGained;
-      final momentumStr = momentum != null ? '+$momentum pts' : 'N/A';
+      final momentumStr = isFirstScan
+          ? InsightsStrings.initialReading
+          : (momentum != null ? '+$momentum pts' : InsightsStrings.noChangePlaceholder);
 
       // Analysis
-      final detectedText = (data?.analysis?.detected.isNotEmpty ?? false)
-          ? data!.analysis!.detected
-          : InsightsStrings.consistencyDetected;
-      final whyText = (data?.analysis?.why.isNotEmpty ?? false)
-          ? data!.analysis!.why
-          : InsightsStrings.consistencyWhy;
-      final nextStepText = (data?.analysis?.nextStep.isNotEmpty ?? false)
-          ? data!.analysis!.nextStep
-          : InsightsStrings.consistencyNextSteps;
+      final rawDetected = data?.analysis?.detected ?? '';
+      final rawWhy = data?.analysis?.why ?? '';
+      final rawNextStep = data?.analysis?.nextStep ?? '';
+
+      final detectedText = isFirstScan
+          ? (rawDetected.isNotEmpty &&
+                  !rawDetected.toLowerCase().contains('week') &&
+                  !rawDetected.toLowerCase().contains('12'))
+              ? rawDetected
+              : InsightsStrings.consistencyDetectedFirstScan
+          : (rawDetected.isNotEmpty
+              ? rawDetected
+              : InsightsStrings.consistencyDetected);
+      final whyText = isFirstScan
+          ? InsightsStrings.consistencySuggestsFirstScan
+          : (rawWhy.isNotEmpty ? rawWhy : InsightsStrings.consistencyWhy);
+      final nextStepText = isFirstScan
+          ? InsightsStrings.consistencyNextStepsFirstScan
+          : (rawNextStep.isNotEmpty ? rawNextStep : InsightsStrings.consistencyNextSteps);
 
       // Priorities
       final prioritiesList = (data?.weeklyPriorities.isNotEmpty ?? false)

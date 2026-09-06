@@ -57,34 +57,51 @@ class SymmetryScoreView extends StatelessWidget {
         );
       }
 
+      // First scan check
+      final isFirstScan = (data?.checkinNumber ?? 1) <= 1;
+
       // Map values with fallback defaults
       final score = data?.score ?? 85;
-      final badgeText = (data?.status.isNotEmpty ?? false)
-          ? data!.status
-          : InsightsStrings.good;
+      final rawStatus = data?.status ?? '';
+      final badgeText = rawStatus.isNotEmpty ? rawStatus : InsightsStrings.good;
       final badgeType = InsightScoreBadgeType.fromTone(
         data?.statusTone,
         data?.status,
         fallback: InsightScoreBadgeType.good,
       );
-      final summaryText = (data?.summary.isNotEmpty ?? false)
-          ? data!.summary
-          : InsightsStrings.symmetrySummary;
+      final rawSummary = data?.summary ?? '';
+      final summaryText = isFirstScan
+          ? (rawSummary.isNotEmpty &&
+                  !rawSummary.toLowerCase().contains('week') &&
+                  !rawSummary.toLowerCase().contains('stable') &&
+                  !rawSummary.toLowerCase().contains('progress'))
+              ? rawSummary
+              : InsightsStrings.symmetrySummaryFirstScan
+          : (rawSummary.isNotEmpty ? rawSummary : InsightsStrings.symmetrySummary);
 
       // Visual image
       final visualImage = data?.visual?.imageUrl;
       final visualThumb = data?.visual?.thumbUrl;
 
       // Analysis
-      final detectedText = (data?.analysis?.detected.isNotEmpty ?? false)
-          ? data!.analysis!.detected
-          : InsightsStrings.symmetryDetected;
-      final whyText = (data?.analysis?.why.isNotEmpty ?? false)
-          ? data!.analysis!.why
-          : InsightsStrings.symmetryWhy;
-      final nextStepText = (data?.analysis?.nextStep.isNotEmpty ?? false)
-          ? data!.analysis!.nextStep
-          : InsightsStrings.symmetryNextSteps;
+      final rawDetected = data?.analysis?.detected ?? '';
+      final rawWhy = data?.analysis?.why ?? '';
+      final rawNextStep = data?.analysis?.nextStep ?? '';
+
+      final detectedText = isFirstScan
+          ? (rawDetected.isNotEmpty &&
+                  !rawDetected.toLowerCase().contains('week')
+              ? rawDetected
+              : InsightsStrings.symmetryDetectedFirstScan)
+          : (rawDetected.isNotEmpty
+              ? rawDetected
+              : InsightsStrings.symmetryDetected);
+      final whyText = isFirstScan
+          ? InsightsStrings.symmetrySuggestsFirstScan
+          : (rawWhy.isNotEmpty ? rawWhy : InsightsStrings.symmetryWhy);
+      final nextStepText = isFirstScan
+          ? InsightsStrings.symmetryNextStepsFirstScan
+          : (rawNextStep.isNotEmpty ? rawNextStep : InsightsStrings.symmetryNextSteps);
 
       // Priorities
       final prioritiesList = (data?.weeklyPriorities.isNotEmpty ?? false)

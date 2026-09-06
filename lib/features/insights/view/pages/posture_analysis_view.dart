@@ -57,29 +57,48 @@ class PostureAnalysisView extends StatelessWidget {
         );
       }
 
+      // First scan check
+      final isFirstScan = (data?.checkinNumber ?? 1) <= 1 || data?.comparison?.before == null;
+
       // Map values with fallback defaults
       final score = data?.score ?? 70;
-      final badgeText = (data?.status.isNotEmpty ?? false)
-          ? data!.status
-          : InsightsStrings.progressingWell;
+      final rawStatus = data?.status ?? '';
+      final badgeText = rawStatus.isNotEmpty ? rawStatus : InsightsStrings.needsAttention;
       final badgeType = InsightScoreBadgeType.fromTone(
         data?.statusTone,
         data?.status,
+        fallback: InsightScoreBadgeType.warning,
       );
-      final summaryText = (data?.summary.isNotEmpty ?? false)
-          ? data!.summary
-          : InsightsStrings.postureSummary;
+      final rawSummary = data?.summary ?? '';
+      final summaryText = isFirstScan
+          ? (rawSummary.isNotEmpty &&
+                  !rawSummary.toLowerCase().contains('improvement') &&
+                  !rawSummary.toLowerCase().contains('progress') &&
+                  !rawSummary.toLowerCase().contains('stable') &&
+                  !rawSummary.toLowerCase().contains('week'))
+              ? rawSummary
+              : InsightsStrings.postureSummaryFirstScan
+          : (rawSummary.isNotEmpty ? rawSummary : InsightsStrings.postureSummary);
 
       // Analysis
-      final detectedText = (data?.analysis?.detected.isNotEmpty ?? false)
-          ? data!.analysis!.detected
-          : InsightsStrings.postureDetected;
-      final whyText = (data?.analysis?.why.isNotEmpty ?? false)
-          ? data!.analysis!.why
-          : InsightsStrings.postureWhy;
-      final nextStepText = (data?.analysis?.nextStep.isNotEmpty ?? false)
-          ? data!.analysis!.nextStep
-          : InsightsStrings.postureNextSteps;
+      final rawDetected = data?.analysis?.detected ?? '';
+      final rawWhy = data?.analysis?.why ?? '';
+      final rawNextStep = data?.analysis?.nextStep ?? '';
+
+      final detectedText = isFirstScan
+          ? (rawDetected.isNotEmpty &&
+                  !rawDetected.toLowerCase().contains('week')
+              ? rawDetected
+              : InsightsStrings.postureDetectedFirstScan)
+          : (rawDetected.isNotEmpty
+              ? rawDetected
+              : InsightsStrings.postureDetected);
+      final whyText = isFirstScan
+          ? InsightsStrings.postureSuggestsFirstScan
+          : (rawWhy.isNotEmpty ? rawWhy : InsightsStrings.postureWhy);
+      final nextStepText = isFirstScan
+          ? InsightsStrings.postureNextStepsFirstScan
+          : (rawNextStep.isNotEmpty ? rawNextStep : InsightsStrings.postureNextSteps);
 
       // Priorities
       final prioritiesList = (data?.weeklyPriorities.isNotEmpty ?? false)

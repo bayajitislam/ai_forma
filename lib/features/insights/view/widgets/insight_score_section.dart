@@ -22,8 +22,10 @@ enum InsightScoreBadgeType {
         tone == 'needs_attention' ||
         tone == 'attention' ||
         tone == 'negative' ||
+        tone == 'imbalance' ||
         text.contains('warning') ||
-        text.contains('attention')) {
+        text.contains('attention') ||
+        text.contains('imbalance')) {
       return InsightScoreBadgeType.warning;
     }
 
@@ -35,7 +37,11 @@ enum InsightScoreBadgeType {
       return InsightScoreBadgeType.good;
     }
 
-    if (text.contains('progressing') || tone == 'positive') {
+    if (text.contains('progressing') ||
+        tone == 'positive' ||
+        text.contains('balanced') ||
+        text.contains('on track') ||
+        text.contains('complete')) {
       return InsightScoreBadgeType.positive;
     }
 
@@ -61,13 +67,11 @@ class InsightScoreSection extends StatelessWidget {
 
   Color get _badgeBackground => switch (badgeType) {
     InsightScoreBadgeType.warning => AppColors.insightBadgeWarningBg,
-    InsightScoreBadgeType.positive => AppColors.insightBadgeWarningBg,
     _ => AppColors.insightBadgePositiveBg,
   };
 
   Color get _badgeTextColor => switch (badgeType) {
     InsightScoreBadgeType.warning => AppColors.insightWarning,
-    InsightScoreBadgeType.positive => AppColors.insightWarning,
     _ => AppColors.brandTealDark,
   };
 

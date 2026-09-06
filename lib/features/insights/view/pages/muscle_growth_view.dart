@@ -58,27 +58,9 @@ class MuscleGrowthView extends StatelessWidget {
         );
       }
 
-      // Map values with fallback defaults
-      final score = data?.score ?? 78;
-      final badgeText = (data?.status.isNotEmpty ?? false)
-          ? data!.status
-          : InsightsStrings.progressingWell;
-      final badgeType = InsightScoreBadgeType.fromTone(
-        data?.statusTone,
-        data?.status,
-      );
-      final summaryText = (data?.summary.isNotEmpty ?? false)
-          ? data!.summary
-          : InsightsStrings.muscleGrowthSummary;
-
-      // Chart
+      // First scan check: checkin number <= 1 or only single scan series available
       final series = data?.chart?.series ?? [];
-      final dataPoints = series.isNotEmpty
-          ? series.map((e) => e.muscleMassKg).toList()
-          : <double>[62, 68, 70, 71, 78];
-      final labels = series.isNotEmpty
-          ? series.map((e) => e.date).toList()
-          : InsightsStrings.trendDates;
+      final isFirstScan = (data?.checkinNumber ?? 1) <= 1 || series.length <= 1;
 
       // Metrics
       final kgValue = data?.metrics?.muscleMassKg?.value;
@@ -87,27 +69,87 @@ class MuscleGrowthView extends StatelessWidget {
       final percentDelta = data?.metrics?.muscleMassPercent?.delta;
 
       final kgValueStr = kgValue != null ? '$kgValue kg' : '- kg';
-      final kgDeltaStr = kgDelta != null ? '$kgDelta kg' : '- kg';
-      final kgDirection = (kgDelta ?? 1) >= 0
-          ? InsightStatChangeDirection.up
-          : InsightStatChangeDirection.down;
+      final kgDeltaStr = isFirstScan
+          ? InsightsStrings.noChangePlaceholder
+          : (kgDelta != null ? '$kgDelta kg' : '- kg');
+      final kgDirection = isFirstScan
+          ? InsightStatChangeDirection.none
+          : ((kgDelta ?? 1) >= 0
+              ? InsightStatChangeDirection.up
+              : InsightStatChangeDirection.down);
 
       final percentValueStr = percentValue != null ? '$percentValue%' : '- %';
-      final percentDeltaStr = percentDelta != null ? '$percentDelta%' : '- %';
-      final percentDirection = (percentDelta ?? 1) >= 0
-          ? InsightStatChangeDirection.up
-          : InsightStatChangeDirection.down;
+      final percentDeltaStr = isFirstScan
+          ? InsightsStrings.noChangePlaceholder
+          : (percentDelta != null ? '$percentDelta%' : '- %');
+      final percentDirection = isFirstScan
+          ? InsightStatChangeDirection.none
+          : ((percentDelta ?? 1) >= 0
+              ? InsightStatChangeDirection.up
+              : InsightStatChangeDirection.down);
+
+      // Score & Badge
+      final score = data?.score ?? 78;
+      final rawStatus = data?.status ?? '';
+      final badgeText = rawStatus.isNotEmpty
+          ? rawStatus
+          : (isFirstScan ? InsightsStrings.good : InsightsStrings.progressingWell);
+      final badgeType = InsightScoreBadgeType.fromTone(
+        data?.statusTone,
+        data?.status,
+        fallback: InsightScoreBadgeType.good,
+      );
+      final rawSummary = data?.summary ?? '';
+      final summaryText = isFirstScan
+          ? (rawSummary.isNotEmpty &&
+                  !rawSummary.toLowerCase().contains('week') &&
+                  !rawSummary.toLowerCase().contains('gain') &&
+                  !rawSummary.toLowerCase().contains('stable') &&
+                  !rawSummary.toLowerCase().contains('progress'))
+              ? rawSummary
+              : InsightsStrings.muscleGrowthSummaryFirstScan
+          : (rawSummary.isNotEmpty ? rawSummary : InsightsStrings.muscleGrowthSummary);
+
+      // Chart
+      final List<double> dataPoints;
+      final List<String> labels;
+
+      if (isFirstScan) {
+        final currentPoint = kgValue ?? (series.isNotEmpty ? series.first.muscleMassKg : 68.0);
+        dataPoints = [currentPoint];
+        labels = [
+          series.isNotEmpty
+              ? series.first.date
+              : ((data?.scanDate.isNotEmpty ?? false) ? data!.scanDate : 'Scan 1')
+        ];
+      } else {
+        dataPoints = series.isNotEmpty
+            ? series.map((e) => e.muscleMassKg).toList()
+            : <double>[62, 68, 70, 71, 78];
+        labels = series.isNotEmpty
+            ? series.map((e) => e.date).toList()
+            : InsightsStrings.trendDates;
+      }
 
       // Analysis
-      final detectedText = (data?.analysis?.detected.isNotEmpty ?? false)
-          ? data!.analysis!.detected
-          : InsightsStrings.muscleGrowthDetected;
-      final whyText = (data?.analysis?.why.isNotEmpty ?? false)
-          ? data!.analysis!.why
-          : InsightsStrings.muscleGrowthWhy;
-      final nextStepText = (data?.analysis?.nextStep.isNotEmpty ?? false)
-          ? data!.analysis!.nextStep
-          : InsightsStrings.muscleGrowthNextSteps;
+      final rawDetected = data?.analysis?.detected ?? '';
+      final rawWhy = data?.analysis?.why ?? '';
+      final rawNextStep = data?.analysis?.nextStep ?? '';
+
+      final detectedText = isFirstScan
+          ? (rawDetected.isNotEmpty &&
+                  !rawDetected.toLowerCase().contains('week')
+              ? rawDetected
+              : InsightsStrings.muscleGrowthDetectedFirstScan)
+          : (rawDetected.isNotEmpty
+              ? rawDetected
+              : InsightsStrings.muscleGrowthDetected);
+      final whyText = isFirstScan
+          ? InsightsStrings.muscleGrowthSuggestsFirstScan
+          : (rawWhy.isNotEmpty ? rawWhy : InsightsStrings.muscleGrowthWhy);
+      final nextStepText = isFirstScan
+          ? InsightsStrings.muscleGrowthNextStepsFirstScan
+          : (rawNextStep.isNotEmpty ? rawNextStep : InsightsStrings.muscleGrowthNextSteps);
 
       // Priorities
       final prioritiesList = (data?.weeklyPriorities.isNotEmpty ?? false)

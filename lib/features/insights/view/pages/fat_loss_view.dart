@@ -58,27 +58,9 @@ class FatLossView extends StatelessWidget {
         );
       }
 
-      // Map values with fallback defaults
-      final score = data?.score ?? 60;
-      final badgeText = (data?.status.isNotEmpty ?? false)
-          ? data!.status
-          : InsightsStrings.progressingWell;
-      final badgeType = InsightScoreBadgeType.fromTone(
-        data?.statusTone,
-        data?.status,
-      );
-      final summaryText = (data?.summary.isNotEmpty ?? false)
-          ? data!.summary
-          : InsightsStrings.fatLossSummary;
-
-      // Chart
+      // First scan check: checkin number <= 1 or only single scan series available
       final series = data?.chart?.series ?? [];
-      final dataPoints = series.isNotEmpty
-          ? series.map((e) => e.bodyFatKg).toList()
-          : <double>[62, 68, 70, 71, 78];
-      final labels = series.isNotEmpty
-          ? series.map((e) => e.date).toList()
-          : InsightsStrings.trendDates;
+      final isFirstScan = (data?.checkinNumber ?? 1) <= 1 || series.length <= 1;
 
       // Metrics
       final percentValue = data?.metrics?.bodyFatPercent?.value;
@@ -87,27 +69,87 @@ class FatLossView extends StatelessWidget {
       final kgDelta = data?.metrics?.fatMassKg?.delta;
 
       final percentValueStr = percentValue != null ? '$percentValue%' : '- %';
-      final percentDeltaStr = percentDelta != null ? '$percentDelta%' : '- %';
-      final percentDirection = (percentDelta ?? 0) <= 0
-          ? InsightStatChangeDirection.down
-          : InsightStatChangeDirection.up;
+      final percentDeltaStr = isFirstScan
+          ? InsightsStrings.noChangePlaceholder
+          : (percentDelta != null ? '$percentDelta%' : '- %');
+      final percentDirection = isFirstScan
+          ? InsightStatChangeDirection.none
+          : ((percentDelta ?? 0) <= 0
+              ? InsightStatChangeDirection.down
+              : InsightStatChangeDirection.up);
 
       final kgValueStr = kgValue != null ? '$kgValue kg' : '- kg';
-      final kgDeltaStr = kgDelta != null ? '$kgDelta kg' : '- kg';
-      final kgDirection = (kgDelta ?? 0) <= 0
-          ? InsightStatChangeDirection.down
-          : InsightStatChangeDirection.up;
+      final kgDeltaStr = isFirstScan
+          ? InsightsStrings.noChangePlaceholder
+          : (kgDelta != null ? '$kgDelta kg' : '- kg');
+      final kgDirection = isFirstScan
+          ? InsightStatChangeDirection.none
+          : ((kgDelta ?? 0) <= 0
+              ? InsightStatChangeDirection.down
+              : InsightStatChangeDirection.up);
+
+      // Score & Badge
+      final score = data?.score ?? 60;
+      final rawStatus = data?.status ?? '';
+      final badgeText = rawStatus.isNotEmpty
+          ? rawStatus
+          : (isFirstScan ? InsightsStrings.good : InsightsStrings.progressingWell);
+      final badgeType = InsightScoreBadgeType.fromTone(
+        data?.statusTone,
+        data?.status,
+        fallback: InsightScoreBadgeType.good,
+      );
+      final rawSummary = data?.summary ?? '';
+      final summaryText = isFirstScan
+          ? (rawSummary.isNotEmpty &&
+                  !rawSummary.toLowerCase().contains('week') &&
+                  !rawSummary.toLowerCase().contains('reduce') &&
+                  !rawSummary.toLowerCase().contains('stable') &&
+                  !rawSummary.toLowerCase().contains('progress'))
+              ? rawSummary
+              : InsightsStrings.fatLossSummaryFirstScan
+          : (rawSummary.isNotEmpty ? rawSummary : InsightsStrings.fatLossSummary);
+
+      // Chart
+      final List<double> dataPoints;
+      final List<String> labels;
+
+      if (isFirstScan) {
+        final currentPoint = kgValue ?? (series.isNotEmpty ? series.first.bodyFatKg : 15.0);
+        dataPoints = [currentPoint];
+        labels = [
+          series.isNotEmpty
+              ? series.first.date
+              : ((data?.scanDate.isNotEmpty ?? false) ? data!.scanDate : 'Scan 1')
+        ];
+      } else {
+        dataPoints = series.isNotEmpty
+            ? series.map((e) => e.bodyFatKg).toList()
+            : <double>[62, 68, 70, 71, 78];
+        labels = series.isNotEmpty
+            ? series.map((e) => e.date).toList()
+            : InsightsStrings.trendDates;
+      }
 
       // Analysis
-      final detectedText = (data?.analysis?.detected.isNotEmpty ?? false)
-          ? data!.analysis!.detected
-          : InsightsStrings.fatLossDetected;
-      final whyText = (data?.analysis?.why.isNotEmpty ?? false)
-          ? data!.analysis!.why
-          : InsightsStrings.fatLossWhy;
-      final nextStepText = (data?.analysis?.nextStep.isNotEmpty ?? false)
-          ? data!.analysis!.nextStep
-          : InsightsStrings.fatLossNextSteps;
+      final rawDetected = data?.analysis?.detected ?? '';
+      final rawWhy = data?.analysis?.why ?? '';
+      final rawNextStep = data?.analysis?.nextStep ?? '';
+
+      final detectedText = isFirstScan
+          ? (rawDetected.isNotEmpty &&
+                  !rawDetected.toLowerCase().contains('week')
+              ? rawDetected
+              : InsightsStrings.fatLossDetectedFirstScan)
+          : (rawDetected.isNotEmpty
+              ? rawDetected
+              : InsightsStrings.fatLossDetected);
+      final whyText = isFirstScan
+          ? InsightsStrings.fatLossSuggestsFirstScan
+          : (rawWhy.isNotEmpty ? rawWhy : InsightsStrings.fatLossWhy);
+      final nextStepText = isFirstScan
+          ? InsightsStrings.fatLossNextStepsFirstScan
+          : (rawNextStep.isNotEmpty ? rawNextStep : InsightsStrings.fatLossNextSteps);
 
       // Priorities
       final prioritiesList = (data?.weeklyPriorities.isNotEmpty ?? false)

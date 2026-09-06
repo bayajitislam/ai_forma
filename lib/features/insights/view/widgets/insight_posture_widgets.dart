@@ -63,16 +63,26 @@ class InsightPostureSummaryCard extends StatelessWidget {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: AppColors.insightBadgePositiveBg,
+                  color: (statusTone.toLowerCase().contains('warning') ||
+                          status.toLowerCase().contains('attention') ||
+                          status.toLowerCase().contains('warning') ||
+                          status.toLowerCase().contains('imbalance'))
+                      ? AppColors.insightBadgeWarningBg
+                      : AppColors.insightBadgePositiveBg,
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
                   '$score / 100',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: AppFonts.family,
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
-                    color: AppColors.brandTealDark,
+                    color: (statusTone.toLowerCase().contains('warning') ||
+                            status.toLowerCase().contains('attention') ||
+                            status.toLowerCase().contains('warning') ||
+                            status.toLowerCase().contains('imbalance'))
+                        ? AppColors.insightWarning
+                        : AppColors.brandTealDark,
                   ),
                 ),
               ),

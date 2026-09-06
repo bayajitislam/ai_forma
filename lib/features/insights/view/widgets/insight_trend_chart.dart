@@ -185,34 +185,39 @@ class _TrendChartPainter extends CustomPainter {
       ..color = AppColors.brandTealDark
       ..style = PaintingStyle.fill;
 
-    // Single data point: Draw a horizontal line and a centered point
+    // Single data point: Draw grid lines and a single centered data point (no trend line)
     if (dataPoints.length == 1) {
-      final centerY = size.height / 2;
+      final centerY = size.height * 0.5;
       final centerX = size.width / 2;
 
-      final linePaint = Paint()
-        ..color = AppColors.brandTealDark.withValues(alpha: 0.3)
-        ..strokeWidth = 2.0
-        ..style = PaintingStyle.stroke
-        ..strokeCap = StrokeCap.round;
-
+      // Draw subtle dashed/dotted background guide
+      canvas.drawLine(
+        Offset(0, size.height * 0.2),
+        Offset(size.width, size.height * 0.2),
+        gridPaint,
+      );
       canvas.drawLine(
         Offset(0, centerY),
         Offset(size.width, centerY),
-        linePaint,
+        gridPaint,
+      );
+      canvas.drawLine(
+        Offset(0, size.height * 0.8),
+        Offset(size.width, size.height * 0.8),
+        gridPaint,
       );
 
       final centerPoint = Offset(centerX, centerY);
-      canvas.drawCircle(centerPoint, 5, dotPaint);
+      canvas.drawCircle(centerPoint, 6, dotPaint);
       canvas.drawCircle(
         centerPoint,
-        5,
+        6,
         Paint()
           ..color = AppColors.surface
           ..style = PaintingStyle.stroke
-          ..strokeWidth = 2,
+          ..strokeWidth = 2.5,
       );
-      canvas.drawCircle(centerPoint, 6, dotPaint);
+      canvas.drawCircle(centerPoint, 7, dotPaint);
       return;
     }
 

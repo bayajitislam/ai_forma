@@ -91,103 +91,92 @@ class _InsightsViewState extends State<InsightsView> {
       }
 
       final analysis = scan?.analysisResult;
+      final isFirstScan = (scan?.checkinNumber ?? 1) <= 1 || (scan?.source == 'onboarding');
 
-      final muscleSubtitle =
-          (analysis?.muscleGrowth?.remark.isNotEmpty ?? false)
-          ? analysis!.muscleGrowth!.remark
-          : InsightsStrings.muscleGrowthSubtitle;
-      final muscleStatus = (analysis?.muscleGrowth?.status.isNotEmpty ?? false)
-          ? analysis!.muscleGrowth!.status
-          : InsightsStrings.muscleGrowthStatus;
+      final rawMuscleRemark = analysis?.muscleGrowth?.remark ?? '';
+      final rawMuscleStatus = analysis?.muscleGrowth?.status ?? '';
+      final muscleSubtitle = isFirstScan
+          ? (rawMuscleRemark.isNotEmpty &&
+                  !rawMuscleRemark.toLowerCase().contains('progress') &&
+                  !rawMuscleRemark.toLowerCase().contains('week')
+              ? rawMuscleRemark
+              : InsightsStrings.baselineCaptured)
+          : (rawMuscleRemark.isNotEmpty
+              ? rawMuscleRemark
+              : InsightsStrings.muscleGrowthSubtitle);
+      final muscleStatus = rawMuscleStatus.isNotEmpty
+          ? rawMuscleStatus
+          : (isFirstScan ? InsightsStrings.good : InsightsStrings.muscleGrowthStatus);
 
-      final fatSubtitle = (analysis?.fatLoss?.remark.isNotEmpty ?? false)
-          ? analysis!.fatLoss!.remark
-          : InsightsStrings.fatReductionSubtitle;
-      final fatStatus = (analysis?.fatLoss?.status.isNotEmpty ?? false)
-          ? analysis!.fatLoss!.status
-          : InsightsStrings.fatReductionStatus;
+      final rawFatRemark = analysis?.fatLoss?.remark ?? '';
+      final rawFatStatus = analysis?.fatLoss?.status ?? '';
+      final fatSubtitle = isFirstScan
+          ? (rawFatRemark.isNotEmpty &&
+                  !rawFatRemark.toLowerCase().contains('track') &&
+                  !rawFatRemark.toLowerCase().contains('week')
+              ? rawFatRemark
+              : InsightsStrings.baselineCaptured)
+          : (rawFatRemark.isNotEmpty
+              ? rawFatRemark
+              : InsightsStrings.fatReductionSubtitle);
+      final fatStatus = rawFatStatus.isNotEmpty
+          ? rawFatStatus
+          : (isFirstScan ? InsightsStrings.good : InsightsStrings.fatReductionStatus);
 
-      final postureSubtitle =
-          (analysis?.postureAnalysis?.remark.isNotEmpty ?? false)
-          ? analysis!.postureAnalysis!.remark
-          : InsightsStrings.postureSubtitle;
-      final postureStatus =
-          (analysis?.postureAnalysis?.status.isNotEmpty ?? false)
-          ? analysis!.postureAnalysis!.status
+      final rawPostureRemark = analysis?.postureAnalysis?.remark ?? '';
+      final rawPostureStatus = analysis?.postureAnalysis?.status ?? '';
+      final postureSubtitle = isFirstScan
+          ? (rawPostureRemark.isNotEmpty &&
+                  !rawPostureRemark.toLowerCase().contains('week')
+              ? rawPostureRemark
+              : InsightsStrings.baselineCaptured)
+          : (rawPostureRemark.isNotEmpty
+              ? rawPostureRemark
+              : InsightsStrings.postureSubtitle);
+      final postureStatus = rawPostureStatus.isNotEmpty
+          ? rawPostureStatus
           : InsightsStrings.postureStatus;
 
-      final symmetrySubtitle =
-          (analysis?.symmetryScore?.remark.isNotEmpty ?? false)
-          ? analysis!.symmetryScore!.remark
-          : InsightsStrings.symmetrySubtitle;
-      final symmetryStatus =
-          (analysis?.symmetryScore?.status.isNotEmpty ?? false)
-          ? analysis!.symmetryScore!.status
+      final rawSymmetryRemark = analysis?.symmetryScore?.remark ?? '';
+      final rawSymmetryStatus = analysis?.symmetryScore?.status ?? '';
+      final symmetrySubtitle = isFirstScan
+          ? (rawSymmetryRemark.isNotEmpty &&
+                  !rawSymmetryRemark.toLowerCase().contains('week')
+              ? rawSymmetryRemark
+              : InsightsStrings.initialReading)
+          : (rawSymmetryRemark.isNotEmpty
+              ? rawSymmetryRemark
+              : InsightsStrings.symmetrySubtitle);
+      final symmetryStatus = rawSymmetryStatus.isNotEmpty
+          ? rawSymmetryStatus
           : InsightsStrings.symmetryStatus;
+
+      final consistencySubtitle = isFirstScan
+          ? 'Scan 1 Complete'
+          : InsightsStrings.consistencySubtitle;
+
+      InsightStatusType resolveStatusType(String status) {
+        final s = status.toLowerCase();
+        if (s.contains('attention') ||
+            s.contains('warning') ||
+            s.contains('negative') ||
+            s.contains('imbalance')) {
+          return InsightStatusType.warning;
+        }
+        return InsightStatusType.positive;
+      }
+
+      final muscleStatusType = resolveStatusType(muscleStatus);
+      final fatStatusType = resolveStatusType(fatStatus);
+      final postureStatusType = resolveStatusType(postureStatus);
+      final symmetryStatusType = resolveStatusType(symmetryStatus);
+      final consistencyStatusType = resolveStatusType(InsightsStrings.consistencyStatus);
 
       return SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // if (scan?.analysisLocked == true) ...[
-            //   Container(
-            //     margin: const EdgeInsets.only(bottom: 16),
-            //     padding: const EdgeInsets.all(16),
-            //     decoration: BoxDecoration(
-            //       color: AppColors.surface,
-            //       borderRadius: BorderRadius.circular(16),
-            //       border: Border.all(
-            //         color: AppColors.brandTeal.withValues(alpha: 0.3),
-            //       ),
-            //     ),
-            //     child: Column(
-            //       crossAxisAlignment: CrossAxisAlignment.start,
-            //       children: [
-            //         Row(
-            //           children: [
-            //             const Icon(
-            //               AppIcons.lock,
-            //               color: AppColors.brandTeal,
-            //               size: 20,
-            //             ),
-            //             const SizedBox(width: 8),
-            //             Expanded(
-            //               child: Text(
-            //                 'Your Progress Analysis Is Ready',
-            //                 style: AppTextStyles.authSectionTitle.copyWith(
-            //                   fontSize: 16,
-            //                 ),
-            //               ),
-            //             ),
-            //           ],
-            //         ),
-            //         const SizedBox(height: 8),
-            //         Text(
-            //           'Unlock your progress analysis to see your detailed physique changes, muscle growth, and personalized recommendations.',
-            //           style: AppTextStyles.authBody.copyWith(fontSize: 13),
-            //         ),
-            //         const SizedBox(height: 14),
-            //         SizedBox(
-            //           width: double.infinity,
-            //           child: PrimaryButton(
-            //             label: 'UNLOCK ANALYSIS',
-            //             onPressed: () {
-            //               Get.snackbar(
-            //                 'Subscription Required',
-            //                 'Please subscribe to unlock your full progress analysis.',
-            //                 snackPosition: SnackPosition.BOTTOM,
-            //                 backgroundColor: AppColors.brandTeal,
-            //                 colorText: Colors.white,
-            //                 margin: const EdgeInsets.all(16),
-            //               );
-            //             },
-            //           ),
-            //         ),
-            //       ],
-            //     ),
-            //   ),
-            // ],
             Row(
               children: [
                 InsightCategoryCard(
@@ -224,7 +213,7 @@ class _InsightsViewState extends State<InsightsView> {
               title: InsightsStrings.muscleGrowth,
               subtitle: muscleSubtitle,
               status: muscleStatus,
-              statusType: InsightStatusType.positive,
+              statusType: muscleStatusType,
               onTap: () => _openMetricDetail(const MuscleGrowthView()),
             ),
             const SizedBox(height: 10),
@@ -233,7 +222,7 @@ class _InsightsViewState extends State<InsightsView> {
               title: InsightsStrings.fatReduction,
               subtitle: fatSubtitle,
               status: fatStatus,
-              statusType: InsightStatusType.positive,
+              statusType: fatStatusType,
               onTap: () => _openMetricDetail(const FatLossView()),
             ),
             const SizedBox(height: 10),
@@ -242,7 +231,7 @@ class _InsightsViewState extends State<InsightsView> {
               title: InsightsStrings.posture,
               subtitle: postureSubtitle,
               status: postureStatus,
-              statusType: InsightStatusType.warning,
+              statusType: postureStatusType,
               onTap: () => _openMetricDetail(const PostureAnalysisView()),
             ),
             const SizedBox(height: 10),
@@ -251,16 +240,16 @@ class _InsightsViewState extends State<InsightsView> {
               title: InsightsStrings.symmetryScore,
               subtitle: symmetrySubtitle,
               status: symmetryStatus,
-              statusType: InsightStatusType.positive,
+              statusType: symmetryStatusType,
               onTap: () => _openMetricDetail(const SymmetryScoreView()),
             ),
             const SizedBox(height: 10),
             InsightMetricRow(
               icon: AppIcons.checkCircle,
               title: InsightsStrings.consistency,
-              subtitle: InsightsStrings.consistencySubtitle,
+              subtitle: consistencySubtitle,
               status: InsightsStrings.consistencyStatus,
-              statusType: InsightStatusType.positive,
+              statusType: consistencyStatusType,
               onTap: () => _openMetricDetail(const ConsistencyView()),
             ),
             const SizedBox(height: 24),

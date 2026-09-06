@@ -12,11 +12,17 @@ class InsightAnalysisSection extends StatelessWidget {
     required this.detected,
     required this.why,
     required this.nextSteps,
+    this.detectedTitle,
+    this.suggestsTitle,
+    this.nextStepsTitle,
   });
 
   final String detected;
   final String why;
   final String nextSteps;
+  final String? detectedTitle;
+  final String? suggestsTitle;
+  final String? nextStepsTitle;
 
   static const double _headerIconSize = 24;
   static const double _headerIconInner = 14;
@@ -78,19 +84,19 @@ class InsightAnalysisSection extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _AnalysisBlock(
-                title: InsightsStrings.whatAiFormaDetected,
+                title: detectedTitle ?? InsightsStrings.whatAiFormaDetected,
                 body: detected,
                 titleBodyGap: _titleBodyGap,
               ),
               const _SectionDivider(spacing: _dividerSpacing),
               _AnalysisBlock(
-                title: InsightsStrings.whyYoureSeeingThis,
+                title: suggestsTitle ?? InsightsStrings.whatYourDataSuggests,
                 body: why,
                 titleBodyGap: _titleBodyGap,
               ),
               const _SectionDivider(spacing: _dividerSpacing),
               _AnalysisBlock(
-                title: InsightsStrings.recommendedNextSteps,
+                title: nextStepsTitle ?? InsightsStrings.recommendedNextSteps,
                 body: nextSteps,
                 titleBodyGap: _titleBodyGap,
               ),
