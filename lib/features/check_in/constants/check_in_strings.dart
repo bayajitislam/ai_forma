@@ -98,8 +98,12 @@ abstract final class CheckInStrings {
 
   // Complete
   static const String completeTitle = 'Analysis Complete';
-  static const String completeSubtitle =
-      'Your latest AI analysis is complete. Compare your progress and discover what\u2019s changed.';
+  static const String completeSubtitleFirstScan =
+      'Your first physique analysis is ready. Discover what AiFORMA has detected.';
+  static const String completeSubtitleRepeatScan =
+      'Your latest analysis is ready. See what\u2019s changed since your previous scan.';
+  // Keep legacy alias for any code that still references the old constant
+  static const String completeSubtitle = completeSubtitleRepeatScan;
   static const String checkInLabel = 'Check-In';
   static const String currentStreakLabel = 'Current Streak';
   static const String momentumLabel = 'Momentum';

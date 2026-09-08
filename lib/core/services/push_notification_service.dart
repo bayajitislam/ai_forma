@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:ai_forma/core/constants/api_endpoint.dart';
 import 'package:ai_forma/core/network/dio_client.dart';
 import 'package:ai_forma/core/storage/auth_storage.dart';
+import 'package:ai_forma/firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
@@ -9,7 +10,7 @@ import 'package:get/get.dart';
 
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  await Firebase.initializeApp();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   if (kDebugMode) {
     print('Handling a background message: ${message.messageId}');
   }
@@ -24,17 +25,12 @@ class PushNotificationService {
   /// Initialize Firebase Push Notifications and register FCM device token with backend
   Future<void> initialize() async {
     try {
-      // Ensure Firebase core is initialized
-      try {
-        await Firebase.initializeApp();
-      } catch (e) {
-        if (kDebugMode) {
-          print('Firebase core not configured yet natively: $e');
-        }
+      // Firebase is already initialized in main() — no need to call initializeApp again.
+      // Guard against edge case where apps list could be empty.
+      if (Firebase.apps.isEmpty) {
+        if (kDebugMode) print('PushNotificationService: Firebase not initialized, skipping.');
         return;
       }
-
-      if (Firebase.apps.isEmpty) return;
 
       // Set background message handler
       FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
@@ -49,20 +45,19 @@ class PushNotificationService {
 
       if (settings.authorizationStatus == AuthorizationStatus.authorized ||
           settings.authorizationStatus == AuthorizationStatus.provisional) {
-        if (kDebugMode) {
-          print('User granted push notification permission.');
-        }
+        if (kDebugMode) print('User granted push notification permission.');
 
-        // Get initial FCM device token
-        final token = await _messaging.getToken();
-        if (token != null && token.isNotEmpty) {
-          await registerTokenWithBackend(token);
-        }
-
-        // Listen for token refresh events
+        // Wire up the refresh listener first — this fires reliably once the
+        // APNs token arrives (even on first launch), so we never miss it.
         _messaging.onTokenRefresh.listen((newToken) {
+          if (kDebugMode) print('FCM token refreshed, registering with backend.');
           registerTokenWithBackend(newToken);
         });
+
+        // Attempt to get the FCM token immediately in the background.
+        // On first iOS launch the APNs token may not be ready yet — that's fine;
+        // onTokenRefresh above will fire as soon as it becomes available.
+        _tryRegisterFcmToken();
 
         // Foreground notification handler
         FirebaseMessaging.onMessage.listen((RemoteMessage message) {
@@ -80,13 +75,39 @@ class PushNotificationService {
         });
       }
     } catch (e) {
-      if (kDebugMode) {
-        print('PushNotificationService initialization skipped: $e');
+      if (kDebugMode) print('PushNotificationService initialization error: $e');
+    }
+  }
+
+
+  /// Non-blocking attempt to get and register the FCM token.
+  /// Tries immediately, then once more after [retryDelay] if APNs isn't ready.
+  Future<void> _tryRegisterFcmToken({
+    Duration retryDelay = const Duration(seconds: 5),
+    bool isRetry = false,
+  }) async {
+    try {
+      final token = await _messaging.getToken();
+      if (token != null && token.isNotEmpty) {
+        if (kDebugMode) print('FCM token obtained${isRetry ? ' (on retry)' : ''}, registering with backend.');
+        await registerTokenWithBackend(token);
       }
+    } catch (e) {
+      if (isRetry) {
+        // Second attempt also failed — APNs is not available in this session
+        // (likely a provisioning/entitlement issue). onTokenRefresh will cover future sessions.
+        if (kDebugMode) print('FCM token unavailable — APNs may not be configured for this build: $e');
+        return;
+      }
+      // First attempt failed — schedule one silent retry after a short delay
+      // to give iOS time to complete the APNs handshake.
+      if (kDebugMode) print('FCM token not ready, will retry in ${retryDelay.inSeconds}s.');
+      Future.delayed(retryDelay, () => _tryRegisterFcmToken(isRetry: true));
     }
   }
 
   /// Register FCM token with backend: POST /api/devices/push-token/register/
+
   Future<bool> registerTokenWithBackend(String token) async {
     try {
       final authToken = await AuthStorage.getAccessToken();
@@ -134,9 +155,7 @@ class PushNotificationService {
         await registerTokenWithBackend(token);
       }
     } catch (e) {
-      if (kDebugMode) {
-        print('Skipping FCM token registration (Firebase not initialized natively): $e');
-      }
+      if (kDebugMode) print('FCM token unavailable at login (APNs not ready): $e');
     }
   }
 

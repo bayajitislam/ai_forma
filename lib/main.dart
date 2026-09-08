@@ -10,10 +10,15 @@ import 'package:ai_forma/core/theme/app_theme.dart';
 import 'package:get/get.dart';
 
 import 'package:ai_forma/core/services/push_notification_service.dart';
+import 'package:ai_forma/firebase_options.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 void main() async {
   runZonedGuarded(() async {
     WidgetsFlutterBinding.ensureInitialized();
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
 
     // 1. Catch synchronous Flutter framework errors (widget build, layout, render)
     FlutterError.onError = (FlutterErrorDetails details) {

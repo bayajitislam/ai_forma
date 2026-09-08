@@ -5,6 +5,7 @@ import 'package:ai_forma/features/profile/view/pages/report_bug_view.dart';
 import 'package:ai_forma/routes/routes_name.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:ai_forma/core/constants/api_endpoint.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
 import 'package:ai_forma/features/auth/controllers/user_controller.dart';
 import 'package:ai_forma/features/dashboard/controllers/home_controller.dart';
@@ -12,9 +13,23 @@ import 'package:ai_forma/features/dashboard/models/home_response_model.dart';
 import 'package:ai_forma/features/profile/view/pages/personal_details_view.dart';
 import 'package:ai_forma/features/profile/view/pages/subscription_view.dart';
 import 'package:ai_forma/core/widgets/primary_button.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ProfileView extends StatelessWidget {
   const ProfileView({super.key});
+
+  /// Opens [url] in the device's default external browser.
+  Future<void> _launchUrl(String url) async {
+    final uri = Uri.parse(url);
+    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      Get.snackbar(
+        'Cannot Open Link',
+        'Please visit $url in your browser.',
+        backgroundColor: AppColors.brandTeal,
+        colorText: Colors.white,
+      );
+    }
+  }
 
   Future<void> _handleLogout(BuildContext context) async {
     if (Get.isRegistered<UserController>()) {
@@ -497,14 +512,14 @@ class ProfileView extends StatelessWidget {
             context,
             icon: Icons.security_outlined,
             title: 'Privacy Policy',
-            onTap: () {},
+            onTap: () => _launchUrl(ApiEndpoint.privacyPolicy),
           ),
           _buildDivider(),
           _buildOptionTile(
             context,
             icon: Icons.description_outlined,
             title: 'Terms of Service',
-            onTap: () {},
+            onTap: () => _launchUrl(ApiEndpoint.termsOfService),
           ),
 
           const SizedBox(height: 32),

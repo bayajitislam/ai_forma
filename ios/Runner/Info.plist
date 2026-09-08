@@ -75,5 +75,11 @@
 		<string>fetch</string>
 		<string>remote-notification</string>
 	</array>
+	<!-- url_launcher: allow querying https/http schemes -->
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>https</string>
+		<string>http</string>
+	</array>
 </dict>
 </plist>

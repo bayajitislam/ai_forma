@@ -65,4 +65,8 @@ class ApiEndpoint {
   //devices & push notifications
   static const String registerPushToken = '/api/devices/push-token/register/';
   static const String unregisterPushToken = '/api/devices/push-token/unregister/';
+
+  // web links
+  static const String privacyPolicy = 'https://ai-forma.net/privacy-policy';
+  static const String termsOfService = 'https://ai-forma.net/terms-of-service';
 }
