@@ -68,20 +68,24 @@ class MuscleGrowthView extends StatelessWidget {
       final percentValue = data?.metrics?.muscleMassPercent?.value;
       final percentDelta = data?.metrics?.muscleMassPercent?.delta;
 
-      final kgValueStr = kgValue != null ? '$kgValue kg' : '- kg';
+      final kgValueStr =
+          kgValue != null ? '${kgValue.round()} kg' : '- kg';
       final kgDeltaStr = isFirstScan
           ? InsightsStrings.noChangePlaceholder
-          : (kgDelta != null ? '$kgDelta kg' : '- kg');
+          : (kgDelta != null ? '${kgDelta.toStringAsFixed(1)} kg' : '- kg');
       final kgDirection = isFirstScan
           ? InsightStatChangeDirection.none
           : ((kgDelta ?? 1) >= 0
               ? InsightStatChangeDirection.up
               : InsightStatChangeDirection.down);
 
-      final percentValueStr = percentValue != null ? '$percentValue%' : '- %';
+      final percentValueStr =
+          percentValue != null ? '${percentValue.round()}%' : '- %';
       final percentDeltaStr = isFirstScan
           ? InsightsStrings.noChangePlaceholder
-          : (percentDelta != null ? '$percentDelta%' : '- %');
+          : (percentDelta != null
+              ? '${percentDelta.toStringAsFixed(1)}%'
+              : '- %');
       final percentDirection = isFirstScan
           ? InsightStatChangeDirection.none
           : ((percentDelta ?? 1) >= 0
@@ -132,24 +136,16 @@ class MuscleGrowthView extends StatelessWidget {
       }
 
       // Analysis
-      final rawDetected = data?.analysis?.detected ?? '';
-      final rawWhy = data?.analysis?.why ?? '';
-      final rawNextStep = data?.analysis?.nextStep ?? '';
-
-      final detectedText = isFirstScan
-          ? (rawDetected.isNotEmpty &&
-                  !rawDetected.toLowerCase().contains('week')
-              ? rawDetected
-              : InsightsStrings.muscleGrowthDetectedFirstScan)
-          : (rawDetected.isNotEmpty
-              ? rawDetected
-              : InsightsStrings.muscleGrowthDetected);
-      final whyText = isFirstScan
-          ? InsightsStrings.muscleGrowthSuggestsFirstScan
-          : (rawWhy.isNotEmpty ? rawWhy : InsightsStrings.muscleGrowthWhy);
-      final nextStepText = isFirstScan
-          ? InsightsStrings.muscleGrowthNextStepsFirstScan
-          : (rawNextStep.isNotEmpty ? rawNextStep : InsightsStrings.muscleGrowthNextSteps);
+      final isLocked = data?.accessLevel == 'locked_preview' ||
+          (data != null && data.analysis == null && data.analysisHeadings.isNotEmpty);
+      final rawAnalysis = data?.analysis;
+      final analysisText = isLocked
+          ? null
+          : ((rawAnalysis != null && rawAnalysis.isNotEmpty)
+              ? rawAnalysis
+              : (isFirstScan
+                  ? InsightsStrings.muscleGrowthAnalysisFirstScan
+                  : InsightsStrings.muscleGrowthAnalysis));
 
       // Priorities
       final prioritiesList = (data?.weeklyPriorities.isNotEmpty ?? false)
@@ -191,9 +187,8 @@ class MuscleGrowthView extends StatelessWidget {
           ),
           const SizedBox(height: 24),
           InsightAnalysisSection(
-            detected: detectedText,
-            why: whyText,
-            nextSteps: nextStepText,
+            analysis: analysisText,
+            analysisHeadings: data?.analysisHeadings,
           ),
           const SizedBox(height: 16),
           InsightPrioritiesCard(priorities: prioritiesList),

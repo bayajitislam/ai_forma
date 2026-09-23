@@ -97,25 +97,16 @@ class ConsistencyView extends StatelessWidget {
           : (momentum != null ? '+$momentum pts' : InsightsStrings.noChangePlaceholder);
 
       // Analysis
-      final rawDetected = data?.analysis?.detected ?? '';
-      final rawWhy = data?.analysis?.why ?? '';
-      final rawNextStep = data?.analysis?.nextStep ?? '';
-
-      final detectedText = isFirstScan
-          ? (rawDetected.isNotEmpty &&
-                  !rawDetected.toLowerCase().contains('week') &&
-                  !rawDetected.toLowerCase().contains('12'))
-              ? rawDetected
-              : InsightsStrings.consistencyDetectedFirstScan
-          : (rawDetected.isNotEmpty
-              ? rawDetected
-              : InsightsStrings.consistencyDetected);
-      final whyText = isFirstScan
-          ? InsightsStrings.consistencySuggestsFirstScan
-          : (rawWhy.isNotEmpty ? rawWhy : InsightsStrings.consistencyWhy);
-      final nextStepText = isFirstScan
-          ? InsightsStrings.consistencyNextStepsFirstScan
-          : (rawNextStep.isNotEmpty ? rawNextStep : InsightsStrings.consistencyNextSteps);
+      final isLocked = data?.accessLevel == 'locked_preview' ||
+          (data != null && data.analysis == null && data.analysisHeadings.isNotEmpty);
+      final rawAnalysis = data?.analysis;
+      final analysisText = isLocked
+          ? null
+          : ((rawAnalysis != null && rawAnalysis.isNotEmpty)
+              ? rawAnalysis
+              : (isFirstScan
+                  ? InsightsStrings.consistencyAnalysisFirstScan
+                  : InsightsStrings.consistencyAnalysis));
 
       // Priorities
       final prioritiesList = (data?.weeklyPriorities.isNotEmpty ?? false)
@@ -149,9 +140,8 @@ class ConsistencyView extends StatelessWidget {
           ),
           const SizedBox(height: 24),
           InsightAnalysisSection(
-            detected: detectedText,
-            why: whyText,
-            nextSteps: nextStepText,
+            analysis: analysisText,
+            analysisHeadings: data?.analysisHeadings,
           ),
           const SizedBox(height: 16),
           InsightPrioritiesCard(

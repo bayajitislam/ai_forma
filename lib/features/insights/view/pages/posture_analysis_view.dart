@@ -81,24 +81,16 @@ class PostureAnalysisView extends StatelessWidget {
           : (rawSummary.isNotEmpty ? rawSummary : InsightsStrings.postureSummary);
 
       // Analysis
-      final rawDetected = data?.analysis?.detected ?? '';
-      final rawWhy = data?.analysis?.why ?? '';
-      final rawNextStep = data?.analysis?.nextStep ?? '';
-
-      final detectedText = isFirstScan
-          ? (rawDetected.isNotEmpty &&
-                  !rawDetected.toLowerCase().contains('week')
-              ? rawDetected
-              : InsightsStrings.postureDetectedFirstScan)
-          : (rawDetected.isNotEmpty
-              ? rawDetected
-              : InsightsStrings.postureDetected);
-      final whyText = isFirstScan
-          ? InsightsStrings.postureSuggestsFirstScan
-          : (rawWhy.isNotEmpty ? rawWhy : InsightsStrings.postureWhy);
-      final nextStepText = isFirstScan
-          ? InsightsStrings.postureNextStepsFirstScan
-          : (rawNextStep.isNotEmpty ? rawNextStep : InsightsStrings.postureNextSteps);
+      final isLocked = data?.accessLevel == 'locked_preview' ||
+          (data != null && data.analysis == null && data.analysisHeadings.isNotEmpty);
+      final rawAnalysis = data?.analysis;
+      final analysisText = isLocked
+          ? null
+          : ((rawAnalysis != null && rawAnalysis.isNotEmpty)
+              ? rawAnalysis
+              : (isFirstScan
+                  ? InsightsStrings.postureAnalysisNarrativeFirstScan
+                  : InsightsStrings.postureAnalysisNarrative));
 
       // Priorities
       final prioritiesList = (data?.weeklyPriorities.isNotEmpty ?? false)
@@ -130,9 +122,8 @@ class PostureAnalysisView extends StatelessWidget {
           ),
           const SizedBox(height: 24),
           InsightAnalysisSection(
-            detected: detectedText,
-            why: whyText,
-            nextSteps: nextStepText,
+            analysis: analysisText,
+            analysisHeadings: data?.analysisHeadings,
           ),
           const SizedBox(height: 16),
           InsightPrioritiesCard(

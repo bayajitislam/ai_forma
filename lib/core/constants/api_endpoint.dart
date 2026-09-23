@@ -68,5 +68,5 @@ class ApiEndpoint {
 
   // web links
   static const String privacyPolicy = 'https://ai-forma.net/privacy-policy';
-  static const String termsOfService = 'https://ai-forma.net/terms-of-service';
+  static const String termsOfService = 'https://ai-forma.net/terms-and-conditions';
 }

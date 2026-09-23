@@ -9,20 +9,12 @@ import 'package:ai_forma/features/insights/constants/insights_strings.dart';
 class InsightAnalysisSection extends StatelessWidget {
   const InsightAnalysisSection({
     super.key,
-    required this.detected,
-    required this.why,
-    required this.nextSteps,
-    this.detectedTitle,
-    this.suggestsTitle,
-    this.nextStepsTitle,
+    this.analysis,
+    this.analysisHeadings,
   });
 
-  final String detected;
-  final String why;
-  final String nextSteps;
-  final String? detectedTitle;
-  final String? suggestsTitle;
-  final String? nextStepsTitle;
+  final String? analysis;
+  final List<String>? analysisHeadings;
 
   static const double _headerIconSize = 24;
   static const double _headerIconInner = 14;
@@ -31,11 +23,18 @@ class InsightAnalysisSection extends StatelessWidget {
   static const double _headerToCardGap = 14;
   static const double _cardRadius = 16;
   static const double _cardPadding = 20;
-  static const double _dividerSpacing = 16;
-  static const double _titleBodyGap = 6;
+  static const double _paragraphGap = 12;
 
   @override
   Widget build(BuildContext context) {
+    final hasAnalysis = analysis != null && analysis!.trim().isNotEmpty;
+    final headings = analysisHeadings ?? const <String>[];
+    final hasHeadings = headings.isNotEmpty;
+
+    if (!hasAnalysis && !hasHeadings) {
+      return const SizedBox.shrink();
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -80,87 +79,117 @@ class InsightAnalysisSection extends StatelessWidget {
             borderRadius: BorderRadius.circular(_cardRadius),
             border: Border.all(color: AppColors.insightAnalysisCardBorder),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _AnalysisBlock(
-                title: detectedTitle ?? InsightsStrings.whatAiFormaDetected,
-                body: detected,
-                titleBodyGap: _titleBodyGap,
-              ),
-              const _SectionDivider(spacing: _dividerSpacing),
-              _AnalysisBlock(
-                title: suggestsTitle ?? InsightsStrings.whatYourDataSuggests,
-                body: why,
-                titleBodyGap: _titleBodyGap,
-              ),
-              const _SectionDivider(spacing: _dividerSpacing),
-              _AnalysisBlock(
-                title: nextStepsTitle ?? InsightsStrings.recommendedNextSteps,
-                body: nextSteps,
-                titleBodyGap: _titleBodyGap,
-              ),
-            ],
-          ),
+          child: hasAnalysis
+              ? _NarrativeContent(
+                  text: analysis!.trim(),
+                  gap: _paragraphGap,
+                )
+              : _LockedHeadingsPreview(headings: headings),
         ),
       ],
     );
   }
 }
 
-class _SectionDivider extends StatelessWidget {
-  const _SectionDivider({required this.spacing});
+class _NarrativeContent extends StatelessWidget {
+  const _NarrativeContent({
+    required this.text,
+    required this.gap,
+  });
 
-  final double spacing;
+  final String text;
+  final double gap;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: spacing),
-      child: const Divider(
-        height: 1,
-        thickness: 1,
-        color: AppColors.insightAnalysisDivider,
-      ),
+    final paragraphs = text
+        .split(RegExp(r'\n\s*\n'))
+        .map((p) => p.trim())
+        .where((p) => p.isNotEmpty)
+        .toList();
+
+    if (paragraphs.isEmpty) {
+      return Text(
+        text,
+        style: const TextStyle(
+          fontFamily: AppFonts.family,
+          fontSize: 14,
+          fontWeight: FontWeight.w400,
+          color: AppColors.insightAnalysisBody,
+          height: 1.55,
+        ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        for (var i = 0; i < paragraphs.length; i++) ...[
+          if (i > 0) SizedBox(height: gap),
+          Text(
+            paragraphs[i],
+            style: const TextStyle(
+              fontFamily: AppFonts.family,
+              fontSize: 14,
+              fontWeight: FontWeight.w400,
+              color: AppColors.insightAnalysisBody,
+              height: 1.55,
+            ),
+          ),
+        ],
+      ],
     );
   }
 }
 
-class _AnalysisBlock extends StatelessWidget {
-  const _AnalysisBlock({
-    required this.title,
-    required this.body,
-    required this.titleBodyGap,
-  });
+class _LockedHeadingsPreview extends StatelessWidget {
+  const _LockedHeadingsPreview({required this.headings});
 
-  final String title;
-  final String body;
-  final double titleBodyGap;
+  final List<String> headings;
 
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          title,
-          style: const TextStyle(
-            fontFamily: AppFonts.family,
-            fontSize: 14,
-            fontWeight: FontWeight.w700,
-            color: AppColors.brandTealDark,
-            height: 1.3,
+        for (final heading in headings) ...[
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8.0),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Padding(
+                  padding: EdgeInsets.only(top: 2.0, right: 8.0),
+                  child: AppIcon(
+                    icon: AppIcons.lock,
+                    size: 14,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                Expanded(
+                  child: Text(
+                    heading,
+                    style: const TextStyle(
+                      fontFamily: AppFonts.family,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textSecondary,
+                      height: 1.4,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-        SizedBox(height: titleBodyGap),
+        ],
+        const SizedBox(height: 8),
         Text(
-          body,
+          InsightsStrings.analysisPreviewLocked,
           style: const TextStyle(
             fontFamily: AppFonts.family,
-            fontSize: 14,
-            fontWeight: FontWeight.w400,
-            color: AppColors.insightAnalysisBody,
-            height: 1.5,
+            fontSize: 12,
+            fontStyle: FontStyle.italic,
+            color: AppColors.textSecondary,
           ),
         ),
       ],

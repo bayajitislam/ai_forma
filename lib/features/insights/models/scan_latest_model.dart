@@ -28,32 +28,34 @@ class FatLossModel {
   final int score;
   final String remark;
   final String status;
-  final String nextStep;
-  final String rationale;
+  final String analysis;
   final double? bodyFatKg;
-  final String detectedSummary;
   final List<String> weeklyPriorities;
 
   const FatLossModel({
     required this.score,
     required this.remark,
     required this.status,
-    required this.nextStep,
-    required this.rationale,
+    required this.analysis,
     this.bodyFatKg,
-    required this.detectedSummary,
     required this.weeklyPriorities,
   });
 
   factory FatLossModel.fromJson(Map<String, dynamic> json) {
+    final rawAnalysis = json['analysis']?.toString();
+    final legacyJoined = [
+      json['detected_summary'],
+      json['rationale'],
+      json['next_step'],
+    ].where((s) => s != null && s.toString().trim().isNotEmpty).join('\n\n');
     return FatLossModel(
       score: safeParseInt(json['score']) ?? 0,
       remark: json['remark']?.toString() ?? '',
       status: json['status']?.toString() ?? '',
-      nextStep: json['next_step']?.toString() ?? '',
-      rationale: json['rationale']?.toString() ?? '',
+      analysis: (rawAnalysis != null && rawAnalysis.isNotEmpty)
+          ? rawAnalysis
+          : legacyJoined,
       bodyFatKg: safeParseDouble(json['body_fat_kg']),
-      detectedSummary: json['detected_summary']?.toString() ?? '',
       weeklyPriorities: (json['weekly_priorities'] as List<dynamic>?)
               ?.map((e) => e.toString())
               .toList() ??
@@ -66,32 +68,34 @@ class MuscleGrowthModel {
   final int score;
   final String remark;
   final String status;
-  final String nextStep;
-  final String rationale;
+  final String analysis;
   final double? muscleMassKg;
-  final String detectedSummary;
   final List<String> weeklyPriorities;
 
   const MuscleGrowthModel({
     required this.score,
     required this.remark,
     required this.status,
-    required this.nextStep,
-    required this.rationale,
+    required this.analysis,
     this.muscleMassKg,
-    required this.detectedSummary,
     required this.weeklyPriorities,
   });
 
   factory MuscleGrowthModel.fromJson(Map<String, dynamic> json) {
+    final rawAnalysis = json['analysis']?.toString();
+    final legacyJoined = [
+      json['detected_summary'],
+      json['rationale'],
+      json['next_step'],
+    ].where((s) => s != null && s.toString().trim().isNotEmpty).join('\n\n');
     return MuscleGrowthModel(
       score: safeParseInt(json['score']) ?? 0,
       remark: json['remark']?.toString() ?? '',
       status: json['status']?.toString() ?? '',
-      nextStep: json['next_step']?.toString() ?? '',
-      rationale: json['rationale']?.toString() ?? '',
+      analysis: (rawAnalysis != null && rawAnalysis.isNotEmpty)
+          ? rawAnalysis
+          : legacyJoined,
       muscleMassKg: safeParseDouble(json['muscle_mass_kg']),
-      detectedSummary: json['detected_summary']?.toString() ?? '',
       weeklyPriorities: (json['weekly_priorities'] as List<dynamic>?)
               ?.map((e) => e.toString())
               .toList() ??
@@ -104,29 +108,31 @@ class SymmetryScoreModel {
   final int score;
   final String remark;
   final String status;
-  final String nextStep;
-  final String rationale;
-  final String detectedSummary;
+  final String analysis;
   final List<String> weeklyPriorities;
 
   const SymmetryScoreModel({
     required this.score,
     required this.remark,
     required this.status,
-    required this.nextStep,
-    required this.rationale,
-    required this.detectedSummary,
+    required this.analysis,
     required this.weeklyPriorities,
   });
 
   factory SymmetryScoreModel.fromJson(Map<String, dynamic> json) {
+    final rawAnalysis = json['analysis']?.toString();
+    final legacyJoined = [
+      json['detected_summary'],
+      json['rationale'],
+      json['next_step'],
+    ].where((s) => s != null && s.toString().trim().isNotEmpty).join('\n\n');
     return SymmetryScoreModel(
       score: safeParseInt(json['score']) ?? 0,
       remark: json['remark']?.toString() ?? '',
       status: json['status']?.toString() ?? '',
-      nextStep: json['next_step']?.toString() ?? '',
-      rationale: json['rationale']?.toString() ?? '',
-      detectedSummary: json['detected_summary']?.toString() ?? '',
+      analysis: (rawAnalysis != null && rawAnalysis.isNotEmpty)
+          ? rawAnalysis
+          : legacyJoined,
       weeklyPriorities: (json['weekly_priorities'] as List<dynamic>?)
               ?.map((e) => e.toString())
               .toList() ??
@@ -139,41 +145,80 @@ class PostureAnalysisModel {
   final int score;
   final String remark;
   final String status;
-  final String nextStep;
-  final String rationale;
+  final String analysis;
   final String pelvicTilt;
   final String headPosition;
   final String spinalPosition;
   final String shoulderPosition;
-  final String detectedSummary;
   final List<String> weeklyPriorities;
 
   const PostureAnalysisModel({
     required this.score,
     required this.remark,
     required this.status,
-    required this.nextStep,
-    required this.rationale,
+    required this.analysis,
     required this.pelvicTilt,
     required this.headPosition,
     required this.spinalPosition,
     required this.shoulderPosition,
-    required this.detectedSummary,
     required this.weeklyPriorities,
   });
 
   factory PostureAnalysisModel.fromJson(Map<String, dynamic> json) {
+    final rawAnalysis = json['analysis']?.toString();
+    final legacyJoined = [
+      json['detected_summary'],
+      json['rationale'],
+      json['next_step'],
+    ].where((s) => s != null && s.toString().trim().isNotEmpty).join('\n\n');
     return PostureAnalysisModel(
       score: safeParseInt(json['score']) ?? 0,
       remark: json['remark']?.toString() ?? '',
       status: json['status']?.toString() ?? '',
-      nextStep: json['next_step']?.toString() ?? '',
-      rationale: json['rationale']?.toString() ?? '',
+      analysis: (rawAnalysis != null && rawAnalysis.isNotEmpty)
+          ? rawAnalysis
+          : legacyJoined,
       pelvicTilt: json['pelvic_tilt']?.toString() ?? '',
       headPosition: json['head_position']?.toString() ?? '',
       spinalPosition: json['spinal_position']?.toString() ?? '',
       shoulderPosition: json['shoulder_position']?.toString() ?? '',
-      detectedSummary: json['detected_summary']?.toString() ?? '',
+      weeklyPriorities: (json['weekly_priorities'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          [],
+    );
+  }
+}
+
+class ConsistencyModel {
+  final int score;
+  final String remark;
+  final String status;
+  final String analysis;
+  final List<String> weeklyPriorities;
+
+  const ConsistencyModel({
+    required this.score,
+    required this.remark,
+    required this.status,
+    required this.analysis,
+    required this.weeklyPriorities,
+  });
+
+  factory ConsistencyModel.fromJson(Map<String, dynamic> json) {
+    final rawAnalysis = json['analysis']?.toString();
+    final legacyJoined = [
+      json['detected_summary'],
+      json['rationale'],
+      json['next_step'],
+    ].where((s) => s != null && s.toString().trim().isNotEmpty).join('\n\n');
+    return ConsistencyModel(
+      score: safeParseInt(json['score']) ?? 0,
+      remark: json['remark']?.toString() ?? '',
+      status: json['status']?.toString() ?? '',
+      analysis: (rawAnalysis != null && rawAnalysis.isNotEmpty)
+          ? rawAnalysis
+          : legacyJoined,
       weeklyPriorities: (json['weekly_priorities'] as List<dynamic>?)
               ?.map((e) => e.toString())
               .toList() ??
@@ -187,6 +232,7 @@ class AnalysisResultModel {
   final MuscleGrowthModel? muscleGrowth;
   final SymmetryScoreModel? symmetryScore;
   final PostureAnalysisModel? postureAnalysis;
+  final ConsistencyModel? consistencyAnalysis;
   final List<InsightTitleSubtitleItem> strength;
   final List<InsightTitleSubtitleItem> focusArea;
   final List<InsightTitleSubtitleItem> nextSteps;
@@ -197,6 +243,7 @@ class AnalysisResultModel {
     this.muscleGrowth,
     this.symmetryScore,
     this.postureAnalysis,
+    this.consistencyAnalysis,
     required this.strength,
     required this.focusArea,
     required this.nextSteps,
@@ -221,6 +268,11 @@ class AnalysisResultModel {
       postureAnalysis: json['posture_analysis'] is Map<String, dynamic>
           ? PostureAnalysisModel.fromJson(
               json['posture_analysis'] as Map<String, dynamic>,
+            )
+          : null,
+      consistencyAnalysis: json['consistency_analysis'] is Map<String, dynamic>
+          ? ConsistencyModel.fromJson(
+              json['consistency_analysis'] as Map<String, dynamic>,
             )
           : null,
       strength: (json['strength'] as List<dynamic>?)

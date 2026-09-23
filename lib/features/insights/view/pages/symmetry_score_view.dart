@@ -84,24 +84,16 @@ class SymmetryScoreView extends StatelessWidget {
       final visualThumb = data?.visual?.thumbUrl;
 
       // Analysis
-      final rawDetected = data?.analysis?.detected ?? '';
-      final rawWhy = data?.analysis?.why ?? '';
-      final rawNextStep = data?.analysis?.nextStep ?? '';
-
-      final detectedText = isFirstScan
-          ? (rawDetected.isNotEmpty &&
-                  !rawDetected.toLowerCase().contains('week')
-              ? rawDetected
-              : InsightsStrings.symmetryDetectedFirstScan)
-          : (rawDetected.isNotEmpty
-              ? rawDetected
-              : InsightsStrings.symmetryDetected);
-      final whyText = isFirstScan
-          ? InsightsStrings.symmetrySuggestsFirstScan
-          : (rawWhy.isNotEmpty ? rawWhy : InsightsStrings.symmetryWhy);
-      final nextStepText = isFirstScan
-          ? InsightsStrings.symmetryNextStepsFirstScan
-          : (rawNextStep.isNotEmpty ? rawNextStep : InsightsStrings.symmetryNextSteps);
+      final isLocked = data?.accessLevel == 'locked_preview' ||
+          (data != null && data.analysis == null && data.analysisHeadings.isNotEmpty);
+      final rawAnalysis = data?.analysis;
+      final analysisText = isLocked
+          ? null
+          : ((rawAnalysis != null && rawAnalysis.isNotEmpty)
+              ? rawAnalysis
+              : (isFirstScan
+                  ? InsightsStrings.symmetryAnalysisFirstScan
+                  : InsightsStrings.symmetryAnalysis));
 
       // Priorities
       final prioritiesList = (data?.weeklyPriorities.isNotEmpty ?? false)
@@ -130,9 +122,8 @@ class SymmetryScoreView extends StatelessWidget {
           ),
           const SizedBox(height: 24),
           InsightAnalysisSection(
-            detected: detectedText,
-            why: whyText,
-            nextSteps: nextStepText,
+            analysis: analysisText,
+            analysisHeadings: data?.analysisHeadings,
           ),
           const SizedBox(height: 16),
           InsightPrioritiesCard(

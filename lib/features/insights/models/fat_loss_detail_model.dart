@@ -10,7 +10,8 @@ class FatLossDetailResponseModel {
   final String status;
   final String statusTone;
   final String summary;
-  final FatLossAnalysisModel? analysis;
+  final String? analysis;
+  final List<String> analysisHeadings;
   final List<FatLossPriorityItemModel> weeklyPriorities;
   final FatLossMetricsModel? metrics;
   final FatLossChartModel? chart;
@@ -26,6 +27,7 @@ class FatLossDetailResponseModel {
     required this.statusTone,
     required this.summary,
     this.analysis,
+    this.analysisHeadings = const [],
     required this.weeklyPriorities,
     this.metrics,
     this.chart,
@@ -46,11 +48,21 @@ class FatLossDetailResponseModel {
       status: json['status']?.toString() ?? '',
       statusTone: json['status_tone']?.toString() ?? '',
       summary: json['summary']?.toString() ?? '',
-      analysis: json['analysis'] is Map<String, dynamic>
-          ? FatLossAnalysisModel.fromJson(
-              json['analysis'] as Map<String, dynamic>,
-            )
-          : null,
+      analysis: json['analysis'] is String
+          ? json['analysis'] as String
+          : (json['analysis'] is Map<String, dynamic>
+              ? [
+                  json['analysis']['detected'],
+                  json['analysis']['why'],
+                  json['analysis']['next_step'],
+                ]
+                  .where((s) => s != null && s.toString().trim().isNotEmpty)
+                  .join('\n\n')
+              : null),
+      analysisHeadings: (json['analysis_headings'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          const [],
       weeklyPriorities: (json['weekly_priorities'] as List<dynamic>?)
               ?.map((e) => FatLossPriorityItemModel.fromJson(
                     e as Map<String, dynamic>,
@@ -87,26 +99,6 @@ class FatLossWindowModel {
       weeks: safeParseInt(json['weeks']) ?? 0,
       from: json['from']?.toString() ?? '',
       to: json['to']?.toString() ?? '',
-    );
-  }
-}
-
-class FatLossAnalysisModel {
-  final String detected;
-  final String why;
-  final String nextStep;
-
-  const FatLossAnalysisModel({
-    required this.detected,
-    required this.why,
-    required this.nextStep,
-  });
-
-  factory FatLossAnalysisModel.fromJson(Map<String, dynamic> json) {
-    return FatLossAnalysisModel(
-      detected: json['detected']?.toString() ?? '',
-      why: json['why']?.toString() ?? '',
-      nextStep: json['next_step']?.toString() ?? '',
     );
   }
 }

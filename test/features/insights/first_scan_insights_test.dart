@@ -70,31 +70,54 @@ void main() {
   });
 
   group('InsightAnalysisSection Widget Tests', () {
-    testWidgets('renders all 3 standardized AI Analysis headings correctly',
+    testWidgets('renders single coach narrative with multi-paragraph support',
         (tester) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
             body: InsightAnalysisSection(
-              detected: 'Visible muscular development is present.',
-              why: 'Your current scan provides an initial picture.',
-              nextSteps: 'Continue consistent resistance training.',
+              analysis:
+                  'Paragraph 1: Visible muscular development is present.\n\nParagraph 2: Your current scan provides a solid baseline.',
             ),
           ),
         ),
       );
 
-      expect(find.text(InsightsStrings.whatAiFormaDetected), findsOneWidget);
-      expect(find.text(InsightsStrings.whatYourDataSuggests), findsOneWidget);
-      expect(find.text(InsightsStrings.recommendedNextSteps), findsOneWidget);
-      expect(find.text('Visible muscular development is present.'), findsOneWidget);
-      expect(find.text('Your current scan provides an initial picture.'), findsOneWidget);
-      expect(find.text('Continue consistent resistance training.'), findsOneWidget);
+      expect(find.text(InsightsStrings.aiFormaAnalysis), findsOneWidget);
+      expect(
+        find.text('Paragraph 1: Visible muscular development is present.'),
+        findsOneWidget,
+      );
+      expect(
+        find.text('Paragraph 2: Your current scan provides a solid baseline.'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets(
+        'renders locked preview when analysis is null and headings provided',
+        (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: InsightAnalysisSection(
+              analysis: null,
+              analysisHeadings: ['Upper Body Development', 'Symmetry Alignment'],
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text(InsightsStrings.aiFormaAnalysis), findsOneWidget);
+      expect(find.text('Upper Body Development'), findsOneWidget);
+      expect(find.text('Symmetry Alignment'), findsOneWidget);
+      expect(find.text(InsightsStrings.analysisPreviewLocked), findsOneWidget);
     });
   });
 
   group('First Scan vs Scan 2+ Tests for Key Insights', () {
-    testWidgets('MuscleGrowthView shows first scan baseline and no trend deltas on scan 1',
+    testWidgets(
+        'MuscleGrowthView shows first scan baseline and no trend deltas on scan 1',
         (tester) async {
       final repo = FakeInsightsRepository();
       repo.muscleGrowthDetail = const MuscleGrowthDetailResponseModel(
@@ -121,26 +144,21 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // Verify standardized headers
-      expect(find.text(InsightsStrings.whatAiFormaDetected), findsOneWidget);
-      expect(find.text(InsightsStrings.whatYourDataSuggests), findsOneWidget);
-      expect(find.text(InsightsStrings.recommendedNextSteps), findsOneWidget);
+      // Verify analysis section header
+      expect(find.text(InsightsStrings.aiFormaAnalysis), findsOneWidget);
 
       // Verify no change deltas like ↑ 0.0 kg, but '—'
       expect(find.text(InsightsStrings.noChangePlaceholder), findsNWidgets(2));
 
       // Verify first scan baseline explanation
       expect(
-        find.text(InsightsStrings.muscleGrowthSuggestsFirstScan),
-        findsOneWidget,
-      );
-      expect(
         find.text(InsightsStrings.muscleGrowthSummaryFirstScan),
         findsOneWidget,
       );
     });
 
-    testWidgets('FatLossView shows first scan baseline and no trend deltas on scan 1',
+    testWidgets(
+        'FatLossView shows first scan baseline and no trend deltas on scan 1',
         (tester) async {
       final repo = FakeInsightsRepository();
       repo.fatLossDetail = const FatLossDetailResponseModel(
@@ -167,8 +185,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text(InsightsStrings.whatAiFormaDetected), findsOneWidget);
-      expect(find.text(InsightsStrings.whatYourDataSuggests), findsOneWidget);
+      expect(find.text(InsightsStrings.aiFormaAnalysis), findsOneWidget);
       expect(find.text(InsightsStrings.noChangePlaceholder), findsNWidgets(2));
       expect(find.text(InsightsStrings.fatLossSummaryFirstScan), findsOneWidget);
     });
@@ -204,10 +221,11 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text(InsightsStrings.whatYourDataSuggests), findsOneWidget);
+      expect(find.text(InsightsStrings.aiFormaAnalysis), findsOneWidget);
       expect(find.text(InsightsStrings.initialReading), findsOneWidget);
       expect(find.text('1 scan'), findsOneWidget);
-      expect(find.text(InsightsStrings.consistencySummaryFirstScan), findsOneWidget);
+      expect(
+          find.text(InsightsStrings.consistencySummaryFirstScan), findsOneWidget);
     });
 
     testWidgets('PostureAnalysisView shows first scan baseline on scan 1',
@@ -233,8 +251,9 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text(InsightsStrings.whatYourDataSuggests), findsOneWidget);
-      expect(find.text(InsightsStrings.postureSummaryFirstScan), findsOneWidget);
+      expect(find.text(InsightsStrings.aiFormaAnalysis), findsOneWidget);
+      expect(
+          find.text(InsightsStrings.postureSummaryFirstScan), findsOneWidget);
     });
 
     testWidgets('SymmetryScoreView shows first scan baseline on scan 1',
@@ -260,8 +279,9 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text(InsightsStrings.whatYourDataSuggests), findsOneWidget);
-      expect(find.text(InsightsStrings.symmetrySummaryFirstScan), findsOneWidget);
+      expect(find.text(InsightsStrings.aiFormaAnalysis), findsOneWidget);
+      expect(
+          find.text(InsightsStrings.symmetrySummaryFirstScan), findsOneWidget);
     });
 
     test('InsightScoreBadgeType resolves correctly from tone and text', () {

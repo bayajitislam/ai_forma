@@ -126,8 +126,8 @@ abstract final class InsightsStrings {
       'You\'ve gained 1.8 kg of lean muscle over the last 8 weeks.';
   static const String muscleGrowthSummaryFirstScan =
       'Your current scan provides a baseline of your muscular development.';
-  static const String muscleMass = 'Muscle Mass';
-  static const String muscleMassPercent = 'Muscle Mass %';
+  static const String muscleMass = 'Estimated Muscle Mass';
+  static const String muscleMassPercent = 'Estimated Muscle Mass %';
   static const String muscleGrowthDetected =
       'Significant hypertrophy in your deltoids and upper back over the last 4 weeks, contributing to a 1.8 kg overall increase in lean mass.';
   static const String muscleGrowthDetectedFirstScan =
@@ -140,6 +140,10 @@ abstract final class InsightsStrings {
       'Maintain your current caloric surplus and protein intake. We need to ensure your recovery keeps pace with this increased training volume.';
   static const String muscleGrowthNextStepsFirstScan =
       'Continue consistent resistance training and nutrition while AIFORMA tracks how your physique develops across future scans.';
+  static const String muscleGrowthAnalysis =
+      'Significant hypertrophy in your deltoids and upper back over the last 4 weeks, contributing to a 1.8 kg overall increase in lean mass.\n\nYour consistency with the new progressive overload program and hitting your daily protein target of 180g has provided the necessary stimulus and building blocks for growth. Maintain your current caloric surplus and protein intake.';
+  static const String muscleGrowthAnalysisFirstScan =
+      'Visible muscular development is present across the upper body, particularly through the shoulders and arms.\n\nYour current scan provides an initial baseline of your muscular development. As more scan and Daily Brief data is collected, AiFORMA will build a clearer understanding of how your physique is responding over time. Continue consistent resistance training and nutrition.';
   static const String muscleGrowthPriority1 =
       'Increase sleep duration by 30 mins to support recovery.';
   static const String muscleGrowthPriority2 =
@@ -154,8 +158,8 @@ abstract final class InsightsStrings {
       'You\'ve reduced 2.4% body fat in the last 8 weeks.';
   static const String fatLossSummaryFirstScan =
       'Initial scan baseline captured. Future scans will track body fat trends.';
-  static const String bodyFatPercent = 'Body Fat %';
-  static const String fatMass = 'Fat Mass';
+  static const String bodyFatPercent = 'Estimated Body Fat %';
+  static const String fatMass = 'Estimated Fat Mass';
   static const String fatLossDetected =
       'Steady reduction in overall body fat percentage and visible leaning out, particularly around the midsection and lower back.';
   static const String fatLossDetectedFirstScan =
@@ -168,6 +172,10 @@ abstract final class InsightsStrings {
       'Consider implementing one high-carb refeed day this week to support metabolic rate and training performance.';
   static const String fatLossNextStepsFirstScan =
       'Maintain consistent nutrition and activity levels while AIFORMA monitors changes in future check-ins.';
+  static const String fatLossAnalysis =
+      'Steady reduction in overall body fat percentage and visible leaning out, particularly around the midsection and lower back.\n\nYour consistent caloric deficit combined with 2–3 weekly LISS cardio sessions has created the optimal environment for fat oxidation without sacrificing muscle mass. Consider implementing one high-carb refeed day this week.';
+  static const String fatLossAnalysisFirstScan =
+      'Current scan establishes baseline fat distribution across the torso and lower body.\n\nYour current scan provides an initial baseline of your body fat levels. As subsequent scans and Daily Briefs are logged, AiFORMA will calculate your rate of fat oxidation and metabolic response. Maintain consistent nutrition and activity levels.';
   static const String fatLossPriority1 =
       'Implement one high-carb refeed day this Saturday.';
   static const String fatLossPriority2 =
@@ -204,6 +212,10 @@ abstract final class InsightsStrings {
       'Incorporate daily mobility work targeting the hip flexors and thoracic spine to restore neutral alignment.';
   static const String postureNextStepsFirstScan =
       'Focus on posture awareness and mobility drills while AIFORMA tracks alignment adjustments across future check-ins.';
+  static const String postureAnalysisNarrative =
+      'We are detecting a slight rounding of the shoulders (kyphosis) and a minor anterior pelvic tilt when viewed from the side profile.\n\nThis is commonly associated with prolonged sitting and tight hip flexors, which pull the pelvis forward and cause the upper back to compensate. Incorporate daily mobility work targeting the hip flexors and thoracic spine to restore neutral alignment.';
+  static const String postureAnalysisNarrativeFirstScan =
+      'Current scan observation of your natural standing alignment and profile posture.\n\nThis initial scan establishes your posture baseline. Ongoing check-ins will track whether corrective mobility work and daily movement patterns are improving spinal alignment. Focus on posture awareness and mobility drills.';
   static const String posturePriority1 =
       'Add 3 sets of face-pulls to your upper body days.';
   static const String posturePriority2 =
@@ -233,6 +245,10 @@ abstract final class InsightsStrings {
       'We need to incorporate more unilateral (single-leg) exercises to force your weaker side to work independently and catch up.';
   static const String symmetryNextStepsFirstScan =
       'Incorporate balanced unilateral exercises into your routine while AIFORMA tracks symmetry changes over upcoming scans.';
+  static const String symmetryAnalysis =
+      'Your upper body shows excellent left-to-right symmetry (80%), but we are detecting a slight imbalance in your lower body (76%), specifically favoring your right leg.\n\nThis is common if you have a dominant leg you subconsciously rely on during bilateral movements like squats and deadlifts. We recommend incorporating more unilateral exercises to encourage balanced development.';
+  static const String symmetryAnalysisFirstScan =
+      'Initial observation of left-to-right symmetry across upper and lower body.\n\nThis initial scan maps your baseline muscular symmetry. Future scans will identify if unilateral training adjustments are needed to maintain or improve balance across upcoming check-ins.';
   static const String symmetryPriority1 =
       'Add Bulgarian split squats (3 sets of 10) to leg days.';
   static const String symmetryPriority2 =
@@ -261,6 +277,12 @@ abstract final class InsightsStrings {
       'Keep your current Tuesday/Friday scan schedule. Consistency at this level compounds into significantly more accurate AI recommendations over time.';
   static const String consistencyNextStepsFirstScan =
       'Set a regular check-in day each week so AIFORMA can build high-accuracy trend analysis from your future scans.';
+  static const String consistencyAnalysis =
+      'You have maintained an exceptional scan cadence, completing 12 of 16 scheduled check-ins with a 92% on-time rate.\n\nRegular scanning provides AiFORMA with the data needed to track micro-changes in your physique that weekly weigh-ins alone cannot capture. Keep your current scan schedule to compound recommendation accuracy over time.';
+  static const String consistencyAnalysisFirstScan =
+      'Initial check-in successfully completed and calibrated.\n\nYour first check-in is logged. As you maintain a regular check-in cadence, AiFORMA will generate detailed consistency metrics and cadence trends. Set a regular check-in day each week for high-accuracy analysis.';
+  static const String analysisPreviewLocked =
+      'Full coach narrative unlocks with your weekly check-in.';
   static const String consistencyPriority1 =
       'Complete your next scheduled scan on Tuesday.';
   static const String consistencyPriority2 =

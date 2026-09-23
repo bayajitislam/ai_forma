@@ -10,7 +10,8 @@ class PostureDetailResponseModel {
   final String status;
   final String statusTone;
   final String summary;
-  final PostureAnalysisDataModel? analysis;
+  final String? analysis;
+  final List<String> analysisHeadings;
   final List<PosturePriorityItemModel> weeklyPriorities;
   final PostureAlignmentModel? alignment;
   final PostureComparisonModel? comparison;
@@ -26,6 +27,7 @@ class PostureDetailResponseModel {
     required this.statusTone,
     required this.summary,
     this.analysis,
+    this.analysisHeadings = const [],
     required this.weeklyPriorities,
     this.alignment,
     this.comparison,
@@ -44,11 +46,21 @@ class PostureDetailResponseModel {
       status: json['status']?.toString() ?? '',
       statusTone: json['status_tone']?.toString() ?? '',
       summary: json['summary']?.toString() ?? '',
-      analysis: json['analysis'] is Map<String, dynamic>
-          ? PostureAnalysisDataModel.fromJson(
-              json['analysis'] as Map<String, dynamic>,
-            )
-          : null,
+      analysis: json['analysis'] is String
+          ? json['analysis'] as String
+          : (json['analysis'] is Map<String, dynamic>
+              ? [
+                  json['analysis']['detected'],
+                  json['analysis']['why'],
+                  json['analysis']['next_step'],
+                ]
+                  .where((s) => s != null && s.toString().trim().isNotEmpty)
+                  .join('\n\n')
+              : null),
+      analysisHeadings: (json['analysis_headings'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          const [],
       weeklyPriorities: (json['weekly_priorities'] as List<dynamic>?)
               ?.map((e) => PosturePriorityItemModel.fromJson(
                     e as Map<String, dynamic>,
@@ -85,26 +97,6 @@ class PostureWindowModel {
       weeks: safeParseInt(json['weeks']) ?? 0,
       from: json['from']?.toString() ?? '',
       to: json['to']?.toString() ?? '',
-    );
-  }
-}
-
-class PostureAnalysisDataModel {
-  final String detected;
-  final String why;
-  final String nextStep;
-
-  const PostureAnalysisDataModel({
-    required this.detected,
-    required this.why,
-    required this.nextStep,
-  });
-
-  factory PostureAnalysisDataModel.fromJson(Map<String, dynamic> json) {
-    return PostureAnalysisDataModel(
-      detected: json['detected']?.toString() ?? '',
-      why: json['why']?.toString() ?? '',
-      nextStep: json['next_step']?.toString() ?? '',
     );
   }
 }
