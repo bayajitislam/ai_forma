@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:ai_forma/core/network/dio_client.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
+import 'package:ai_forma/core/utils/app_date_formatter.dart';
 import 'package:ai_forma/core/widgets/app_network_error_widget.dart';
 import 'package:ai_forma/features/insights/constants/insights_strings.dart';
 import 'package:ai_forma/features/insights/controllers/muscle_growth_controller.dart';
@@ -124,7 +125,9 @@ class MuscleGrowthView extends StatelessWidget {
         labels = [
           series.isNotEmpty
               ? series.first.date
-              : ((data?.scanDate.isNotEmpty ?? false) ? data!.scanDate : 'Scan 1')
+              : ((data?.scanDate.isNotEmpty ?? false)
+                  ? AppDateFormatter.toDayMonthYear(data!.scanDate)
+                  : 'Scan 1')
         ];
       } else {
         dataPoints = series.isNotEmpty

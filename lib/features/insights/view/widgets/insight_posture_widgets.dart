@@ -3,6 +3,7 @@ import 'package:ai_forma/core/theme/app_colors.dart';
 import 'package:ai_forma/core/theme/app_fonts.dart';
 import 'package:ai_forma/core/constants/app_images.dart';
 import 'package:ai_forma/core/widgets/app_cached_image.dart';
+import 'package:ai_forma/core/utils/app_date_formatter.dart';
 import 'package:ai_forma/features/insights/models/posture_detail_model.dart';
 
 class InsightPostureSummaryCard extends StatelessWidget {
@@ -129,7 +130,7 @@ class InsightPostureComparison extends StatelessWidget {
         children: [
           _ComparisonCard(
             title: 'Current Scan',
-            date: afterScan.scanDate,
+            date: AppDateFormatter.toDayMonthYear(afterScan.scanDate),
             imageUrl: afterScan.imageUrl,
             thumbUrl: afterScan.thumbUrl,
             onTap: onRefreshRequested,
@@ -176,7 +177,10 @@ class InsightPostureComparison extends StatelessWidget {
         Expanded(
           child: _ComparisonCard(
             title: 'Before',
-            date: beforeScan?.scanDate ?? 'Scan 1',
+            date: AppDateFormatter.toDayMonthYear(
+              beforeScan?.scanDate,
+              fallback: 'Scan 1',
+            ),
             imageUrl: beforeScan?.imageUrl,
             thumbUrl: beforeScan?.thumbUrl,
             onTap: onRefreshRequested,
@@ -186,7 +190,10 @@ class InsightPostureComparison extends StatelessWidget {
         Expanded(
           child: _ComparisonCard(
             title: 'After',
-            date: afterScan?.scanDate ?? 'Scan 2',
+            date: AppDateFormatter.toDayMonthYear(
+              afterScan?.scanDate,
+              fallback: 'Scan 2',
+            ),
             imageUrl: afterScan?.imageUrl,
             thumbUrl: afterScan?.thumbUrl,
             onTap: onRefreshRequested,

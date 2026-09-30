@@ -172,99 +172,104 @@ class _InsightsViewState extends State<InsightsView> {
       final symmetryStatusType = resolveStatusType(symmetryStatus);
       final consistencyStatusType = resolveStatusType(InsightsStrings.consistencyStatus);
 
-      return SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                InsightCategoryCard(
-                  label: InsightsStrings.categoryStrengths,
-                  icon: AppIcons.shieldCheck,
-                  isSelected: false,
-                  onTap: () => _openCategory(InsightCategory.strengths, analysis),
-                ),
-                const SizedBox(width: 10),
-                InsightCategoryCard(
-                  label: InsightsStrings.categoryFocusAreas,
-                  icon: AppIcons.fire,
-                  iconColor: AppColors.insightWarning,
-                  isSelected: false,
-                  onTap: () => _openCategory(InsightCategory.focusAreas, analysis),
-                ),
-                const SizedBox(width: 10),
-                InsightCategoryCard(
-                  label: InsightsStrings.categoryNextSteps,
-                  icon: AppIcons.cpu,
-                  isSelected: false,
-                  onTap: () => _openCategory(InsightCategory.recommendations, analysis),
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
-            Text(
-              InsightsStrings.keyInsights,
-              style: AppTextStyles.authSectionTitle.copyWith(fontSize: 20),
-            ),
-            const SizedBox(height: 14),
-            InsightMetricRow(
-              icon: AppIcons.heartPulse,
-              title: InsightsStrings.muscleGrowth,
-              subtitle: muscleSubtitle,
-              status: muscleStatus,
-              statusType: muscleStatusType,
-              onTap: () => _openMetricDetail(const MuscleGrowthView()),
-            ),
-            const SizedBox(height: 10),
-            InsightMetricRow(
-              icon: AppIcons.fire,
-              title: InsightsStrings.fatReduction,
-              subtitle: fatSubtitle,
-              status: fatStatus,
-              statusType: fatStatusType,
-              onTap: () => _openMetricDetail(const FatLossView()),
-            ),
-            const SizedBox(height: 10),
-            InsightMetricRow(
-              icon: AppIcons.alert,
-              title: InsightsStrings.posture,
-              subtitle: postureSubtitle,
-              status: postureStatus,
-              statusType: postureStatusType,
-              onTap: () => _openMetricDetail(const PostureAnalysisView()),
-            ),
-            const SizedBox(height: 10),
-            InsightMetricRow(
-              icon: AppIcons.checkCircle,
-              title: InsightsStrings.symmetryScore,
-              subtitle: symmetrySubtitle,
-              status: symmetryStatus,
-              statusType: symmetryStatusType,
-              onTap: () => _openMetricDetail(const SymmetryScoreView()),
-            ),
-            const SizedBox(height: 10),
-            InsightMetricRow(
-              icon: AppIcons.checkCircle,
-              title: InsightsStrings.consistency,
-              subtitle: consistencySubtitle,
-              status: InsightsStrings.consistencyStatus,
-              statusType: consistencyStatusType,
-              onTap: () => _openMetricDetail(const ConsistencyView()),
-            ),
-            const SizedBox(height: 24),
-            PrimaryButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute<void>(
-                    builder: (_) => const CompareScansView(),
+      return RefreshIndicator(
+        onRefresh: () => controller.fetchLatestScan(),
+        color: AppColors.brandTeal,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, 120),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  InsightCategoryCard(
+                    label: InsightsStrings.categoryStrengths,
+                    icon: AppIcons.shieldCheck,
+                    isSelected: false,
+                    onTap: () => _openCategory(InsightCategory.strengths, analysis),
                   ),
-                );
-              },
-              label: InsightsStrings.compareScans,
-            ),
-          ],
+                  const SizedBox(width: 10),
+                  InsightCategoryCard(
+                    label: InsightsStrings.categoryFocusAreas,
+                    icon: AppIcons.fire,
+                    iconColor: AppColors.insightWarning,
+                    isSelected: false,
+                    onTap: () => _openCategory(InsightCategory.focusAreas, analysis),
+                  ),
+                  const SizedBox(width: 10),
+                  InsightCategoryCard(
+                    label: InsightsStrings.categoryNextSteps,
+                    icon: AppIcons.cpu,
+                    isSelected: false,
+                    onTap: () => _openCategory(InsightCategory.recommendations, analysis),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+              Text(
+                InsightsStrings.keyInsights,
+                style: AppTextStyles.authSectionTitle.copyWith(fontSize: 20),
+              ),
+              const SizedBox(height: 14),
+              InsightMetricRow(
+                icon: AppIcons.heartPulse,
+                title: InsightsStrings.muscleGrowth,
+                subtitle: muscleSubtitle,
+                status: muscleStatus,
+                statusType: muscleStatusType,
+                onTap: () => _openMetricDetail(const MuscleGrowthView()),
+              ),
+              const SizedBox(height: 10),
+              InsightMetricRow(
+                icon: AppIcons.fire,
+                title: InsightsStrings.fatReduction,
+                subtitle: fatSubtitle,
+                status: fatStatus,
+                statusType: fatStatusType,
+                onTap: () => _openMetricDetail(const FatLossView()),
+              ),
+              const SizedBox(height: 10),
+              InsightMetricRow(
+                icon: AppIcons.alert,
+                title: InsightsStrings.posture,
+                subtitle: postureSubtitle,
+                status: postureStatus,
+                statusType: postureStatusType,
+                onTap: () => _openMetricDetail(const PostureAnalysisView()),
+              ),
+              const SizedBox(height: 10),
+              InsightMetricRow(
+                icon: AppIcons.checkCircle,
+                title: InsightsStrings.symmetryScore,
+                subtitle: symmetrySubtitle,
+                status: symmetryStatus,
+                statusType: symmetryStatusType,
+                onTap: () => _openMetricDetail(const SymmetryScoreView()),
+              ),
+              const SizedBox(height: 10),
+              InsightMetricRow(
+                icon: AppIcons.checkCircle,
+                title: InsightsStrings.consistency,
+                subtitle: consistencySubtitle,
+                status: InsightsStrings.consistencyStatus,
+                statusType: consistencyStatusType,
+                onTap: () => _openMetricDetail(const ConsistencyView()),
+              ),
+              const SizedBox(height: 24),
+              PrimaryButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute<void>(
+                      builder: (_) => const CompareScansView(),
+                    ),
+                  );
+                },
+                label: InsightsStrings.compareScans,
+              ),
+            ],
+          ),
         ),
       );
     });

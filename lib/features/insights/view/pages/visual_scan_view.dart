@@ -8,6 +8,7 @@ import 'package:ai_forma/features/insights/constants/insights_strings.dart';
 import 'package:ai_forma/features/insights/models/compare_result_model.dart';
 import 'package:ai_forma/features/insights/view/pages/comparison_summary_view.dart';
 import 'package:ai_forma/features/insights/view/widgets/visual_scan_compare_slider.dart';
+import 'package:ai_forma/core/utils/app_date_formatter.dart';
 
 class VisualScanView extends StatelessWidget {
   const VisualScanView({
@@ -41,8 +42,14 @@ class VisualScanView extends StatelessWidget {
             ? result!.now!.frontThumbUrl!
             : nowScan.imageAsset;
 
-    final beforeLabel = result?.then?.scanDate ?? thenScan.shortDate;
-    final afterLabel = result?.now?.scanDate ?? nowScan.shortDate;
+    final beforeLabel = AppDateFormatter.toDayMonthYear(
+      result?.then?.scanDate,
+      fallback: thenScan.shortDate,
+    );
+    final afterLabel = AppDateFormatter.toDayMonthYear(
+      result?.now?.scanDate,
+      fallback: nowScan.shortDate,
+    );
 
     return Scaffold(
       backgroundColor: AppColors.insightChartBackground,

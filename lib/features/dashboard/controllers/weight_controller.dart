@@ -4,6 +4,7 @@ import 'package:ai_forma/core/network/dio_client.dart';
 import 'package:ai_forma/features/dashboard/controllers/home_controller.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:ai_forma/core/utils/app_date_formatter.dart';
 import 'package:uuid/uuid.dart';
 
 enum TimeRange { week1, month1, month3, month6, year1 }
@@ -177,12 +178,7 @@ class WeightController extends GetxController {
     if (prev is Map<String, dynamic>) {
       progressPreviousWeight.value = prev['weight_kg']?.toString() ?? '--';
       final dtStr = prev['date']?.toString() ?? '';
-      if (dtStr.isNotEmpty) {
-        final dt = DateTime.tryParse(dtStr);
-        progressPreviousDate.value = dt != null ? DateFormat('MMM d, yyyy').format(dt) : dtStr;
-      } else {
-        progressPreviousDate.value = '';
-      }
+      progressPreviousDate.value = AppDateFormatter.toDayMonthYear(dtStr);
     } else if (prev != null) {
       progressPreviousWeight.value = prev.toString();
       progressPreviousDate.value = '';
@@ -192,12 +188,7 @@ class WeightController extends GetxController {
     if (curr is Map<String, dynamic>) {
       progressCurrentWeight.value = curr['weight_kg']?.toString() ?? '--';
       final dtStr = curr['date']?.toString() ?? '';
-      if (dtStr.isNotEmpty) {
-        final dt = DateTime.tryParse(dtStr);
-        progressCurrentDate.value = dt != null ? DateFormat('MMM d, yyyy').format(dt) : dtStr;
-      } else {
-        progressCurrentDate.value = '';
-      }
+      progressCurrentDate.value = AppDateFormatter.toDayMonthYear(dtStr);
     } else if (curr != null) {
       progressCurrentWeight.value = curr.toString();
       progressCurrentDate.value = '';

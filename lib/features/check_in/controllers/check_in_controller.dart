@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'dart:isolate';
-import 'dart:typed_data';
 
 import 'package:ai_forma/core/theme/app_colors.dart';
 import 'package:ai_forma/core/theme/app_text_styles.dart';
@@ -11,6 +10,7 @@ import 'package:ai_forma/features/check_in/models/scan_validation_model.dart';
 import 'package:ai_forma/features/check_in/repositories/check_in_repository.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_devlog/flutter_devlog.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
@@ -34,6 +34,13 @@ Uint8List? processCapturedImageBytes({
     // 2. Un-mirror front camera captures so final image matches true reality
     if (isFrontCamera) {
       processed = img.flipHorizontal(processed);
+    }
+
+    // 3. Guarantee portrait orientation for body scan photos (height >= width)
+    // If the image is landscape, the hardware sensor captured in sensor orientation.
+    // Rotating 90° clockwise ensures the uploaded image is strictly portrait format.
+    if (processed.width > processed.height) {
+      processed = img.copyRotate(processed, angle: 90);
     }
 
     final encoded = img.encodeJpg(processed, quality: quality);
@@ -397,6 +404,9 @@ class CheckInController extends GetxController {
     );
 
     await cameraController!.initialize();
+    try {
+      await cameraController!.lockCaptureOrientation(DeviceOrientation.portraitUp);
+    } catch (_) {}
     isCameraInitialized(true);
   }
 
@@ -474,6 +484,9 @@ class CheckInController extends GetxController {
 
     try {
       isCapturing(true);
+      try {
+        await cameraController!.lockCaptureOrientation(DeviceOrientation.portraitUp);
+      } catch (_) {}
       final xFile = await cameraController!.takePicture();
       final rawBytes = await xFile.readAsBytes();
 
@@ -521,6 +534,19 @@ class CheckInController extends GetxController {
       );
       if (picked != null) {
         final file = File(picked.path);
+        final rawBytes = await file.readAsBytes();
+
+        // Process gallery image to bake EXIF and ensure portrait orientation
+        final processedBytes = await Isolate.run(() => processCapturedImageBytes(
+              rawBytes: rawBytes,
+              isFrontCamera: false,
+              quality: 90,
+            ));
+
+        if (processedBytes != null) {
+          await file.writeAsBytes(processedBytes);
+        }
+
         if (currentAngle.value == 'Front') {
           frontImage.value = file;
         } else if (currentAngle.value == 'Side') {

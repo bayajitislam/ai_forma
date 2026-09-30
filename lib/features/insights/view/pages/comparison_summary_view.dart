@@ -11,6 +11,7 @@ import 'package:ai_forma/features/check_in/view/widgets/check_in_header.dart';
 import 'package:ai_forma/features/insights/constants/insights_strings.dart';
 import 'package:ai_forma/features/insights/models/compare_result_model.dart';
 import 'package:ai_forma/features/insights/view/pages/visual_scan_view.dart';
+import 'package:ai_forma/core/utils/app_date_formatter.dart';
 import 'package:ai_forma/features/shell/view/utils/shell_navigation.dart';
 
 class ComparisonScanData {
@@ -56,10 +57,16 @@ class ComparisonSummaryView extends StatelessWidget {
             nowScan.shortDate,
           );
 
-    final thenDate = result?.then?.scanDate ?? thenScan.shortDate;
+    final thenDate = AppDateFormatter.toDayMonthYear(
+      result?.then?.scanDate,
+      fallback: thenScan.shortDate,
+    );
     final thenImageUrl = result?.then?.frontImageUrl ?? result?.then?.frontThumbUrl;
 
-    final nowDate = result?.now?.scanDate ?? nowScan.shortDate;
+    final nowDate = AppDateFormatter.toDayMonthYear(
+      result?.now?.scanDate,
+      fallback: nowScan.shortDate,
+    );
     final nowImageUrl = result?.now?.frontImageUrl ?? result?.now?.frontThumbUrl;
 
     final bodyFatChangeStr = _formatDelta(result?.deltas?.bodyFatPercent, '%');

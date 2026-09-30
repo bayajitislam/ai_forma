@@ -7,6 +7,7 @@ import 'package:ai_forma/core/widgets/primary_button.dart';
 import 'package:ai_forma/features/dashboard/controllers/weight_controller.dart';
 import 'package:ai_forma/features/dashboard/view/widgets/weight_entry_bottom_sheet.dart';
 import 'package:intl/intl.dart';
+import 'package:ai_forma/core/utils/app_date_formatter.dart';
 
 class WeightTrendsView extends StatelessWidget {
   const WeightTrendsView({super.key});
@@ -318,7 +319,7 @@ class WeightTrendsView extends StatelessWidget {
                   ),
                   children: [
                     TextSpan(
-                      text: DateFormat('MMM d, yyyy').format(record.date),
+                      text: AppDateFormatter.toDayMonthYear(record.date),
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 10,
@@ -369,7 +370,7 @@ class WeightTrendsView extends StatelessWidget {
               ),
             ),
             title: Text(
-              DateFormat('MMM d, yyyy').format(record.date),
+              AppDateFormatter.toDayMonthYear(record.date),
               style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
             ),
             subtitle: Text(

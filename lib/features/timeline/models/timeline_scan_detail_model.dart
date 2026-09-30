@@ -127,6 +127,8 @@ class TimelinePhotoViewItemModel {
   final String? imageUrl;
   final String? thumbUrl;
 
+  String get key => view;
+
   const TimelinePhotoViewItemModel({
     required this.view,
     required this.label,

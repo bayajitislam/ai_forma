@@ -5,6 +5,7 @@ import 'package:ai_forma/core/constants/app_images.dart';
 import 'package:ai_forma/core/widgets/app_cached_image.dart';
 import 'package:ai_forma/features/timeline/controllers/timeline_controller.dart';
 import 'package:ai_forma/features/timeline/models/timeline_history_model.dart';
+import 'package:ai_forma/core/utils/app_date_formatter.dart';
 import 'package:ai_forma/features/timeline/view/pages/scan_detail_view.dart';
 
 class ScanHistoryTabView extends StatefulWidget {
@@ -172,7 +173,9 @@ class _ScanHistoryTabViewState extends State<ScanHistoryTabView> {
   }
 
   Widget _buildScanRow(
-      BuildContext context, TimelineHistoryScanItemModel scan) {
+    BuildContext context,
+    TimelineHistoryScanItemModel scan,
+  ) {
     final thumbs = _getFilteredThumbnails(scan);
 
     return GestureDetector(
@@ -181,7 +184,7 @@ class _ScanHistoryTabViewState extends State<ScanHistoryTabView> {
           MaterialPageRoute(
             builder: (context) => ScanDetailView(
               scanId: scan.id,
-              date: scan.scanDate,
+              date: AppDateFormatter.toDayMonthYear(scan.scanDate),
             ),
           ),
         );
@@ -192,12 +195,12 @@ class _ScanHistoryTabViewState extends State<ScanHistoryTabView> {
           children: [
             // Date
             SizedBox(
-              width: 60,
+              width: 66,
               child: Text(
-                scan.scanDate,
+                AppDateFormatter.toDayMonthYear(scan.scanDate),
                 style: const TextStyle(
                   fontFamily: 'Nunito',
-                  fontSize: 14,
+                  fontSize: 12,
                   fontWeight: FontWeight.w600,
                   color: AppColors.textSecondary,
                 ),
@@ -231,15 +234,15 @@ class _ScanHistoryTabViewState extends State<ScanHistoryTabView> {
                             ? AppCachedNetworkImage(
                                 imageUrl: urlOrAsset,
                                 fit: BoxFit.contain,
+                                width: 76,
+                                height: 100,
+                                autoOrient: true,
                                 errorWidget: Image.asset(
                                   AppImages.frontView,
                                   fit: BoxFit.cover,
                                 ),
                               )
-                            : Image.asset(
-                                urlOrAsset,
-                                fit: BoxFit.cover,
-                              ),
+                            : Image.asset(urlOrAsset, fit: BoxFit.cover),
                       ),
                     ),
                   );

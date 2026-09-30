@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:intl/intl.dart';
+import 'package:ai_forma/core/utils/app_date_formatter.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
 import 'package:ai_forma/core/widgets/primary_button.dart';
 import 'package:ai_forma/features/auth/controllers/user_controller.dart';
@@ -44,15 +44,11 @@ class PersonalDetailsView extends StatelessWidget {
           child: Obx(() {
             final user = userController.currentUser.value;
 
-            String dobFormatted = 'N/A';
-            if (user?.profile?.dateOfBirth != null && user!.profile!.dateOfBirth!.isNotEmpty) {
-              try {
-                final date = DateTime.parse(user.profile!.dateOfBirth!);
-                dobFormatted = DateFormat('MMM dd, yyyy').format(date);
-              } catch (_) {
-                dobFormatted = user.profile!.dateOfBirth!;
-              }
-            }
+            final rawDob = user?.profile?.dateOfBirth;
+            final dobFormatted = AppDateFormatter.toDayMonthYear(
+              rawDob,
+              fallback: 'N/A',
+            );
 
             final details = [
               _DetailRowItem(

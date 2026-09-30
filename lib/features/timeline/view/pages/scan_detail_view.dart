@@ -4,6 +4,8 @@ import 'package:ai_forma/core/theme/app_colors.dart';
 import 'package:ai_forma/core/constants/app_images.dart';
 import 'package:ai_forma/core/widgets/app_brand_text.dart';
 import 'package:ai_forma/core/widgets/app_cached_image.dart';
+import 'package:ai_forma/core/widgets/app_loader.dart';
+import 'package:ai_forma/core/utils/app_date_formatter.dart';
 import 'package:ai_forma/features/timeline/controllers/timeline_controller.dart';
 import 'package:ai_forma/features/timeline/models/timeline_scan_detail_model.dart';
 
@@ -229,7 +231,7 @@ class _ScanDetailViewState extends State<ScanDetailView>
                     child: Column(
                       children: [
                         Text(
-                          comparison.then?.scanDate ?? '',
+                          AppDateFormatter.toDayMonthYear(comparison.then?.scanDate),
                           style: const TextStyle(
                             fontFamily: 'Nunito',
                             fontSize: 12,
@@ -258,7 +260,7 @@ class _ScanDetailViewState extends State<ScanDetailView>
                     child: Column(
                       children: [
                         Text(
-                          comparison.now?.scanDate ?? '',
+                          AppDateFormatter.toDayMonthYear(comparison.now?.scanDate),
                           style: const TextStyle(
                             fontFamily: 'Nunito',
                             fontSize: 12,
@@ -309,13 +311,21 @@ class _ScanDetailViewState extends State<ScanDetailView>
     final photo = views[safeIndex];
     final imageUrl = photo.imageUrl ?? photo.thumbUrl;
 
+    final String fallbackAsset = switch (photo.view.toLowerCase()) {
+      'side' => AppImages.sideView,
+      'back' => AppImages.backView,
+      _ => (safeIndex == 1)
+          ? AppImages.sideView
+          : (safeIndex == 2 ? AppImages.backView : AppImages.frontView),
+    };
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
       child: Column(
         children: [
           // Sub-header info
           Text(
-            detail?.scanDate ?? widget.date ?? '',
+            AppDateFormatter.toDayMonthYear(detail?.scanDate ?? widget.date),
             style: const TextStyle(
               fontFamily: 'Nunito',
               fontSize: 16,
@@ -345,15 +355,23 @@ class _ScanDetailViewState extends State<ScanDetailView>
                     borderRadius: BorderRadius.circular(16),
                     child: imageUrl != null && imageUrl.isNotEmpty
                         ? AppCachedNetworkImage(
+                            key: ValueKey('detail_${photo.view}_$imageUrl'),
                             imageUrl: imageUrl,
                             fit: BoxFit.contain,
+                            autoOrient: true,
+                            useOldImageOnUrlChange: false,
+                            placeholder: const Center(
+                              child: AppLoader(
+                                color: AppColors.brandTeal,
+                              ),
+                            ),
                             errorWidget: Image.asset(
-                              AppImages.frontView,
+                              fallbackAsset,
                               fit: BoxFit.contain,
                             ),
                           )
                         : Image.asset(
-                            AppImages.frontView,
+                            fallbackAsset,
                             fit: BoxFit.contain,
                           ),
                   ),

@@ -4,8 +4,9 @@ import 'package:ai_forma/core/constants/api_endpoint.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
 
 /// Reusable cached network image widget with disk/memory caching,
-/// smooth neutral grey shimmer placeholder on first download, and instant cached rendering.
-class AppCachedNetworkImage extends StatelessWidget {
+/// smooth neutral grey shimmer placeholder on first download, instant cached rendering,
+/// and optional autoOrient to ensure vertical scans stay upright in portrait.
+class AppCachedNetworkImage extends StatefulWidget {
   final String imageUrl;
   final double? width;
   final double? height;
@@ -13,6 +14,8 @@ class AppCachedNetworkImage extends StatelessWidget {
   final BorderRadius? borderRadius;
   final Widget? placeholder;
   final Widget? errorWidget;
+  final bool autoOrient;
+  final bool useOldImageOnUrlChange;
 
   const AppCachedNetworkImage({
     super.key,
@@ -23,6 +26,8 @@ class AppCachedNetworkImage extends StatelessWidget {
     this.borderRadius,
     this.placeholder,
     this.errorWidget,
+    this.autoOrient = true,
+    this.useOldImageOnUrlChange = false,
   });
 
   /// Helper to ensure relative URLs have full baseUrl prefix
@@ -48,34 +53,116 @@ class AppCachedNetworkImage extends StatelessWidget {
   }
 
   @override
+  State<AppCachedNetworkImage> createState() => _AppCachedNetworkImageState();
+}
+
+class _AppCachedNetworkImageState extends State<AppCachedNetworkImage> {
+  ImageStream? _imageStream;
+  ImageStreamListener? _streamListener;
+  bool _isLandscape = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.autoOrient) {
+      _resolveOrientation();
+    }
+  }
+
+  @override
+  void didUpdateWidget(AppCachedNetworkImage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.autoOrient &&
+        (oldWidget.imageUrl != widget.imageUrl || !oldWidget.autoOrient)) {
+      _stopListening();
+      _isLandscape = false;
+      _resolveOrientation();
+    } else if (!widget.autoOrient && oldWidget.autoOrient) {
+      _stopListening();
+      _isLandscape = false;
+    }
+  }
+
+  void _resolveOrientation() {
+    final cleanUrl = AppCachedNetworkImage.resolveUrl(widget.imageUrl);
+    if (cleanUrl.isEmpty) return;
+
+    final provider = CachedNetworkImageProvider(cleanUrl);
+    _imageStream = provider.resolve(const ImageConfiguration());
+    _streamListener = ImageStreamListener(
+      (ImageInfo info, bool _) {
+        if (mounted) {
+          final isLandscape = info.image.width > info.image.height;
+          if (_isLandscape != isLandscape) {
+            setState(() {
+              _isLandscape = isLandscape;
+            });
+          }
+        }
+      },
+      onError: (dynamic _, StackTrace? _) {},
+    );
+    _imageStream?.addListener(_streamListener!);
+  }
+
+  void _stopListening() {
+    if (_imageStream != null && _streamListener != null) {
+      _imageStream!.removeListener(_streamListener!);
+    }
+    _imageStream = null;
+    _streamListener = null;
+  }
+
+  @override
+  void dispose() {
+    _stopListening();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final cleanUrl = resolveUrl(imageUrl);
+    final cleanUrl = AppCachedNetworkImage.resolveUrl(widget.imageUrl);
     if (cleanUrl.isEmpty) {
       return _buildErrorWidget();
     }
 
+    final bool shouldRotate = widget.autoOrient && _isLandscape;
+
     Widget imageWidget = CachedNetworkImage(
       imageUrl: cleanUrl,
-      width: width,
-      height: height,
-      fit: fit,
+      width: shouldRotate ? null : widget.width,
+      height: shouldRotate ? null : widget.height,
+      fit: widget.fit,
       fadeInDuration: Duration.zero,
       fadeOutDuration: Duration.zero,
-      useOldImageOnUrlChange: true,
+      useOldImageOnUrlChange: widget.useOldImageOnUrlChange,
       placeholder: (context, url) =>
-          placeholder ??
+          widget.placeholder ??
           _ShimmerPlaceholder(
-            width: width,
-            height: height,
-            borderRadius: borderRadius,
+            width: widget.width,
+            height: widget.height,
+            borderRadius: widget.borderRadius,
           ),
       errorWidget: (context, url, error) =>
-          errorWidget ?? _buildErrorWidget(),
+          widget.errorWidget ?? _buildErrorWidget(),
     );
 
-    if (borderRadius != null) {
+    if (shouldRotate) {
+      imageWidget = SizedBox(
+        width: widget.width,
+        height: widget.height,
+        child: Center(
+          child: RotatedBox(
+            quarterTurns: 1,
+            child: imageWidget,
+          ),
+        ),
+      );
+    }
+
+    if (widget.borderRadius != null) {
       return ClipRRect(
-        borderRadius: borderRadius!,
+        borderRadius: widget.borderRadius!,
         child: imageWidget,
       );
     }
@@ -85,8 +172,8 @@ class AppCachedNetworkImage extends StatelessWidget {
 
   Widget _buildErrorWidget() {
     return Container(
-      width: width,
-      height: height,
+      width: widget.width,
+      height: widget.height,
       color: AppColors.surface,
       child: const Center(
         child: Icon(

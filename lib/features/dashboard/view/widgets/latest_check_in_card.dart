@@ -8,7 +8,7 @@ import 'package:ai_forma/core/constants/app_images.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
 import 'package:ai_forma/core/theme/app_text_styles.dart';
 import 'package:ai_forma/features/dashboard/constants/dashboard_strings.dart';
-import 'package:intl/intl.dart';
+import 'package:ai_forma/core/utils/app_date_formatter.dart';
 
 class LatestCheckInCard extends StatefulWidget {
   const LatestCheckInCard({super.key, this.onTap, this.analysisData});
@@ -88,13 +88,7 @@ class _LatestCheckInCardState extends State<LatestCheckInCard>
   }
 
   String _formatDate(String? isoDate) {
-    if (isoDate == null || isoDate.isEmpty) return '';
-    try {
-      final dt = DateTime.parse(isoDate);
-      return DateFormat('MMMM d, yyyy').format(dt);
-    } catch (_) {
-      return isoDate;
-    }
+    return AppDateFormatter.toDayMonthYear(isoDate);
   }
 
   @override
@@ -248,7 +242,9 @@ class _LatestCheckInCardState extends State<LatestCheckInCard>
                   children: viewsList.isNotEmpty
                       ? List.generate(viewsList.length, (index) {
                           final view = viewsList[index];
-                          final url = view.thumbUrl ?? view.imageUrl;
+                          final url = (view.imageUrl != null && view.imageUrl!.isNotEmpty)
+                              ? view.imageUrl!
+                              : (view.thumbUrl ?? '');
                           return Expanded(
                             child: Padding(
                               padding: EdgeInsets.only(
@@ -321,6 +317,7 @@ class _AnalysisImage extends StatelessWidget {
                 fit: BoxFit.contain,
                 height: 152,
                 width: double.infinity,
+                autoOrient: true,
                 errorWidget: Image.asset(
                   fallbackAsset,
                   height: 152,

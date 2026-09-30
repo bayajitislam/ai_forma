@@ -11,7 +11,7 @@ import 'package:ai_forma/features/insights/controllers/compare_scans_controller.
 import 'package:ai_forma/features/insights/repositories/insights_repository.dart';
 import 'package:ai_forma/features/insights/view/pages/comparison_summary_view.dart';
 import 'package:ai_forma/features/insights/view/widgets/compare_scan_card.dart';
-import 'package:intl/intl.dart';
+import 'package:ai_forma/core/utils/app_date_formatter.dart';
 
 class CompareScansView extends StatelessWidget {
   const CompareScansView({super.key});
@@ -34,12 +34,7 @@ class CompareScansView extends StatelessWidget {
   }
 
   String _formatDisplayDate(String scanDateStr) {
-    try {
-      final parsedDate = DateTime.parse(scanDateStr);
-      return DateFormat('MMMM d, yyyy').format(parsedDate);
-    } catch (_) {
-      return scanDateStr;
-    }
+    return AppDateFormatter.toDayMonthYear(scanDateStr);
   }
 
   @override

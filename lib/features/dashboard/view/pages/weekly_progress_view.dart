@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
+import 'package:ai_forma/core/utils/app_date_formatter.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
 import 'package:ai_forma/core/theme/app_text_styles.dart';
 import 'package:ai_forma/features/dashboard/controllers/weight_controller.dart';
@@ -473,7 +474,7 @@ class _WeeklyProgressViewState extends State<WeeklyProgressView> {
                   ),
                   children: [
                     TextSpan(
-                      text: DateFormat('MMM d, yyyy').format(record.date),
+                      text: AppDateFormatter.toDayMonthYear(record.date),
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 10,
@@ -530,12 +531,12 @@ class _WeeklyProgressViewState extends State<WeeklyProgressView> {
         previousWeightVal != null ? previousWeightVal.toStringAsFixed(1) : '--';
 
     final currentDateStr = endRecord != null
-        ? DateFormat('MMM d, yyyy').format(endRecord.date)
+        ? AppDateFormatter.toDayMonthYear(endRecord.date)
         : '';
     final previousDateStr = (startRecord != null && startRecord != endRecord)
-        ? DateFormat('MMM d, yyyy').format(startRecord.date)
+        ? AppDateFormatter.toDayMonthYear(startRecord.date)
         : (controller.previousWeight != null
-            ? DateFormat('MMM d, yyyy').format(controller.previousWeight!.date)
+            ? AppDateFormatter.toDayMonthYear(controller.previousWeight!.date)
             : '');
 
     String changeLabel = 'WEEKLY CHANGE';
@@ -859,7 +860,7 @@ class _WeeklyProgressViewState extends State<WeeklyProgressView> {
                 ),
               ),
               title: Text(
-                DateFormat('MMM d, yyyy').format(record.date),
+                AppDateFormatter.toDayMonthYear(record.date),
                 style:
                     const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
               ),

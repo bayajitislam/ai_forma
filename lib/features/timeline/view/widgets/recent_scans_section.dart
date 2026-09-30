@@ -3,6 +3,7 @@ import 'package:ai_forma/core/theme/app_colors.dart';
 import 'package:ai_forma/core/theme/app_text_styles.dart';
 import 'package:ai_forma/core/constants/app_images.dart';
 import 'package:ai_forma/core/widgets/app_cached_image.dart';
+import 'package:ai_forma/core/utils/app_date_formatter.dart';
 import 'package:ai_forma/features/timeline/models/timeline_overview_model.dart';
 
 class RecentScansSection extends StatelessWidget {
@@ -80,6 +81,9 @@ class RecentScansSection extends StatelessWidget {
                             ? AppCachedNetworkImage(
                                 imageUrl: imageUrl,
                                 fit: BoxFit.contain,
+                                width: 96,
+                                height: 130,
+                                autoOrient: true,
                                 errorWidget: Image.asset(
                                   AppImages.sideView,
                                   fit: BoxFit.cover,
@@ -93,7 +97,7 @@ class RecentScansSection extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      scan.scanDate,
+                      AppDateFormatter.toDayMonthYear(scan.scanDate),
                       style: const TextStyle(
                         fontFamily: 'Nunito',
                         fontSize: 13,
