@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:ai_forma/core/constants/api_endpoint.dart';
+import 'package:ai_forma/core/constants/app_images.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
 
 /// Reusable cached network image widget with disk/memory caching,
@@ -47,7 +48,7 @@ class AppCachedNetworkImage extends StatefulWidget {
   static ImageProvider provider(String? url) {
     final cleanUrl = resolveUrl(url);
     if (cleanUrl.isEmpty) {
-      return const AssetImage('assets/images/user.png');
+      return const AssetImage(AppImages.logo);
     }
     return CachedNetworkImageProvider(cleanUrl);
   }

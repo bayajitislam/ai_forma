@@ -1,6 +1,8 @@
 class ApiEndpoint {
-  // static const String baseUrl = 'http://10.10.26.245:8000';
-  static const String baseUrl = 'https://aiformapi.sobhoy.com';
+  static const String baseUrl = String.fromEnvironment(
+    'API_URL',
+    defaultValue: 'https://aiformapi.sobhoy.com',
+  );
 
   //auth
   static const String login = '/api/auth/login/';
@@ -64,9 +66,11 @@ class ApiEndpoint {
 
   //devices & push notifications
   static const String registerPushToken = '/api/devices/push-token/register/';
-  static const String unregisterPushToken = '/api/devices/push-token/unregister/';
+  static const String unregisterPushToken =
+      '/api/devices/push-token/unregister/';
 
   // web links
   static const String privacyPolicy = 'https://ai-forma.net/privacy-policy';
-  static const String termsOfService = 'https://ai-forma.net/terms-and-conditions';
+  static const String termsOfService =
+      'https://ai-forma.net/terms-and-conditions';
 }

@@ -70,10 +70,10 @@ class MuscleGrowthView extends StatelessWidget {
       final percentDelta = data?.metrics?.muscleMassPercent?.delta;
 
       final kgValueStr =
-          kgValue != null ? '${kgValue.round()} kg' : '- kg';
+          kgValue != null ? '${kgValue.round()} kg' : 'kg';
       final kgDeltaStr = isFirstScan
           ? InsightsStrings.noChangePlaceholder
-          : (kgDelta != null ? '${kgDelta.toStringAsFixed(1)} kg' : '- kg');
+          : (kgDelta != null ? '${kgDelta.toStringAsFixed(1)} kg' : 'kg');
       final kgDirection = isFirstScan
           ? InsightStatChangeDirection.none
           : ((kgDelta ?? 1) >= 0
@@ -81,12 +81,12 @@ class MuscleGrowthView extends StatelessWidget {
               : InsightStatChangeDirection.down);
 
       final percentValueStr =
-          percentValue != null ? '${percentValue.round()}%' : '- %';
+          percentValue != null ? '${percentValue.round()}%' : '%';
       final percentDeltaStr = isFirstScan
           ? InsightsStrings.noChangePlaceholder
           : (percentDelta != null
               ? '${percentDelta.toStringAsFixed(1)}%'
-              : '- %');
+              : '%');
       final percentDirection = isFirstScan
           ? InsightStatChangeDirection.none
           : ((percentDelta ?? 1) >= 0

@@ -8,6 +8,7 @@ import 'package:dio/dio.dart';
 import 'package:get/get.dart' hide FormData, MultipartFile;
 
 import 'package:ai_forma/core/services/push_notification_service.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 
 class UserController extends GetxController {
   final DioClient _dio;
@@ -25,12 +26,19 @@ class UserController extends GetxController {
     _loadUserFromStorage();
   }
 
+  void _setCrashlyticsUserId(String id) {
+    try {
+      FirebaseCrashlytics.instance.setUserIdentifier(id);
+    } catch (_) {}
+  }
+
   /// Load user profile from local storage on app initialization
   Future<void> _loadUserFromStorage() async {
     final user = await AuthStorage.getUser();
     currentUser.value = user;
     if (user != null) {
       PushNotificationService.instance.registerCurrentToken();
+      _setCrashlyticsUserId(user.id.toString());
     }
   }
 
@@ -68,6 +76,7 @@ class UserController extends GetxController {
 
         // Update reactive state
         currentUser.value = updatedUser;
+        _setCrashlyticsUserId(updatedUser.id.toString());
 
         // Persist to local storage
         await AuthStorage.saveUser(updatedUser);
@@ -229,6 +238,7 @@ class UserController extends GetxController {
   /// Update currentUser state and save to local storage
   Future<void> setUser(UserModel user) async {
     currentUser.value = user;
+    _setCrashlyticsUserId(user.id.toString());
     await AuthStorage.saveUser(user);
     PushNotificationService.instance.registerCurrentToken();
   }
@@ -237,6 +247,7 @@ class UserController extends GetxController {
   Future<void> logout() async {
     await PushNotificationService.instance.unregisterTokenFromBackend();
     currentUser.value = null;
+    _setCrashlyticsUserId('');
     await AuthStorage.clearSession();
   }
 
@@ -251,6 +262,7 @@ class UserController extends GetxController {
       if (response.statusCode == 200 || response.statusCode == 204) {
         // Clear all local data
         currentUser.value = null;
+        _setCrashlyticsUserId('');
         await AuthStorage.clearSession();
 
         isLoading(false);

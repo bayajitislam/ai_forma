@@ -1,3 +1,4 @@
+import 'package:ai_forma/core/services/push_notification_service.dart';
 import 'package:ai_forma/core/storage/auth_storage.dart';
 import 'package:ai_forma/core/widgets/app_cached_image.dart';
 import 'package:ai_forma/features/profile/view/pages/edit_personal_details_view.dart';
@@ -5,6 +6,7 @@ import 'package:ai_forma/features/profile/view/pages/report_bug_view.dart';
 import 'package:ai_forma/routes/routes_name.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:ai_forma/core/constants/api_endpoint.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
 import 'package:ai_forma/features/auth/controllers/user_controller.dart';
@@ -15,8 +17,147 @@ import 'package:ai_forma/features/profile/view/pages/subscription_view.dart';
 import 'package:ai_forma/core/widgets/primary_button.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class ProfileView extends StatelessWidget {
+class ProfileView extends StatefulWidget {
   const ProfileView({super.key});
+
+  @override
+  State<ProfileView> createState() => _ProfileViewState();
+}
+
+class _ProfileViewState extends State<ProfileView> with WidgetsBindingObserver {
+  bool _notificationsEnabled = true;
+  bool _isToggling = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _checkNotificationStatus();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _checkNotificationStatus();
+    }
+  }
+
+  Future<void> _checkNotificationStatus() async {
+    final enabled = await PushNotificationService.instance.getEffectiveNotificationStatus();
+    if (mounted) {
+      setState(() {
+        _notificationsEnabled = enabled;
+      });
+    }
+  }
+
+  Future<void> _handleNotificationToggle(bool value) async {
+    setState(() => _isToggling = true);
+    final result = await PushNotificationService.instance.toggleNotifications(value);
+    if (!mounted) return;
+    setState(() => _isToggling = false);
+
+    switch (result) {
+      case NotificationToggleResult.enabled:
+        setState(() => _notificationsEnabled = true);
+        Get.snackbar(
+          'Notifications Enabled',
+          'You will receive check-in reminders and progress alerts.',
+          backgroundColor: AppColors.brandTeal,
+          colorText: Colors.white,
+          snackPosition: SnackPosition.BOTTOM,
+          duration: const Duration(seconds: 3),
+        );
+        break;
+      case NotificationToggleResult.disabled:
+        setState(() => _notificationsEnabled = false);
+        Get.snackbar(
+          'Notifications Disabled',
+          'You have turned off push notifications.',
+          backgroundColor: AppColors.textPrimary,
+          colorText: Colors.white,
+          snackPosition: SnackPosition.BOTTOM,
+          duration: const Duration(seconds: 3),
+        );
+        break;
+      case NotificationToggleResult.permanentlyDenied:
+        setState(() => _notificationsEnabled = false);
+        _showOpenSettingsDialog();
+        break;
+      case NotificationToggleResult.permissionDenied:
+        setState(() => _notificationsEnabled = false);
+        Get.snackbar(
+          'Permission Denied',
+          'Notification permission was not granted.',
+          backgroundColor: Colors.redAccent,
+          colorText: Colors.white,
+          snackPosition: SnackPosition.BOTTOM,
+          duration: const Duration(seconds: 3),
+        );
+        break;
+    }
+  }
+
+  void _showOpenSettingsDialog() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text(
+          'Enable Notifications',
+          style: TextStyle(
+            fontFamily: 'Nunito',
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: AppColors.textPrimary,
+          ),
+        ),
+        content: const Text(
+          'Push notifications are disabled in your device settings. To receive check-in reminders and scan updates, please enable notifications in Settings.',
+          style: TextStyle(
+            fontFamily: 'Nunito',
+            fontSize: 14,
+            color: AppColors.textSecondary,
+            height: 1.4,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text(
+              'CANCEL',
+              style: TextStyle(
+                fontFamily: 'Nunito',
+                fontWeight: FontWeight.bold,
+                color: AppColors.textSecondary,
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              openAppSettings();
+            },
+            child: const Text(
+              'OPEN SETTINGS',
+              style: TextStyle(
+                fontFamily: 'Nunito',
+                fontWeight: FontWeight.bold,
+                color: AppColors.brandTeal,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   /// Opens [url] in the device's default external browser.
   Future<void> _launchUrl(String url) async {
@@ -495,6 +636,8 @@ class ProfileView extends StatelessWidget {
             },
           ),
           _buildDivider(),
+          _buildNotificationToggleTile(context),
+          _buildDivider(),
           _buildOptionTile(
             context,
             icon: Icons.bug_report_outlined,
@@ -587,6 +730,49 @@ class ProfileView extends StatelessWidget {
       color: AppColors.cardBorder.withValues(alpha: 0.4),
       height: 1,
       thickness: 1,
+    );
+  }
+
+  Widget _buildNotificationToggleTile(BuildContext context) {
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+      leading: Icon(
+        Icons.notifications_outlined,
+        color: AppColors.textPrimary.withValues(alpha: 0.7),
+        size: 22,
+      ),
+      title: const Text(
+        'Push Notifications',
+        style: TextStyle(
+          fontFamily: 'Nunito',
+          fontSize: 15,
+          fontWeight: FontWeight.bold,
+          color: AppColors.textPrimary,
+        ),
+      ),
+      subtitle: const Text(
+        'Reminders & scan updates',
+        style: TextStyle(
+          fontFamily: 'Nunito',
+          fontSize: 12,
+          color: AppColors.textSecondary,
+        ),
+      ),
+      trailing: _isToggling
+          ? const SizedBox(
+              width: 24,
+              height: 24,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: AppColors.brandTeal,
+              ),
+            )
+          : Switch.adaptive(
+              value: _notificationsEnabled,
+              activeTrackColor: AppColors.brandTeal,
+              activeThumbColor: Colors.white,
+              onChanged: _isToggling ? null : _handleNotificationToggle,
+            ),
     );
   }
 }

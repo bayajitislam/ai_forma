@@ -48,3 +48,8 @@ app.*.map.json
 **/google-services.json
 **/GoogleService-Info.plist
 
+# Android keystore and signing credentials
+*.jks
+*.keystore
+**/key.properties
+

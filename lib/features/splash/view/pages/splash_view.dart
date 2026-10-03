@@ -1,4 +1,5 @@
 import 'package:ai_forma/core/network/dio_client.dart';
+import 'package:ai_forma/core/services/push_notification_service.dart';
 import 'package:ai_forma/core/storage/auth_storage.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
 import 'package:ai_forma/core/widgets/app_network_error_widget.dart';
@@ -79,7 +80,11 @@ class _SplashViewState extends State<SplashView> {
         } else if (!remoteUser.initialScanCompleted) {
           Get.offAllNamed(RoutesName.checkInIntro);
         } else {
-          Get.offAllNamed(RoutesName.appShell);
+          if (PushNotificationService.instance.hasPendingNotification) {
+            PushNotificationService.instance.consumePendingNotification();
+          } else {
+            Get.offAllNamed(RoutesName.appShell);
+          }
         }
       },
     );
