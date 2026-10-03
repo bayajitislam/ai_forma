@@ -335,13 +335,13 @@ class AIDailyBriefCard extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: const [
-                    const Icon(
+                     Icon(
                       Icons.check_circle_rounded,
                       size: 18,
                       color: AppColors.brandTeal,
                     ),
-                    const SizedBox(width: 8),
-                    const Text(
+                     SizedBox(width: 8),
+                     Text(
                       DashboardStrings.completedForTodayTapToChange,
                       style: TextStyle(
                         fontFamily: AppFonts.family,

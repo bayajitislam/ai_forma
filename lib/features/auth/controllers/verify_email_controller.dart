@@ -41,7 +41,8 @@ class VerifyEmailController extends GetxController {
   void onInit() {
     super.onInit();
     //Read the email argument passed by SignupController
-    email = Get.arguments['email'] ?? '';
+    email =
+        (Get.arguments is Map ? Get.arguments['email'] : null)?.toString() ?? '';
     _startTimer();
   }
 

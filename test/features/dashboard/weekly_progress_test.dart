@@ -1,3 +1,4 @@
+import 'package:ai_forma/core/network/dio_client.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
@@ -14,7 +15,7 @@ void main() {
   group('WeeklyProgressView & WeightController Tests', () {
     testWidgets('WeeklyProgressView defaults to 1W every time it is opened',
         (tester) async {
-      final controller = Get.put(WeightController());
+      final controller = Get.put(WeightController(DioClient()));
       controller.selectedRange.value = TimeRange.month1;
 
       controller.records.assignAll([
@@ -42,7 +43,7 @@ void main() {
 
     testWidgets('Deleting a weight record updates calculations and history immediately',
         (tester) async {
-      final controller = Get.put(WeightController());
+      final controller = Get.put(WeightController(DioClient()));
       final now = DateTime.now();
 
       final record1 = WeightRecord(
@@ -78,7 +79,7 @@ void main() {
 
     testWidgets('WeightEntryBottomSheet saves weight accurately',
         (tester) async {
-      final controller = Get.put(WeightController());
+      final controller = Get.put(WeightController(DioClient()));
       final record = WeightRecord(
         id: 'rec-test',
         weightKg: 65.0,
@@ -113,7 +114,7 @@ void main() {
 
     testWidgets('WeeklyProgressView handles single data point gracefully',
         (tester) async {
-      final controller = Get.put(WeightController());
+      final controller = Get.put(WeightController(DioClient()));
       controller.records.assignAll([
         WeightRecord(
           id: 'single-rec',
@@ -135,7 +136,7 @@ void main() {
 
     testWidgets('WeeklyProgressView handles empty data gracefully',
         (tester) async {
-      final controller = Get.put(WeightController());
+      final controller = Get.put(WeightController(DioClient()));
       controller.records.clear();
 
       await tester.pumpWidget(

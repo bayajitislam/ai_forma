@@ -6,7 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class AuthStorage {
   static const FlutterSecureStorage _secureStorage = FlutterSecureStorage(
     aOptions: AndroidOptions(resetOnError: true),
-    iOptions: IOSOptions(accessibility: KeychainAccessibility.first_unlock),
+    iOptions: IOSOptions(accessibility: KeychainAccessibility.first_unlock_this_device),
   );
 
   static const String _keyAccessToken = 'access_token';
@@ -70,6 +70,9 @@ class AuthStorage {
   }
 
   static const String _keyNotificationsEnabled = 'notifications_enabled';
+  static const String _keyLastRegisteredFcmToken = 'last_registered_fcm_token';
+  static const String _keyLastRegisteredUserId = 'last_registered_user_id';
+  static const String _keyLastFcmRegistrationTime = 'last_fcm_registration_time';
 
   /// Save first check-in completion status
   static Future<void> setFirstCheckInCompleted(bool completed) async {
@@ -93,6 +96,52 @@ class AuthStorage {
   static Future<bool> isNotificationsEnabled() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getBool(_keyNotificationsEnabled) ?? true;
+  }
+
+  /// Save the last successfully registered FCM token and associated user id
+  static Future<void> saveRegisteredPushToken({
+    required String token,
+    required String userId,
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_keyLastRegisteredFcmToken, token);
+    await prefs.setString(_keyLastRegisteredUserId, userId);
+    await prefs.setInt(
+      _keyLastFcmRegistrationTime,
+      DateTime.now().millisecondsSinceEpoch,
+    );
+  }
+
+  /// Check whether the given FCM token is already registered for the given user ID
+  /// Returns false if token is different, user is different, or more than 7 days have elapsed.
+  static Future<bool> isPushTokenAlreadyRegistered({
+    required String token,
+    required String userId,
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+    final cachedToken = prefs.getString(_keyLastRegisteredFcmToken);
+    final cachedUserId = prefs.getString(_keyLastRegisteredUserId);
+    final lastTimeMs = prefs.getInt(_keyLastFcmRegistrationTime) ?? 0;
+
+    if (cachedToken != token || cachedUserId != userId) {
+      return false;
+    }
+
+    // Refresh every 7 days as a heartbeat
+    final lastTime = DateTime.fromMillisecondsSinceEpoch(lastTimeMs);
+    if (DateTime.now().difference(lastTime).inDays >= 7) {
+      return false;
+    }
+
+    return true;
+  }
+
+  /// Clear the registered push token cache (e.g. on logout)
+  static Future<void> clearRegisteredPushToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_keyLastRegisteredFcmToken);
+    await prefs.remove(_keyLastRegisteredUserId);
+    await prefs.remove(_keyLastFcmRegistrationTime);
   }
 
   /// Get saved access token from secure storage (with automatic migration from SharedPreferences)
@@ -166,5 +215,6 @@ class AuthStorage {
     await prefs.remove(_keyRefreshToken);
     await prefs.remove(_keyUserData);
     await prefs.remove(_keyFirstCheckInCompleted);
+    await clearRegisteredPushToken();
   }
 }

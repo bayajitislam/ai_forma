@@ -121,7 +121,7 @@ class PushNotificationService {
             'FCM token refreshed, registering with backend.',
             tag: 'PushNotification',
           );
-          registerTokenWithBackend(newToken);
+          registerTokenWithBackend(newToken, force: true);
         });
 
         // Register token if user preference allows notifications
@@ -219,7 +219,7 @@ class PushNotificationService {
   }
 
   /// Register FCM token with backend: POST /api/devices/push-token/register/
-  Future<bool> registerTokenWithBackend(String token) async {
+  Future<bool> registerTokenWithBackend(String token, {bool force = false}) async {
     try {
       final isPrefEnabled = await AuthStorage.isNotificationsEnabled();
       if (!isPrefEnabled) {
@@ -239,6 +239,25 @@ class PushNotificationService {
         return false;
       }
 
+      // Check current user ID to associate token with user
+      final user = await AuthStorage.getUser();
+      final userId = user?.id.toString() ?? 'anonymous';
+
+      // Check cache unless forced (e.g. on token refresh or account switch)
+      if (!force) {
+        final isAlreadyRegistered = await AuthStorage.isPushTokenAlreadyRegistered(
+          token: token,
+          userId: userId,
+        );
+        if (isAlreadyRegistered) {
+          DevLog.info(
+            'FCM token is already registered with backend for this user. Skipping redundant registration.',
+            tag: 'PushNotification',
+          );
+          return true;
+        }
+      }
+
       if (!Get.isRegistered<DioClient>()) return false;
       final dio = Get.find<DioClient>();
 
@@ -253,6 +272,10 @@ class PushNotificationService {
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
+        await AuthStorage.saveRegisteredPushToken(
+          token: token,
+          userId: userId,
+        );
         DevLog.success(
           'FCM Token registered with backend successfully: $token',
           tag: 'PushNotification',
@@ -272,7 +295,7 @@ class PushNotificationService {
   }
 
   /// Call this on user login / signup success
-  Future<void> registerCurrentToken() async {
+  Future<void> registerCurrentToken({bool force = false}) async {
     try {
       if (Firebase.apps.isEmpty) return;
       final isPrefEnabled = await AuthStorage.isNotificationsEnabled();
@@ -280,7 +303,7 @@ class PushNotificationService {
 
       final token = await _messaging.getToken();
       if (token != null && token.isNotEmpty) {
-        await registerTokenWithBackend(token);
+        await registerTokenWithBackend(token, force: force);
       }
     } catch (e) {
       DevLog.warn(
@@ -307,7 +330,11 @@ class PushNotificationService {
         },
       );
 
-      return response.statusCode == 200;
+      if (response.statusCode == 200) {
+        await AuthStorage.clearRegisteredPushToken();
+        return true;
+      }
+      return false;
     } catch (e, s) {
       DevLog.error(
         'Failed to unregister FCM token: $e',

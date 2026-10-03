@@ -427,6 +427,15 @@ class DynamicAssessmentView extends GetView<AssessmentController> {
     );
   }
 
+  int _feetToInches(num value) {
+    if (value < 15) {
+      final feet = value.toInt();
+      final inches = ((value - feet) * 10).round();
+      return feet * 12 + inches;
+    }
+    return value.round();
+  }
+
   Widget _buildUnitPicker(OnboardingStepModel step) {
     if (step.units.isEmpty) return const SizedBox.shrink();
 
@@ -440,10 +449,28 @@ class DynamicAssessmentView extends GetView<AssessmentController> {
     final activeUnitIndex = unitIndex >= 0 ? unitIndex : 0;
     final currentUnitConfig = step.units[activeUnitIndex];
 
-    final currentVal =
-        (selectedUnitObj is Map && selectedUnitObj['value'] != null)
-        ? (selectedUnitObj['value'] as num).toInt()
-        : currentUnitConfig.defaultVal.toInt();
+    final isFeet = currentUnitConfig.unit.toLowerCase() == 'ft' ||
+        currentUnitConfig.unit.toLowerCase() == 'feet';
+
+    final int minVal;
+    final int maxVal;
+    final int currentVal;
+
+    if (isFeet) {
+      minVal = _feetToInches(currentUnitConfig.min);
+      maxVal = _feetToInches(currentUnitConfig.max);
+      final rawVal = (selectedUnitObj is Map && selectedUnitObj['value'] != null)
+          ? selectedUnitObj['value'] as num
+          : currentUnitConfig.defaultVal;
+      currentVal = _feetToInches(rawVal).clamp(minVal, maxVal);
+    } else {
+      minVal = currentUnitConfig.min.toInt();
+      maxVal = currentUnitConfig.max.toInt();
+      final rawVal = (selectedUnitObj is Map && selectedUnitObj['value'] != null)
+          ? (selectedUnitObj['value'] as num).toInt()
+          : currentUnitConfig.defaultVal.toInt();
+      currentVal = rawVal.clamp(minVal, maxVal);
+    }
 
     return Column(
       children: [
@@ -451,10 +478,35 @@ class DynamicAssessmentView extends GetView<AssessmentController> {
           options: step.units.map((u) => u.unit.toUpperCase()).toList(),
           selectedIndex: activeUnitIndex,
           onChanged: (idx) {
+            final oldUnit = currentUnitConfig.unit.toLowerCase();
             final newUnit = step.units[idx];
+            if (oldUnit == newUnit.unit.toLowerCase()) return;
+
+            num convertedVal = newUnit.defaultVal;
+            final currentRaw = (selectedUnitObj is Map) ? selectedUnitObj['value'] : null;
+
+            if (step.key == 'height' && currentRaw is num) {
+              if (oldUnit == 'cm' && newUnit.unit.toLowerCase() == 'ft') {
+                final totalInches = (currentRaw / 2.54).round();
+                convertedVal = totalInches.clamp(48, 86);
+              } else if (oldUnit == 'ft' && newUnit.unit.toLowerCase() == 'cm') {
+                final inches = _feetToInches(currentRaw);
+                final cm = (inches * 2.54).round();
+                convertedVal = cm.clamp(120, 219);
+              }
+            } else if (step.key == 'weight' && currentRaw is num) {
+              if (oldUnit == 'kg' && (newUnit.unit.toLowerCase() == 'lb' || newUnit.unit.toLowerCase() == 'lbs')) {
+                convertedVal = (currentRaw * 2.20462).round().clamp(88, 417);
+              } else if ((oldUnit == 'lb' || oldUnit == 'lbs') && newUnit.unit.toLowerCase() == 'kg') {
+                convertedVal = (currentRaw / 2.20462).round().clamp(40, 189);
+              }
+            } else if (newUnit.unit.toLowerCase() == 'ft') {
+              convertedVal = _feetToInches(newUnit.defaultVal);
+            }
+
             controller.setUnitAnswer(
               step.key,
-              newUnit.defaultVal,
+              convertedVal,
               newUnit.unit,
             );
           },
@@ -462,8 +514,8 @@ class DynamicAssessmentView extends GetView<AssessmentController> {
         const Spacer(),
         MeasurementWheelPicker(
           key: ValueKey('${step.key}-$selectedUnit'),
-          minValue: currentUnitConfig.min.toInt(),
-          maxValue: currentUnitConfig.max.toInt(),
+          minValue: minVal,
+          maxValue: maxVal,
           initialValue: currentVal,
           unit: currentUnitConfig.unit,
           onChanged: (val) {

@@ -43,11 +43,7 @@ class CompareScansView extends StatelessWidget {
         ? Get.find<CompareScansController>()
         : Get.put(
             CompareScansController(
-              repository: InsightsRepository(
-                Get.isRegistered<DioClient>()
-                    ? Get.find<DioClient>()
-                    : DioClient(),
-              ),
+              repository: InsightsRepository(Get.find<DioClient>()),
             ),
           );
 

@@ -86,9 +86,18 @@ class _CameraCaptureViewState extends State<CameraCaptureView>
     return null;
   }
 
+  late final CheckInController _controller;
+
   @override
   void initState() {
     super.initState();
+    _controller = Get.isRegistered<CheckInController>()
+        ? Get.find<CheckInController>()
+        : Get.put(
+            CheckInController(
+              repository: CheckInRepository(Get.find<DioClient>()),
+            ),
+          );
     _activeAngle = widget.angle;
     _previewFile.value = null;
 
@@ -185,17 +194,7 @@ class _CameraCaptureViewState extends State<CameraCaptureView>
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.isRegistered<CheckInController>()
-        ? Get.find<CheckInController>()
-        : Get.put(
-            CheckInController(
-              repository: CheckInRepository(
-                Get.isRegistered<DioClient>()
-                    ? Get.find<DioClient>()
-                    : Get.put(DioClient(), permanent: true),
-              ),
-            ),
-          );
+    final controller = _controller;
 
     return Scaffold(
       backgroundColor: AppColors.cameraBackground,

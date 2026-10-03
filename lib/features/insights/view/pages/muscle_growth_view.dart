@@ -22,11 +22,7 @@ class MuscleGrowthView extends StatelessWidget {
         ? Get.find<MuscleGrowthController>()
         : Get.put(
             MuscleGrowthController(
-              repository: InsightsRepository(
-                Get.isRegistered<DioClient>()
-                    ? Get.find<DioClient>()
-                    : DioClient(),
-              ),
+              repository: InsightsRepository(Get.find<DioClient>()),
             ),
           );
 

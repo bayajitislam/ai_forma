@@ -75,10 +75,10 @@ class _AnalysingViewState extends State<AnalysingView> {
         _showErrorDialog(controller.errorMessage.value);
       }
     } else {
-      // Fallback delay if controller is missing
-      await Future<void>.delayed(const Duration(seconds: 4));
+      // CheckInController is missing — cannot submit scan.
+      // Show an error rather than silently navigating to a false success screen.
       if (!mounted) return;
-      Get.offNamed(RoutesName.analysisComplete);
+      _showErrorDialog('Unable to submit scan. Please return and try again.');
     }
   }
 

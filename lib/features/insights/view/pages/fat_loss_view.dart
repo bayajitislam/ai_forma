@@ -22,11 +22,7 @@ class FatLossView extends StatelessWidget {
         ? Get.find<FatLossController>()
         : Get.put(
             FatLossController(
-              repository: InsightsRepository(
-                Get.isRegistered<DioClient>()
-                    ? Get.find<DioClient>()
-                    : DioClient(),
-              ),
+              repository: InsightsRepository(Get.find<DioClient>()),
             ),
           );
 

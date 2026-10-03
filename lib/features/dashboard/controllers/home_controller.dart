@@ -1,3 +1,4 @@
+import 'package:ai_forma/core/network/dio_client.dart';
 import 'package:ai_forma/features/dashboard/constants/dashboard_strings.dart';
 import 'package:ai_forma/features/dashboard/models/home_response_model.dart';
 import 'package:ai_forma/features/dashboard/repositories/dashboard_repository.dart';
@@ -6,6 +7,17 @@ import 'package:get/get.dart';
 class HomeController extends GetxController {
   final DashboardRepository repository;
   HomeController({required this.repository});
+
+  static HomeController get to {
+    if (Get.isRegistered<HomeController>()) {
+      return Get.find<HomeController>();
+    }
+    return Get.put(
+      HomeController(
+        repository: DashboardRepository(Get.find<DioClient>()),
+      ),
+    );
+  }
 
   final Rx<HomeResponseModel?> homeData = Rx<HomeResponseModel?>(null);
   final RxBool isLoading = false.obs;

@@ -139,12 +139,9 @@ class CheckInHomeView extends StatelessWidget {
         ? Get.find<CheckInController>()
         : Get.put(
             CheckInController(
-              repository: CheckInRepository(
-                Get.isRegistered<DioClient>()
-                    ? Get.find<DioClient>()
-                    : Get.put(DioClient(), permanent: true),
-              ),
+              repository: CheckInRepository(Get.find<DioClient>()),
             ),
+            permanent: true,
           );
 
     return SafeArea(
@@ -170,10 +167,12 @@ class CheckInHomeView extends StatelessWidget {
               Expanded(
                 child: Obx(() {
                   final status = controller.statusData.value;
-                  final streakWeeks = status?.streakWeeks ?? 12;
-                  final personalBest = status?.personalBestWeeks ?? 12;
-                  final totalCheckins = status?.totalCheckins ?? 12;
-                  final onTimePercent = status?.onTimePercent ?? 92;
+                  final streakWeeks = status?.streakWeeks ?? 0;
+                  final personalBest = status?.personalBestWeeks ?? 0;
+                  final totalCheckins =
+                      status != null ? '${status.totalCheckins}' : '--';
+                  final onTimePercent =
+                      status != null ? '${status.onTimePercent}%' : '--';
                   final rawDay = status?.checkDay.isNotEmpty == true
                       ? status!.checkDay
                       : controller.selectedCheckDay.value;
@@ -204,7 +203,7 @@ class CheckInHomeView extends StatelessWidget {
                               showChevron: true,
                               onTap: () {
                                 ChooseCheckInDayBottomSheet.show(
-                                  context,
+                                   context,
                                   currentDay: currentDay,
                                   onSaved: (selectedDay) {
                                     controller.updateCheckInDay(
@@ -219,14 +218,14 @@ class CheckInHomeView extends StatelessWidget {
                             // 2. On-Time
                             CheckInStatCard(
                               icon: AppIcons.time,
-                              value: '$onTimePercent%',
+                              value: onTimePercent,
                               label: CheckInStrings.statOnTime,
                             ),
                             const SizedBox(width: 10),
                             // 3. Total
                             CheckInStatCard(
                               icon: AppIcons.checkCircle,
-                              value: '$totalCheckins',
+                              value: totalCheckins,
                               label: CheckInStrings.statTotal,
                             ),
                           ],

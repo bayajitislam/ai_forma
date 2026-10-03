@@ -20,11 +20,7 @@ class ConsistencyView extends StatelessWidget {
         ? Get.find<ConsistencyController>()
         : Get.put(
             ConsistencyController(
-              repository: InsightsRepository(
-                Get.isRegistered<DioClient>()
-                    ? Get.find<DioClient>()
-                    : DioClient(),
-              ),
+              repository: InsightsRepository(Get.find<DioClient>()),
             ),
           );
 

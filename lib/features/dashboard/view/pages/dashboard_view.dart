@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:ai_forma/core/network/dio_client.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
 import 'package:ai_forma/features/auth/controllers/user_controller.dart';
 import 'package:ai_forma/features/check_in/controllers/check_in_controller.dart';
@@ -8,9 +7,7 @@ import 'package:ai_forma/features/check_in/view/pages/camera_position_view.dart'
 import 'package:ai_forma/features/check_in/view/pages/check_in_intro_view.dart';
 import 'package:ai_forma/features/dashboard/constants/dashboard_strings.dart';
 import 'package:ai_forma/features/dashboard/controllers/home_controller.dart';
-import 'package:ai_forma/features/dashboard/controllers/weight_controller.dart';
 import 'package:ai_forma/features/dashboard/models/home_response_model.dart';
-import 'package:ai_forma/features/dashboard/repositories/dashboard_repository.dart';
 import 'package:ai_forma/features/dashboard/view/widgets/ai_daily_brief_card.dart';
 import 'package:ai_forma/features/dashboard/view/widgets/ai_insight_card.dart';
 import 'package:ai_forma/features/dashboard/view/widgets/answer_daily_brief_bottom_sheet.dart';
@@ -92,8 +89,9 @@ class DashboardView extends StatelessWidget {
             onLogWeight: () {
               final prefill =
                   dailyBrief?.weightKgPrefill ?? homeData?.weight?.currentKg;
-              final initialWeight =
-                  prefill != null ? double.tryParse(prefill) : null;
+              final initialWeight = prefill != null
+                  ? double.tryParse(prefill)
+                  : null;
 
               WeightEntryBottomSheet.show(
                 context,
@@ -204,8 +202,11 @@ class DashboardView extends StatelessWidget {
         final kind = priority.kind.toLowerCase();
         if (label.contains('weight') || kind.contains('weight')) {
           final prefill =
-              homeData?.dailyBrief?.weightKgPrefill ?? homeData?.weight?.currentKg;
-          final initialWeight = prefill != null ? double.tryParse(prefill) : null;
+              homeData?.dailyBrief?.weightKgPrefill ??
+              homeData?.weight?.currentKg;
+          final initialWeight = prefill != null
+              ? double.tryParse(prefill)
+              : null;
 
           WeightEntryBottomSheet.show(
             context,
@@ -244,21 +245,7 @@ class DashboardView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final weightController = Get.isRegistered<WeightController>()
-        ? Get.find<WeightController>()
-        : Get.put(WeightController());
-
-    final homeController = Get.isRegistered<HomeController>()
-        ? Get.find<HomeController>()
-        : Get.put(
-            HomeController(
-              repository: DashboardRepository(
-                Get.isRegistered<DioClient>()
-                    ? Get.find<DioClient>()
-                    : DioClient(),
-              ),
-            ),
-          );
+    final homeController = HomeController.to;
 
     return Obx(() {
       final isLoading = homeController.isLoading.value;
@@ -273,17 +260,15 @@ class DashboardView extends StatelessWidget {
 
       final currentWeightStr = weightData?.currentKg != null
           ? '${weightData!.currentKg} ${DashboardStrings.kgUnit}'
-          : (weightController.currentWeight != null
-                ? '${weightController.currentWeight!.weightKg.toStringAsFixed(1)} ${DashboardStrings.kgUnit}'
-                : '-');
+          : '-';
 
       final weightChangeStr = weightData?.changeKg != null
           ? _formatWeightChange(weightData!.changeKg)
-          : weightController.weightChangeSinceLastString;
+          : '--';
 
       final statusLabelStr = (weightData?.statusLabel.isNotEmpty ?? false)
           ? weightData!.statusLabel
-          : weightController.weeklyProgressStatus;
+          : DashboardStrings.onTarget;
 
       final statusToneColor = _getStatusToneColor(weightData?.statusTone);
 

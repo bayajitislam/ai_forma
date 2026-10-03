@@ -45,7 +45,10 @@ class _SplashViewState extends State<SplashView> {
     // 2. Logged in -> Call GET /api/auth/me/ to get fresh remote user data
     final UserController userController = Get.isRegistered<UserController>()
         ? Get.find<UserController>()
-        : Get.put(UserController(DioClient()));
+        : Get.put(
+            UserController(Get.find<DioClient>()),
+            permanent: true,
+          );
 
     final res = await userController.fetchProfile();
 

@@ -5,10 +5,8 @@ import 'package:ai_forma/core/theme/app_colors.dart';
 import 'package:ai_forma/core/theme/app_text_styles.dart';
 import 'package:ai_forma/core/widgets/app_network_error_widget.dart';
 import 'package:ai_forma/core/widgets/primary_button.dart';
-import 'package:ai_forma/core/network/dio_client.dart';
 import 'package:ai_forma/features/insights/constants/insights_strings.dart';
 import 'package:ai_forma/features/insights/controllers/insights_controller.dart';
-import 'package:ai_forma/features/insights/repositories/insights_repository.dart';
 import 'package:ai_forma/features/insights/view/pages/compare_scans_view.dart';
 import 'package:ai_forma/features/insights/view/pages/consistency_view.dart';
 import 'package:ai_forma/features/insights/view/pages/fat_loss_view.dart';
@@ -47,23 +45,7 @@ class _InsightsViewState extends State<InsightsView> {
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.isRegistered<InsightsController>()
-        ? Get.find<InsightsController>()
-        : Get.put<InsightsController>(
-            InsightsController(
-              repository: Get.isRegistered<InsightsRepository>()
-                  ? Get.find<InsightsRepository>()
-                  : Get.put<InsightsRepository>(
-                      InsightsRepository(
-                        Get.isRegistered<DioClient>()
-                            ? Get.find<DioClient>()
-                            : Get.put(DioClient(), permanent: true),
-                      ),
-                      permanent: true,
-                    ),
-            ),
-            permanent: true,
-          );
+    final controller = InsightsController.to;
 
     return Obx(() {
       // Eagerly capture all observables so Obx subscribes to all on first build.

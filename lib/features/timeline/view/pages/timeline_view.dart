@@ -20,10 +20,19 @@ class TimelineView extends StatefulWidget {
 class _TimelineViewState extends State<TimelineView>
     with SingleTickerProviderStateMixin {
   late final TabController _tabController;
+  late final TimelineController _controller;
 
   @override
   void initState() {
     super.initState();
+    _controller = Get.isRegistered<TimelineController>()
+        ? Get.find<TimelineController>()
+        : Get.put(
+            TimelineController(
+              repository: TimelineRepository(Get.find<DioClient>()),
+            ),
+            permanent: true,
+          );
     _tabController = TabController(length: 3, vsync: this);
     _tabController.addListener(() {
       setState(() {});
@@ -38,17 +47,7 @@ class _TimelineViewState extends State<TimelineView>
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.isRegistered<TimelineController>()
-        ? Get.find<TimelineController>()
-        : Get.put(
-            TimelineController(
-              repository: TimelineRepository(
-                Get.isRegistered<DioClient>()
-                    ? Get.find<DioClient>()
-                    : DioClient(),
-              ),
-            ),
-          );
+    final controller = _controller;
 
     return Column(
       children: [

@@ -11,9 +11,7 @@ class PersonalDetailsView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final userController = Get.isRegistered<UserController>()
-        ? Get.find<UserController>()
-        : Get.put(UserController(Get.find()));
+    final userController = Get.find<UserController>();
 
     return Scaffold(
       backgroundColor: Colors.white,

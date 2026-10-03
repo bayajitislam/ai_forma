@@ -1,3 +1,4 @@
+import 'package:ai_forma/core/network/dio_client.dart';
 import 'package:ai_forma/features/insights/models/scan_latest_model.dart';
 import 'package:ai_forma/features/insights/repositories/insights_repository.dart';
 import 'package:get/get.dart';
@@ -5,6 +6,16 @@ import 'package:get/get.dart';
 class InsightsController extends GetxController {
   final InsightsRepository repository;
   InsightsController({required this.repository});
+
+  static InsightsController get to {
+    if (Get.isRegistered<InsightsController>()) {
+      return Get.find<InsightsController>();
+    }
+    final repo = Get.isRegistered<InsightsRepository>()
+        ? Get.find<InsightsRepository>()
+        : Get.put(InsightsRepository(Get.find<DioClient>()), permanent: true);
+    return Get.put(InsightsController(repository: repo), permanent: true);
+  }
 
   final Rx<ScanLatestResponseModel?> latestScan = Rx<ScanLatestResponseModel?>(
     null,

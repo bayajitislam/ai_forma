@@ -85,6 +85,12 @@ class AssessmentController extends GetxController {
     for (final step in allSteps) {
       if (step.defaultVal != null) {
         answers[step.key] = step.defaultVal;
+      } else if (step.type == 'unit_picker' && step.units.isNotEmpty) {
+        final firstUnit = step.units.first;
+        answers[step.key] = {
+          'value': firstUnit.defaultVal,
+          'unit': firstUnit.unit,
+        };
       }
     }
   }
@@ -190,8 +196,49 @@ class AssessmentController extends GetxController {
           val.forEach((catKey, catVal) {
             payload[catKey.toString()] = catVal;
           });
+        } else if ((step.key == 'height' || step.storeAs == 'height_cm') && val is Map) {
+          // Normalize height to centimeters because the backend database column is height_cm
+          // and the API serializer strictly enforces "Height must be between 120 and 219 cm."
+          final unit = val['unit']?.toString().toLowerCase();
+          final rawVal = (val['value'] as num?)?.toDouble() ?? 170.0;
+          if (unit == 'ft' || unit == 'feet') {
+            final double inches;
+            if (rawVal < 15) {
+              // Feet-decimal notation from schema default (e.g. 5.7 -> 5'7")
+              final feet = rawVal.toInt();
+              final inVal = ((rawVal - feet) * 10).round();
+              inches = (feet * 12 + inVal).toDouble();
+            } else {
+              // Raw value is total inches (e.g. 59, 67, 70)
+              inches = rawVal;
+            }
+            final heightCm = (inches * 2.54).round().clamp(120, 219);
+            payload[step.key] = {'value': heightCm, 'unit': 'cm'};
+          } else {
+            final heightCm = rawVal.round().clamp(120, 219);
+            payload[step.key] = {'value': heightCm, 'unit': 'cm'};
+          }
+        } else if ((step.key == 'weight' || step.storeAs == 'weight_kg') && val is Map) {
+          // Normalize weight to kilograms because the backend database column is weight_kg
+          // and the API serializer enforces weight in kg (between 40 and 189 kg).
+          final unit = val['unit']?.toString().toLowerCase();
+          final rawVal = (val['value'] as num?)?.toDouble() ?? 70.0;
+          if (unit == 'lb' || unit == 'lbs') {
+            final weightKg = (rawVal / 2.20462).round().clamp(40, 189);
+            payload[step.key] = {'value': weightKg, 'unit': 'kg'};
+          } else {
+            final weightKg = rawVal.round().clamp(40, 189);
+            payload[step.key] = {'value': weightKg, 'unit': 'kg'};
+          }
         } else {
           payload[step.key] = val;
+        }
+      } else if (step.type == 'unit_picker' && step.units.isNotEmpty) {
+        final firstUnit = step.units.first;
+        if (step.key == 'height' || step.storeAs == 'height_cm') {
+          payload[step.key] = {'value': firstUnit.defaultVal.round(), 'unit': 'cm'};
+        } else if (step.key == 'weight' || step.storeAs == 'weight_kg') {
+          payload[step.key] = {'value': firstUnit.defaultVal.round(), 'unit': 'kg'};
         }
       }
     }

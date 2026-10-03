@@ -3,6 +3,7 @@ import 'package:ai_forma/core/models/weight_record.dart';
 import 'package:ai_forma/core/network/dio_client.dart';
 import 'package:ai_forma/features/dashboard/constants/dashboard_strings.dart';
 import 'package:ai_forma/features/dashboard/controllers/home_controller.dart';
+import 'package:dio/dio.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:ai_forma/core/utils/app_date_formatter.dart';
@@ -11,11 +12,14 @@ import 'package:uuid/uuid.dart';
 enum TimeRange { week1, month1, month3, month6, year1 }
 
 class WeightController extends GetxController {
+  final DioClient _dio;
+  WeightController(this._dio);
+
   static WeightController get to {
     if (Get.isRegistered<WeightController>()) {
       return Get.find<WeightController>();
     }
-    return Get.put(WeightController());
+    return Get.put(WeightController(Get.find<DioClient>()));
   }
 
   final _uuid = const Uuid();
@@ -30,6 +34,8 @@ class WeightController extends GetxController {
   final RxInt touchedChartIndex = (-1).obs;
 
   final RxBool isLoading = false.obs;
+  final RxBool isLoadingTrends = false.obs;
+  final RxBool isLoadingProgress = false.obs;
   final RxString errorMessage = ''.obs;
 
   void setTouchedChartIndex(int index) {
@@ -72,26 +78,25 @@ class WeightController extends GetxController {
     final activeRange = range ?? selectedRange.value;
     selectedRange.value = activeRange;
 
+    isLoadingTrends(true);
     isLoading(true);
     errorMessage('');
 
     try {
-      if (Get.isRegistered<DioClient>()) {
-        final dio = Get.find<DioClient>();
-        final response = await dio.get(
-          ApiEndpoint.weightTrends,
-          queryParameters: {'range': _timeRangeToQuery(activeRange)},
-        );
+      final response = await _dio.get(
+        ApiEndpoint.weightTrends,
+        queryParameters: {'range': _timeRangeToQuery(activeRange)},
+      );
 
-        if (response.statusCode == 200 && response.data != null) {
-          final data = response.data as Map<String, dynamic>;
-          _parsePayload(data);
-        }
+      if (response.statusCode == 200 && response.data != null) {
+        final data = response.data as Map<String, dynamic>;
+        _parsePayload(data);
       }
     } catch (e) {
       errorMessage(e.toString());
     } finally {
-      isLoading(false);
+      isLoadingTrends(false);
+      isLoading(isLoadingProgress.value);
     }
   }
 
@@ -100,27 +105,26 @@ class WeightController extends GetxController {
     final activeRange = range ?? selectedRange.value;
     selectedRange.value = activeRange;
 
+    isLoadingProgress(true);
     isLoading(true);
     errorMessage('');
 
     try {
-      if (Get.isRegistered<DioClient>()) {
-        final dio = Get.find<DioClient>();
-        final response = await dio.get(
-          ApiEndpoint.weightProgress,
-          queryParameters: {'range': _timeRangeToQuery(activeRange)},
-        );
+      final response = await _dio.get(
+        ApiEndpoint.weightProgress,
+        queryParameters: {'range': _timeRangeToQuery(activeRange)},
+      );
 
-        if (response.statusCode == 200 && response.data != null) {
-          final data = response.data as Map<String, dynamic>;
-          _parsePayload(data);
-          _parseSummary(data['summary']);
-        }
+      if (response.statusCode == 200 && response.data != null) {
+        final data = response.data as Map<String, dynamic>;
+        _parsePayload(data);
+        _parseSummary(data['summary']);
       }
     } catch (e) {
       errorMessage(e.toString());
     } finally {
-      isLoading(false);
+      isLoadingProgress(false);
+      isLoading(isLoadingTrends.value);
     }
   }
 
@@ -315,38 +319,28 @@ class WeightController extends GetxController {
     isLoading(true);
 
     try {
-      if (Get.isRegistered<DioClient>()) {
-        final dio = Get.find<DioClient>();
-        final response = await dio.post(
-          ApiEndpoint.weightTrends,
-          data: {
-            'weight_kg': roundedWeight,
-            'source': 'manual',
-          },
-        );
+      final response = await _dio.post(
+        ApiEndpoint.weightTrends,
+        data: {
+          'weight_kg': roundedWeight,
+          'source': 'manual',
+        },
+      );
 
-        if (response.statusCode == 200 || response.statusCode == 201) {
-          if (response.data is Map<String, dynamic>) {
-            _parsePayload(response.data as Map<String, dynamic>);
-          }
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        if (response.data is Map<String, dynamic>) {
+          _parsePayload(response.data as Map<String, dynamic>);
         }
+      }
 
-        // Re-sync with backend to get updated charts and calculations
-        await fetchWeightProgress(range: selectedRange.value);
-        await fetchWeightTrends(range: selectedRange.value);
+      // Re-sync with backend to get updated charts and calculations concurrently
+      await Future.wait([
+        fetchWeightProgress(range: selectedRange.value),
+        fetchWeightTrends(range: selectedRange.value),
+      ]);
 
-        if (Get.isRegistered<HomeController>()) {
-          Get.find<HomeController>().fetchHomeData(force: true);
-        }
-      } else {
-        // In-memory fallback only when network client is not present
-        final newRecord = WeightRecord(
-          id: _uuid.v4(),
-          weightKg: roundedWeight,
-          date: DateTime.now(),
-        );
-        records.insert(0, newRecord);
-        _sortRecords();
+      if (Get.isRegistered<HomeController>()) {
+        Get.find<HomeController>().fetchHomeData(force: true);
       }
     } catch (e) {
       errorMessage(e.toString());
@@ -360,36 +354,28 @@ class WeightController extends GetxController {
     isLoading(true);
 
     try {
-      if (Get.isRegistered<DioClient>()) {
-        final dio = Get.find<DioClient>();
-        final response = await dio.post(
-          ApiEndpoint.weightTrends,
-          data: {
-            'weight_kg': roundedWeight,
-            'source': 'manual',
-          },
-        );
+      final response = await _dio.patch(
+        '${ApiEndpoint.weightHistory}$id/',
+        data: {
+          'weight_kg': roundedWeight,
+          'source': 'manual',
+        },
+      );
 
-        if (response.statusCode == 200 || response.statusCode == 201) {
-          if (response.data is Map<String, dynamic>) {
-            _parsePayload(response.data as Map<String, dynamic>);
-          }
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        if (response.data is Map<String, dynamic>) {
+          _parsePayload(response.data as Map<String, dynamic>);
         }
+      }
 
-        // Re-sync with backend to get updated charts and calculations
-        await fetchWeightProgress(range: selectedRange.value);
-        await fetchWeightTrends(range: selectedRange.value);
+      // Re-sync with backend to get updated charts and calculations concurrently
+      await Future.wait([
+        fetchWeightProgress(range: selectedRange.value),
+        fetchWeightTrends(range: selectedRange.value),
+      ]);
 
-        if (Get.isRegistered<HomeController>()) {
-          Get.find<HomeController>().fetchHomeData(force: true);
-        }
-      } else {
-        final index = records.indexWhere((r) => r.id == id);
-        if (index != -1) {
-          final oldRecord = records[index];
-          records[index] = oldRecord.copyWith(weightKg: roundedWeight);
-          _sortRecords();
-        }
+      if (Get.isRegistered<HomeController>()) {
+        Get.find<HomeController>().fetchHomeData(force: true);
       }
     } catch (e) {
       errorMessage(e.toString());
@@ -399,26 +385,34 @@ class WeightController extends GetxController {
   }
 
   Future<void> deleteRecord(String id) async {
+    // Keep a backup for rollback in case the server call fails
+    final backup = records.firstWhereOrNull((r) => r.id == id);
+
     records.removeWhere((r) => r.id == id);
     _sortRecords();
 
     try {
-      if (Get.isRegistered<DioClient>()) {
-        final dio = Get.find<DioClient>();
-        // Attempt backend deletion if endpoint supported
-        await dio.delete('${ApiEndpoint.weightTrends}$id/');
-
-        if (Get.isRegistered<HomeController>()) {
-          Get.find<HomeController>().fetchHomeData(force: true);
+      try {
+        await _dio.delete('${ApiEndpoint.weightTrends}$id/');
+      } on DioException catch (e) {
+        if (e.response?.statusCode == 404) {
+          // Try alternate endpoint
+          await _dio.delete('/api/checkins/weight-history/$id/');
+        } else {
+          rethrow;
         }
       }
+
+      if (Get.isRegistered<HomeController>()) {
+        Get.find<HomeController>().fetchHomeData(force: true);
+      }
     } catch (_) {
-      try {
-        if (Get.isRegistered<DioClient>()) {
-          final dio = Get.find<DioClient>();
-          await dio.delete('/api/checkins/weight-history/$id/');
-        }
-      } catch (_) {}
+      // Rollback: restore the record so the user doesn't lose data silently
+      if (backup != null) {
+        records.add(backup);
+        _sortRecords();
+      }
+      errorMessage('Failed to delete record. Please try again.');
     }
   }
 }

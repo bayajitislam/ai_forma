@@ -38,9 +38,7 @@ class _EditPersonalDetailsViewState extends State<EditPersonalDetailsView> {
   @override
   void initState() {
     super.initState();
-    _userController = Get.isRegistered<UserController>()
-        ? Get.find<UserController>()
-        : Get.put(UserController(Get.find()));
+    _userController = Get.find<UserController>();
 
     final user = _userController.currentUser.value;
     final initialName = user?.fullName ?? '';

@@ -20,11 +20,7 @@ class SymmetryScoreView extends StatelessWidget {
         ? Get.find<SymmetryController>()
         : Get.put(
             SymmetryController(
-              repository: InsightsRepository(
-                Get.isRegistered<DioClient>()
-                    ? Get.find<DioClient>()
-                    : DioClient(),
-              ),
+              repository: InsightsRepository(Get.find<DioClient>()),
             ),
           );
 

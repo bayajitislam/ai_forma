@@ -49,17 +49,7 @@ class UserController extends GetxController {
     errorMessage('');
 
     try {
-      final token = await AuthStorage.getAccessToken();
-
-      final response = await _dio.get(
-        ApiEndpoint.me,
-        options: Options(
-          headers: {
-            if (token != null && token.isNotEmpty)
-              'Authorization': 'Bearer $token',
-          },
-        ),
-      );
+      final response = await _dio.get(ApiEndpoint.me);
 
       Map<String, dynamic>? userMap;
       if (response.data is Map<String, dynamic>) {
@@ -116,17 +106,9 @@ class UserController extends GetxController {
     errorMessage('');
 
     try {
-      final token = await AuthStorage.getAccessToken();
-
       final response = await _dio.patch(
         ApiEndpoint.profile,
         data: updateData,
-        options: Options(
-          headers: {
-            if (token != null && token.isNotEmpty)
-              'Authorization': 'Bearer $token',
-          },
-        ),
       );
 
       Map<String, dynamic>? userMap;
@@ -241,7 +223,7 @@ class UserController extends GetxController {
     currentUser.value = user;
     _setCrashlyticsUserId(user.id.toString());
     await AuthStorage.saveUser(user);
-    PushNotificationService.instance.registerCurrentToken();
+    PushNotificationService.instance.registerCurrentToken(force: true);
   }
 
   /// Logout and clear user session

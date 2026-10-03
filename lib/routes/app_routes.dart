@@ -1,4 +1,6 @@
 import 'package:ai_forma/core/dev/ui_test_gallery.dart';
+import 'package:ai_forma/core/middleware/auth_middleware.dart';
+import 'package:flutter/foundation.dart';
 import 'package:ai_forma/features/onboarding_assessment/bindings/assessment_binding.dart';
 import 'package:ai_forma/features/onboarding_assessment/view/pages/dynamic_assessment_view.dart';
 import 'package:ai_forma/features/auth/bindings/forgot_password_binding.dart';
@@ -27,6 +29,7 @@ import 'package:ai_forma/features/dashboard/view/pages/weekly_progress_view.dart
 import 'package:ai_forma/features/dashboard/view/pages/weight_trends_view.dart';
 import 'package:ai_forma/features/onboarding/view/pages/onboarding_view.dart';
 import 'package:ai_forma/features/onboarding/view/pages/privacy_onboarding_view.dart';
+import 'package:ai_forma/features/shell/bindings/app_shell_binding.dart';
 import 'package:ai_forma/features/shell/view/pages/app_shell_view.dart';
 import 'package:ai_forma/features/splash/view/pages/splash_view.dart';
 import 'package:ai_forma/routes/routes_name.dart';
@@ -135,24 +138,32 @@ class AppRoutes {
     ),
 
     //Shell
-    GetPage(name: RoutesName.appShell, page: () => const AppShellView()),
+    GetPage(
+      name: RoutesName.appShell,
+      page: () => const AppShellView(),
+      binding: AppShellBinding(),
+      middlewares: [AuthMiddleware()],
+    ),
 
     //Dashboard
     GetPage(
       name: RoutesName.weightTrends,
       page: () => const WeightTrendsView(),
       binding: WeightBinding(),
+      middlewares: [AuthMiddleware()],
     ),
     GetPage(
       name: RoutesName.weeklyProgress,
       page: () => const WeeklyProgressView(),
       binding: WeeklyProgressBinding(),
+      middlewares: [AuthMiddleware()],
     ),
 
-    //Dev UI Gallery
-    GetPage(
-      name: RoutesName.uiTestGallery,
-      page: () => const UiTestGalleryView(),
-    ),
+    //Dev UI Gallery — only available in debug builds
+    if (kDebugMode)
+      GetPage(
+        name: RoutesName.uiTestGallery,
+        page: () => const UiTestGalleryView(),
+      ),
   ];
 }

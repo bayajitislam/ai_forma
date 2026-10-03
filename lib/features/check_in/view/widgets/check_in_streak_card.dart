@@ -18,8 +18,8 @@ class CheckInStreakCard extends StatefulWidget {
   const CheckInStreakCard({
     super.key,
     this.onTap,
-    this.streakWeeks = 12,
-    this.personalBest = 12,
+    this.streakWeeks = 0,
+    this.personalBest = 0,
     this.streakHistory,
   });
 

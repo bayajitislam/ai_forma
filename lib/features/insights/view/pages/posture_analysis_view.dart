@@ -20,11 +20,7 @@ class PostureAnalysisView extends StatelessWidget {
         ? Get.find<PostureController>()
         : Get.put(
             PostureController(
-              repository: InsightsRepository(
-                Get.isRegistered<DioClient>()
-                    ? Get.find<DioClient>()
-                    : DioClient(),
-              ),
+              repository: InsightsRepository(Get.find<DioClient>()),
             ),
           );
 

@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:ai_forma/core/widgets/app_icon.dart';
+import 'package:ai_forma/features/check_in/bindings/check_in_binding.dart';
 import 'package:ai_forma/features/dashboard/controllers/home_controller.dart';
 import 'package:ai_forma/features/insights/bindings/insights_binding.dart';
 import 'package:ai_forma/features/insights/controllers/insights_controller.dart';
@@ -42,9 +43,10 @@ class _AppShellViewState extends State<AppShellView> {
       _selectedItem = Get.arguments as AppNavItem;
     }
 
-    // Always register the InsightsController and TimelineController eagerly.
+    // Always register the shell controllers eagerly.
     InsightsBinding().dependencies();
     TimelineBinding().dependencies();
+    CheckInBinding().dependencies();
 
     // If app deep-links directly to Insights or Timeline tab, fetch after initial frame renders.
     WidgetsBinding.instance.addPostFrameCallback((_) {

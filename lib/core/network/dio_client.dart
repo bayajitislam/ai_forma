@@ -2,7 +2,7 @@ import 'package:ai_forma/core/constants/api_endpoint.dart';
 import 'package:ai_forma/core/network/auth_interceptor.dart';
 import 'package:ai_forma/core/network/logger_interceptor.dart';
 import 'package:dio/dio.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 
 class DioClient {
   // Standard timeouts for normal API calls.
@@ -37,7 +37,7 @@ class DioClient {
     );
     _dio.interceptors.addAll([
       AuthInterceptor(),
-      LoggerInterceptor(),
+      if (!kReleaseMode) LoggerInterceptor(),
     ]);
   }
 

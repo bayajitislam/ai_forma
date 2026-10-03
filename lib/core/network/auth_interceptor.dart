@@ -7,7 +7,10 @@ import 'package:flutter_devlog/flutter_devlog.dart';
 import 'package:get/get.dart' hide Response;
 
 class AuthInterceptor extends Interceptor {
-  bool _isRefreshing = false;
+  /// Shared Future for any in-progress token refresh.
+  /// All concurrent 401s await this same Future so only one refresh
+  /// network call is made and none of them race to logout incorrectly.
+  Future<String?>? _refreshFuture;
 
   @override
   Future<void> onRequest(
@@ -44,78 +47,91 @@ class AuthInterceptor extends Interceptor {
     }
 
     final requestPath = err.requestOptions.path;
-    final isRefreshEndpoint = requestPath.contains('token/refresh') ||
-        requestPath.contains('refresh');
+    final isRefreshEndpoint =
+        requestPath.contains('token/refresh') || requestPath.contains('refresh');
     final isLoginEndpoint = requestPath.contains('login');
 
     if (isTokenExpired && !isRefreshEndpoint && !isLoginEndpoint) {
       final refreshToken = await AuthStorage.getRefreshToken();
 
-      if (refreshToken != null && refreshToken.isNotEmpty && !_isRefreshing) {
-        _isRefreshing = true;
+      if (refreshToken != null && refreshToken.isNotEmpty) {
         try {
-          DevLog.api('Access token expired. Refreshing token...');
+          // Queue: if a refresh is already in-flight, await that same Future.
+          // This means 5 concurrent 401s produce exactly 1 network refresh call.
+          _refreshFuture ??= _doRefresh(refreshToken).whenComplete(() {
+            _refreshFuture = null;
+          });
 
-          final refreshDio = Dio(
-            BaseOptions(
-              baseUrl: ApiEndpoint.baseUrl,
-              headers: {'Content-Type': 'application/json'},
-            ),
-          );
+          final newAccessToken = await _refreshFuture;
 
-          Response? refreshResponse;
-          try {
-            refreshResponse = await refreshDio.post(
-              ApiEndpoint.tokenRefresh,
-              data: {'refresh': refreshToken},
+          if (newAccessToken != null) {
+            // Retry original request with the fresh token
+            final opts = err.requestOptions;
+            opts.headers['Authorization'] = 'Bearer $newAccessToken';
+
+            final retryDio = Dio(
+              BaseOptions(
+                baseUrl: ApiEndpoint.baseUrl,
+                headers: {'Content-Type': 'application/json'},
+              ),
             );
-          } on DioException catch (e) {
-            if (e.response?.statusCode == 404) {
-              // Fallback to /api/token/refresh/ if /api/auth/token/refresh/ returns 404
-              refreshResponse = await refreshDio.post(
-                '/api/token/refresh/',
-                data: {'refresh': refreshToken},
-              );
-            } else {
-              rethrow;
-            }
+            final retryResponse = await retryDio.fetch(opts);
+            return handler.resolve(retryResponse);
           }
-
-          if (refreshResponse.statusCode == 200 &&
-              refreshResponse.data != null) {
-            final newAccessToken = refreshResponse.data['access']?.toString();
-            final newRefreshToken = refreshResponse.data['refresh']?.toString();
-
-            if (newAccessToken != null && newAccessToken.isNotEmpty) {
-              DevLog.success('Token refreshed successfully!');
-
-              await AuthStorage.updateTokens(
-                access: newAccessToken,
-                refresh: newRefreshToken,
-              );
-
-              _isRefreshing = false;
-
-              // Retry original request with new token
-              final opts = err.requestOptions;
-              opts.headers['Authorization'] = 'Bearer $newAccessToken';
-
-              final retryResponse = await refreshDio.fetch(opts);
-              return handler.resolve(retryResponse);
-            }
-          }
-        } catch (refreshErr) {
-          DevLog.error('Failed to refresh token: $refreshErr');
-        } finally {
-          _isRefreshing = false;
+        } catch (e) {
+          DevLog.error('Token refresh failed during retry: $e');
         }
       }
 
-      // If refresh token is missing, expired, or failed -> perform Logout & Navigate to LoginView
+      // Refresh token missing, expired, or refresh call failed — logout
       await _handleLogout();
     }
 
     super.onError(err, handler);
+  }
+
+  /// Performs the actual refresh network call and persists the new tokens.
+  /// Returns the new access token on success, or throws on failure.
+  Future<String?> _doRefresh(String refreshToken) async {
+    DevLog.api('Access token expired. Refreshing token...');
+
+    final refreshDio = Dio(
+      BaseOptions(
+        baseUrl: ApiEndpoint.baseUrl,
+        headers: {'Content-Type': 'application/json'},
+      ),
+    );
+
+    Response? response;
+    try {
+      response = await refreshDio.post(
+        ApiEndpoint.tokenRefresh,
+        data: {'refresh': refreshToken},
+      );
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 404) {
+        // Fallback endpoint
+        response = await refreshDio.post(
+          '/api/token/refresh/',
+          data: {'refresh': refreshToken},
+        );
+      } else {
+        rethrow;
+      }
+    }
+
+    if (response.statusCode == 200 && response.data != null) {
+      final newAccess = response.data['access']?.toString();
+      final newRefresh = response.data['refresh']?.toString();
+
+      if (newAccess != null && newAccess.isNotEmpty) {
+        DevLog.success('Token refreshed successfully!');
+        await AuthStorage.updateTokens(access: newAccess, refresh: newRefresh);
+        return newAccess;
+      }
+    }
+
+    return null;
   }
 
   Future<void> _handleLogout() async {
