@@ -22,6 +22,9 @@ import 'package:ai_forma/features/check_in/view/pages/check_in_intro_view.dart';
 import 'package:ai_forma/features/check_in/view/pages/check_in_weight_view.dart';
 import 'package:ai_forma/features/check_in/view/pages/scan_review_view.dart';
 import 'package:ai_forma/features/check_in/view/pages/step_into_frame_view.dart';
+import 'package:ai_forma/features/dashboard/bindings/weight_binding.dart';
+import 'package:ai_forma/features/dashboard/view/pages/weekly_progress_view.dart';
+import 'package:ai_forma/features/dashboard/view/pages/weight_trends_view.dart';
 import 'package:ai_forma/features/onboarding/view/pages/onboarding_view.dart';
 import 'package:ai_forma/features/onboarding/view/pages/privacy_onboarding_view.dart';
 import 'package:ai_forma/features/shell/view/pages/app_shell_view.dart';
@@ -133,6 +136,18 @@ class AppRoutes {
 
     //Shell
     GetPage(name: RoutesName.appShell, page: () => const AppShellView()),
+
+    //Dashboard
+    GetPage(
+      name: RoutesName.weightTrends,
+      page: () => const WeightTrendsView(),
+      binding: WeightBinding(),
+    ),
+    GetPage(
+      name: RoutesName.weeklyProgress,
+      page: () => const WeeklyProgressView(),
+      binding: WeeklyProgressBinding(),
+    ),
 
     //Dev UI Gallery
     GetPage(

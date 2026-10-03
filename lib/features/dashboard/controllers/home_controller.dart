@@ -1,3 +1,4 @@
+import 'package:ai_forma/features/dashboard/constants/dashboard_strings.dart';
 import 'package:ai_forma/features/dashboard/models/home_response_model.dart';
 import 'package:ai_forma/features/dashboard/repositories/dashboard_repository.dart';
 import 'package:get/get.dart';
@@ -31,7 +32,7 @@ class HomeController extends GetxController {
         (data) => homeData.value = data,
       );
     } catch (e) {
-      errorMessage('Failed to load Home data.');
+      errorMessage(DashboardStrings.failedToLoadHomeData);
     } finally {
       isLoading(false);
     }
@@ -64,11 +65,11 @@ class HomeController extends GetxController {
         },
         (data) {
           fetchHomeData(force: true);
-          return (success: true, message: 'Response saved successfully');
+          return (success: true, message: DashboardStrings.responseSavedSuccess);
         },
       );
     } catch (e) {
-      return (success: false, message: 'Failed to submit answer.');
+      return (success: false, message: DashboardStrings.failedToSubmitAnswer);
     } finally {
       isSubmittingAnswer(false);
     }
@@ -94,12 +95,12 @@ class HomeController extends GetxController {
           fetchHomeData(force: true);
           return (
             success: true,
-            message: 'Scan day weight recorded successfully.'
+            message: DashboardStrings.scanDayWeightSuccess
           );
         },
       );
     } catch (e) {
-      return (success: false, message: 'Failed to record weight.');
+      return (success: false, message: DashboardStrings.failedToRecordWeight);
     } finally {
       isSubmittingAnswer(false);
     }

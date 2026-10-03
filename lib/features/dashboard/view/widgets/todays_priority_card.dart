@@ -1,6 +1,7 @@
 import 'package:ai_forma/core/theme/app_colors.dart';
 import 'package:ai_forma/core/theme/app_fonts.dart';
 import 'package:ai_forma/core/theme/app_text_styles.dart';
+import 'package:ai_forma/features/dashboard/constants/dashboard_strings.dart';
 import 'package:ai_forma/features/dashboard/models/home_response_model.dart';
 import 'package:flutter/material.dart';
 
@@ -52,7 +53,7 @@ class TodaysPriorityCard extends StatelessWidget {
               ),
               const SizedBox(width: 6),
               Text(
-                "TODAY'S PRIORITY",
+                DashboardStrings.todaysPriorityCaps,
                 style: AppTextStyles.featureTitle.copyWith(
                   color: AppColors.brandTeal,
                   fontSize: 11,
@@ -78,4 +79,3 @@ class TodaysPriorityCard extends StatelessWidget {
     );
   }
 }
-

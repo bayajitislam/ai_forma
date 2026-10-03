@@ -1,6 +1,7 @@
 import 'package:ai_forma/core/theme/app_colors.dart';
 import 'package:ai_forma/core/theme/app_fonts.dart';
 import 'package:ai_forma/core/theme/app_text_styles.dart';
+import 'package:ai_forma/features/dashboard/constants/dashboard_strings.dart';
 import 'package:ai_forma/features/dashboard/models/home_response_model.dart';
 import 'package:flutter/material.dart';
 
@@ -16,8 +17,8 @@ class DashboardHeader extends StatelessWidget {
         ? headerData!.greeting
         : (headerData?.firstName != null &&
                   headerData!.firstName!.trim().isNotEmpty
-              ? 'Hello, ${headerData!.firstName}'
-              : 'Hello');
+              ? DashboardStrings.greetingWithFirstName(headerData!.firstName!)
+              : DashboardStrings.defaultHello);
 
     final statusText = headerData?.statusMessage ?? '';
 

@@ -1,6 +1,7 @@
 import 'package:ai_forma/core/constants/api_endpoint.dart';
 import 'package:ai_forma/core/failure/failure.dart';
 import 'package:ai_forma/core/network/dio_client.dart';
+import 'package:ai_forma/features/dashboard/constants/dashboard_strings.dart';
 import 'package:ai_forma/features/dashboard/models/home_response_model.dart';
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
@@ -163,7 +164,9 @@ class DashboardRepository {
         );
         return Left(ApiFailure(message: message));
       }
-      return Left(ServerFailure(message: 'Failed to record weight'));
+      return Left(
+        ServerFailure(message: DashboardStrings.failedToRecordWeight),
+      );
     } catch (e) {
       return Left(ServerFailure(message: 'Unexpected error: $e'));
     }

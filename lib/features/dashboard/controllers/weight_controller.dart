@@ -1,6 +1,7 @@
 import 'package:ai_forma/core/constants/api_endpoint.dart';
 import 'package:ai_forma/core/models/weight_record.dart';
 import 'package:ai_forma/core/network/dio_client.dart';
+import 'package:ai_forma/features/dashboard/constants/dashboard_strings.dart';
 import 'package:ai_forma/features/dashboard/controllers/home_controller.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
@@ -10,6 +11,13 @@ import 'package:uuid/uuid.dart';
 enum TimeRange { week1, month1, month3, month6, year1 }
 
 class WeightController extends GetxController {
+  static WeightController get to {
+    if (Get.isRegistered<WeightController>()) {
+      return Get.find<WeightController>();
+    }
+    return Get.put(WeightController());
+  }
+
   final _uuid = const Uuid();
 
   // Observable list of weight records
@@ -18,13 +26,20 @@ class WeightController extends GetxController {
   // Selected time range for the chart
   final Rx<TimeRange> selectedRange = TimeRange.month1.obs;
 
+  // Touched chart spot index (-1 defaults to latest)
+  final RxInt touchedChartIndex = (-1).obs;
+
   final RxBool isLoading = false.obs;
   final RxString errorMessage = ''.obs;
 
+  void setTouchedChartIndex(int index) {
+    touchedChartIndex.value = index;
+  }
+
   // Weekly progress summary observables
-  final RxString progressLabel = 'MONTHLY CHANGE'.obs;
+  final RxString progressLabel = DashboardStrings.monthlyChangeCaps.obs;
   final RxString progressChangeKg = '0.0'.obs;
-  final RxString progressStatusLabel = 'On target'.obs;
+  final RxString progressStatusLabel = DashboardStrings.onTarget.obs;
   final RxString progressStatusTone = 'positive'.obs;
   final RxString progressPreviousWeight = '--'.obs;
   final RxString progressPreviousDate = ''.obs;
@@ -169,10 +184,13 @@ class WeightController extends GetxController {
   void _parseSummary(dynamic summaryData) {
     if (summaryData is! Map<String, dynamic>) return;
 
-    progressLabel.value = summaryData['label']?.toString().toUpperCase() ?? 'MONTHLY CHANGE';
+    progressLabel.value = summaryData['label']?.toString().toUpperCase() ??
+        DashboardStrings.monthlyChangeCaps;
     progressChangeKg.value = summaryData['change_kg']?.toString() ?? '0.0';
-    progressStatusLabel.value = summaryData['status_label']?.toString() ?? 'On target';
-    progressStatusTone.value = summaryData['status_tone']?.toString() ?? 'positive';
+    progressStatusLabel.value =
+        summaryData['status_label']?.toString() ?? DashboardStrings.onTarget;
+    progressStatusTone.value =
+        summaryData['status_tone']?.toString() ?? 'positive';
 
     final prev = summaryData['previous'];
     if (prev is Map<String, dynamic>) {
@@ -210,7 +228,7 @@ class WeightController extends GetxController {
   String get weightChangeSinceLastString {
     final change = weightChangeSinceLast;
     final sign = change > 0 ? '+' : (change < 0 ? '' : '');
-    return '$sign${change.toStringAsFixed(1)} kg';
+    return '$sign${change.toStringAsFixed(1)} ${DashboardStrings.kgUnit}';
   }
 
   WeightRecord? get previousWeight {
@@ -239,13 +257,13 @@ class WeightController extends GetxController {
     if (progressStatusLabel.value.isNotEmpty) {
       return progressStatusLabel.value;
     }
-    if (records.length < 2) return 'Insufficient data';
+    if (records.length < 2) return DashboardStrings.insufficientData;
     final change = weightChangeSinceLast;
-    if (change.abs() < 0.1) return 'Maintaining';
-    if (change <= -0.3 && change >= -0.8) return 'On target';
-    if (change < -0.8) return 'Faster than target';
-    if (change > -0.3 && change < 0) return 'Slower than target';
-    return 'On target';
+    if (change.abs() < 0.1) return DashboardStrings.maintaining;
+    if (change <= -0.3 && change >= -0.8) return DashboardStrings.onTarget;
+    if (change < -0.8) return DashboardStrings.fasterThanTarget;
+    if (change > -0.3 && change < 0) return DashboardStrings.slowerThanTarget;
+    return DashboardStrings.onTarget;
   }
 
   double getWeightChangeFromPrevious(int chartIndex) {
@@ -284,6 +302,7 @@ class WeightController extends GetxController {
   // Actions
   void setTimeRange(TimeRange range, {bool isProgressMode = false}) {
     selectedRange.value = range;
+    touchedChartIndex.value = -1;
     if (isProgressMode) {
       fetchWeightProgress(range: range);
     } else {

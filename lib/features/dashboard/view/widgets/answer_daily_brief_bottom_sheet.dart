@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
+import 'package:ai_forma/core/theme/app_fonts.dart';
 import 'package:ai_forma/core/widgets/app_loader.dart';
 import 'package:ai_forma/core/widgets/primary_button.dart';
+import 'package:ai_forma/features/dashboard/constants/dashboard_strings.dart';
 import 'package:ai_forma/features/dashboard/models/home_response_model.dart';
 
 class AnswerDailyBriefBottomSheet extends StatefulWidget {
@@ -141,7 +143,8 @@ class _AnswerDailyBriefBottomSheetState
 
     final ctaLabelText = step?['cta_label']?.toString() ??
         widget.dailyBriefData?.ctaLabel ??
-        'Save response';
+        DashboardStrings.saveResponse;
+
 
     final privacyNoteText = step?['privacy_note']?.toString() ?? '';
 
@@ -204,7 +207,7 @@ class _AnswerDailyBriefBottomSheetState
                 Text(
                   headingText,
                   style: const TextStyle(
-                    fontFamily: 'Nunito',
+                    fontFamily: AppFonts.family,
                     fontSize: 11,
                     fontWeight: FontWeight.w800,
                     letterSpacing: 0.8,
@@ -221,7 +224,7 @@ class _AnswerDailyBriefBottomSheetState
             Text(
               titleText,
               style: const TextStyle(
-                fontFamily: 'Nunito',
+                fontFamily: AppFonts.family,
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
                 color: AppColors.textPrimary,
@@ -236,7 +239,7 @@ class _AnswerDailyBriefBottomSheetState
             Text(
               subtitleText,
               style: const TextStyle(
-                fontFamily: 'Nunito',
+                fontFamily: AppFonts.family,
                 fontSize: 13,
                 color: AppColors.textSecondary,
                 height: 1.35,
@@ -330,7 +333,7 @@ class _AnswerDailyBriefBottomSheetState
                   child: Text(
                     privacyNoteText,
                     style: const TextStyle(
-                      fontFamily: 'Nunito',
+                      fontFamily: AppFonts.family,
                       fontSize: 11,
                       color: AppColors.textSecondary,
                     ),
@@ -395,7 +398,7 @@ class _AnswerDailyBriefBottomSheetState
             Text(
               label,
               style: const TextStyle(
-                fontFamily: 'Nunito',
+                fontFamily: AppFonts.family,
                 fontSize: 12,
                 fontWeight: FontWeight.bold,
                 color: AppColors.textPrimary,
@@ -410,7 +413,7 @@ class _AnswerDailyBriefBottomSheetState
               Text(
                 description,
                 style: TextStyle(
-                  fontFamily: 'Nunito',
+                  fontFamily: AppFonts.family,
                   fontSize: 10,
                   color: isSelected ? AppColors.brandTeal : AppColors.textSecondary,
                   height: 1.2,
@@ -488,7 +491,7 @@ class _AnswerDailyBriefBottomSheetState
                   Text(
                     label,
                     style: const TextStyle(
-                      fontFamily: 'Nunito',
+                      fontFamily: AppFonts.family,
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
                       color: AppColors.textPrimary,
@@ -499,7 +502,7 @@ class _AnswerDailyBriefBottomSheetState
                     Text(
                       description,
                       style: TextStyle(
-                        fontFamily: 'Nunito',
+                        fontFamily: AppFonts.family,
                         fontSize: 12,
                         color: isSelected
                             ? AppColors.brandTeal

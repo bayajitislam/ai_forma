@@ -18,7 +18,7 @@ class MomentumCard extends StatelessWidget {
 
     final changeVal = momentumData?.change;
     final changeBadgeText = changeVal != null
-        ? (changeVal > 0 ? '+$changeVal this week' : '$changeVal this week')
+        ? DashboardStrings.thisWeekChange(changeVal)
         : null;
 
     final stateTitle = momentumData?.stateLabel ?? '';

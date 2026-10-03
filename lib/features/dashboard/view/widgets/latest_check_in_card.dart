@@ -357,7 +357,7 @@ class _PrivacyPlaceholder extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'Photos Hidden',
+            DashboardStrings.photosHidden,
             style: AppTextStyles.dashboardMetricValue.copyWith(
               fontSize: 14,
               color: AppColors.textSecondary,
@@ -367,7 +367,7 @@ class _PrivacyPlaceholder extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Text(
-              'Tap the toggle above to display your latest scan photos.',
+              DashboardStrings.photosHiddenSubtitle,
               textAlign: TextAlign.center,
               style: AppTextStyles.dashboardMetricLabel.copyWith(fontSize: 11),
             ),

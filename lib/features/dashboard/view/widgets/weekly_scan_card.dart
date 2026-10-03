@@ -5,12 +5,11 @@ import 'package:ai_forma/features/auth/controllers/user_controller.dart';
 import 'package:ai_forma/features/check_in/controllers/check_in_controller.dart';
 import 'package:ai_forma/features/check_in/view/pages/camera_position_view.dart';
 import 'package:ai_forma/features/check_in/view/pages/check_in_intro_view.dart';
+import 'package:ai_forma/features/dashboard/constants/dashboard_strings.dart';
 import 'package:ai_forma/features/dashboard/controllers/home_controller.dart';
 import 'package:ai_forma/features/dashboard/models/home_response_model.dart';
+import 'package:ai_forma/features/dashboard/view/widgets/dashboard_dialogs.dart';
 import 'package:ai_forma/features/dashboard/view/widgets/weight_entry_bottom_sheet.dart';
-
-import 'package:ai_forma/core/common/app_dialog.dart';
-import 'package:ai_forma/features/profile/view/pages/subscription_view.dart';
 
 class WeeklyScanCard extends StatelessWidget {
   const WeeklyScanCard({
@@ -45,7 +44,7 @@ class WeeklyScanCard extends StatelessWidget {
       if (onPaywallTap != null) {
         onPaywallTap!();
       } else {
-        _showPremiumDialog(context);
+        DashboardDialogs.showPremium(context);
       }
       return;
     }
@@ -58,7 +57,7 @@ class WeeklyScanCard extends StatelessWidget {
     final bool isAnswered = dailyBrief?.alreadyAnswered ?? true;
     final bool briefVisible = dailyBrief?.visible ?? false;
 
-    // If daily brief / weight has not been answered yet, prompt via AppDialog first!
+    // If daily brief / weight has not been answered yet, prompt via dialog first
     if (briefVisible && !isAnswered) {
       _showWeightPromptDialog(context, homeData, dailyBrief);
       return;
@@ -67,80 +66,46 @@ class WeeklyScanCard extends StatelessWidget {
     _proceedToScan(context);
   }
 
-  void _showPremiumDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AppDialog(
-        icon: Icons.workspace_premium_rounded,
-        title: 'AiFORMA Premium',
-        message:
-            'Weekly body scans and AI physique analysis are available exclusively for Premium members. Upgrade now to track your transformation.',
-        confirmText: 'Buy Premium',
-        cancelText: 'Cancel',
-        onConfirm: () {
-          Navigator.pop(ctx);
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (_) => const SubscriptionView(),
-            ),
-          );
-        },
-        onCancel: () => Navigator.pop(ctx),
-      ),
-    );
-  }
-
   void _showWeightPromptDialog(
     BuildContext context,
     HomeResponseModel? homeData,
     HomeDailyBriefModel? dailyBrief,
   ) {
-    showDialog(
-      context: context,
-      builder: (dialogCtx) => AppDialog(
-        icon: Icons.scale_rounded,
-        title: 'Log Weight Before Scan',
-        message:
-            'Logging your weight before scanning helps AiFORMA calculate more accurate body composition changes. Would you like to log your weight now, or skip to scan?',
-        confirmText: 'Log Weight',
-        cancelText: 'Skip',
-        onConfirm: () {
-          Navigator.pop(dialogCtx);
-          final prefill =
-              dailyBrief?.weightKgPrefill ?? homeData?.weight?.currentKg;
-          final initialWeight =
-              prefill != null ? double.tryParse(prefill) : null;
+    DashboardDialogs.showWeightPrompt(
+      context,
+      onLogWeight: () {
+        final prefill =
+            dailyBrief?.weightKgPrefill ?? homeData?.weight?.currentKg;
+        final initialWeight =
+            prefill != null ? double.tryParse(prefill) : null;
 
-          WeightEntryBottomSheet.show(
-            context,
-            initialWeightKg: initialWeight,
-            onWeightSaved: (savedWeight) async {
-              if (Get.isRegistered<HomeController>()) {
-                final controller = Get.find<HomeController>();
-                if (dailyBrief?.step != null) {
-                  await controller.submitDailyBriefAnswer(
-                    questionKey: dailyBrief?.questionKey ?? 'weight',
-                    selectedOption: dailyBrief?.selectedOption ?? '',
-                    weightKg: savedWeight,
-                    alreadyAnswered: false,
-                  );
-                } else {
-                  await controller.submitScanDayWeight(weightKg: savedWeight);
-                }
+        WeightEntryBottomSheet.show(
+          context,
+          initialWeightKg: initialWeight,
+          onWeightSaved: (savedWeight) async {
+            if (Get.isRegistered<HomeController>()) {
+              final controller = Get.find<HomeController>();
+              if (dailyBrief?.step != null) {
+                await controller.submitDailyBriefAnswer(
+                  questionKey: dailyBrief?.questionKey ?? 'weight',
+                  selectedOption: dailyBrief?.selectedOption ?? '',
+                  weightKg: savedWeight,
+                  alreadyAnswered: false,
+                );
+              } else {
+                await controller.submitScanDayWeight(weightKg: savedWeight);
               }
+            }
 
-              if (context.mounted) {
-                _proceedToScan(context);
-              }
-            },
-          );
-        },
-        onCancel: () {
-          Navigator.pop(dialogCtx);
-          // User chose to skip! Proceed directly to scan
-          _proceedToScan(context);
-        },
-      ),
+            if (context.mounted) {
+              _proceedToScan(context);
+            }
+          },
+        );
+      },
+      onSkip: () {
+        _proceedToScan(context);
+      },
     );
   }
 
@@ -181,7 +146,9 @@ class WeeklyScanCard extends StatelessWidget {
     final cardTitle = weeklyScanData?.title ?? '';
     final cardSubtitle = weeklyScanData?.subtitle ?? '';
     final ctaText = weeklyScanData?.ctaLabel ??
-        (weeklyScanData?.paywallRequired == true ? 'Subscribe' : '');
+        (weeklyScanData?.paywallRequired == true
+            ? DashboardStrings.subscribe
+            : '');
     final attachedLabel = weeklyScanData?.attachedBriefsLabel;
 
     return Container(
@@ -199,8 +166,8 @@ class WeeklyScanCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Top Header Row
-          Row(
-            children: const [
+          const Row(
+            children: [
               Icon(
                 Icons.calendar_today_outlined,
                 size: 14,
@@ -208,7 +175,7 @@ class WeeklyScanCard extends StatelessWidget {
               ),
               SizedBox(width: 6),
               Text(
-                'WEEKLY SCAN',
+                DashboardStrings.weeklyScanCaps,
                 style: TextStyle(
                   fontFamily: 'Nunito',
                   fontSize: 11,

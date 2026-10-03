@@ -1,20 +1,23 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
 import 'package:ai_forma/core/theme/app_text_styles.dart';
+import 'package:ai_forma/core/utils/app_date_formatter.dart';
 import 'package:ai_forma/core/widgets/primary_button.dart';
+import 'package:ai_forma/features/dashboard/constants/dashboard_strings.dart';
 import 'package:ai_forma/features/dashboard/controllers/weight_controller.dart';
 import 'package:ai_forma/features/dashboard/view/widgets/weight_entry_bottom_sheet.dart';
-import 'package:intl/intl.dart';
-import 'package:ai_forma/core/utils/app_date_formatter.dart';
+import 'package:ai_forma/features/dashboard/view/widgets/weight_history_list.dart';
+import 'package:ai_forma/features/dashboard/view/widgets/weight_time_range_selector.dart';
 
 class WeightTrendsView extends StatelessWidget {
   const WeightTrendsView({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.find<WeightController>();
+    final controller = WeightController.to;
 
     return Scaffold(
       backgroundColor: AppColors.dashboardBackground,
@@ -27,10 +30,10 @@ class WeightTrendsView extends StatelessWidget {
             Icons.arrow_back_ios_new,
             color: AppColors.textPrimary,
           ),
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: Get.back,
         ),
         title: const Text(
-          'AiFORMA',
+          DashboardStrings.appTitle,
           style: TextStyle(
             color: AppColors.brandTeal,
             fontWeight: FontWeight.bold,
@@ -50,59 +53,67 @@ class WeightTrendsView extends StatelessWidget {
           children: [
             Expanded(
               child: RefreshIndicator(
-                onRefresh: () async {
-                  await controller.fetchWeightTrends(
-                    range: controller.selectedRange.value,
-                  );
-                },
+                onRefresh: () => controller.fetchWeightTrends(
+                  range: controller.selectedRange.value,
+                ),
                 color: AppColors.brandTeal,
                 child: SingleChildScrollView(
                   physics: const AlwaysScrollableScrollPhysics(),
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 16),
-                    const Text(
-                      'Weight Trends',
-                      style: AppTextStyles.authSectionTitle,
-                    ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'Track your weight over time and monitor your progress.',
-                      style: AppTextStyles.authBody,
-                    ),
-                    const SizedBox(height: 24),
-                    _buildTimeRangeSelector(controller),
-                    const SizedBox(height: 32),
-                    SizedBox(
-                      height: 250,
-                      child: Obx(() => _buildChart(controller)),
-                    ),
-                    const SizedBox(height: 32),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          'Weight History',
-                          style: AppTextStyles.featureTitle,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 16),
+                      const Text(
+                        DashboardStrings.weightTrendsTitle,
+                        style: AppTextStyles.authSectionTitle,
+                      ),
+                      const SizedBox(height: 8),
+                      const Text(
+                        DashboardStrings.weightTrendsSubtitle,
+                        style: AppTextStyles.authBody,
+                      ),
+                      const SizedBox(height: 24),
+                      Obx(
+                        () => WeightTimeRangeSelector(
+                          selectedRange: controller.selectedRange.value,
+                          onRangeSelected: controller.setTimeRange,
                         ),
-                        TextButton(
-                          onPressed: () {},
-                          child: const Text(
-                            'View All',
-                            style: TextStyle(color: AppColors.brandTeal),
+                      ),
+                      const SizedBox(height: 32),
+                      SizedBox(
+                        height: 250,
+                        child: Obx(() => _buildChart(controller)),
+                      ),
+                      const SizedBox(height: 32),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            DashboardStrings.weightHistory,
+                            style: AppTextStyles.featureTitle,
                           ),
+                          TextButton(
+                            onPressed: () {},
+                            child: const Text(
+                              DashboardStrings.viewAll,
+                              style: TextStyle(color: AppColors.brandTeal),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      Obx(
+                        () => WeightHistoryList(
+                          records: controller.records.toList(),
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    Obx(() => _buildHistoryList(controller, context)),
-                  ],
+                      ),
+                      const SizedBox(height: 20),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: PrimaryButton(
@@ -112,7 +123,7 @@ class WeightTrendsView extends StatelessWidget {
                     initialWeightKg: controller.currentWeight?.weightKg,
                   );
                 },
-                label: 'UPDATE WEIGHT',
+                label: DashboardStrings.updateWeight,
               ),
             ),
           ],
@@ -121,70 +132,19 @@ class WeightTrendsView extends StatelessWidget {
     );
   }
 
-  Widget _buildTimeRangeSelector(WeightController controller) {
-    return Obx(() {
-      return Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: TimeRange.values.map((range) {
-          final isSelected = controller.selectedRange.value == range;
-          String label = '';
-          switch (range) {
-            case TimeRange.week1:
-              label = '1W';
-              break;
-            case TimeRange.month1:
-              label = '1M';
-              break;
-            case TimeRange.month3:
-              label = '3M';
-              break;
-            case TimeRange.month6:
-              label = '6M';
-              break;
-            case TimeRange.year1:
-              label = '1Y';
-              break;
-          }
-          return Expanded(
-            child: GestureDetector(
-              onTap: () => controller.setTimeRange(range),
-              child: Container(
-                margin: const EdgeInsets.symmetric(horizontal: 4),
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                decoration: BoxDecoration(
-                  color: isSelected ? AppColors.brandTeal : AppColors.surface,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: isSelected ? AppColors.brandTeal : AppColors.border,
-                  ),
-                ),
-                alignment: Alignment.center,
-                child: Text(
-                  label,
-                  style: TextStyle(
-                    color: isSelected ? Colors.white : AppColors.textSecondary,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ),
-          );
-        }).toList(),
-      );
-    });
-  }
-
   Widget _buildChart(WeightController controller) {
     final data = controller.chartData;
     if (data.isEmpty) {
-      return const Center(child: Text('No data for this period.'));
+      return const Center(
+        child: Text(DashboardStrings.noDataForPeriod),
+      );
     }
 
     final spots = List.generate(
       data.length,
       (i) => FlSpot(i.toDouble(), data[i].weightKg),
     );
-    final minX = 0.0;
+    const minX = 0.0;
     final maxX = (data.length - 1).toDouble();
 
     final double rawMinY =
@@ -218,8 +178,7 @@ class WeightTrendsView extends StatelessWidget {
         }
       }
     } else {
-      final int targetLabels =
-          controller.selectedRange.value == TimeRange.week1 ? 4 : 4;
+      const int targetLabels = 4;
       final step = (data.length - 1) / (targetLabels - 1);
       final usedDates = <String>{};
       for (int k = 0; k < targetLabels; k++) {
@@ -258,7 +217,7 @@ class WeightTrendsView extends StatelessWidget {
                       labelBySpotIndex[index]!,
                       style: const TextStyle(
                         color: AppColors.textSecondary,
-                        fontSize: 12,
+                        fontSize: 10,
                       ),
                     ),
                   );
@@ -267,22 +226,8 @@ class WeightTrendsView extends StatelessWidget {
               },
             ),
           ),
-          leftTitles: AxisTitles(
-            sideTitles: SideTitles(
-              showTitles: true,
-              interval: ((maxY - minY) / 4).clamp(0.5, 10.0),
-              getTitlesWidget: (value, meta) {
-                return Text(
-                  value.toStringAsFixed(value % 1 == 0 ? 0 : 1),
-                  style: const TextStyle(
-                    color: AppColors.textSecondary,
-                    fontSize: 12,
-                  ),
-                  textAlign: TextAlign.left,
-                );
-              },
-              reservedSize: 42,
-            ),
+          leftTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
           ),
         ),
         borderData: FlBorderData(show: false),
@@ -300,7 +245,14 @@ class WeightTrendsView extends StatelessWidget {
             dotData: const FlDotData(show: true),
             belowBarData: BarAreaData(
               show: true,
-              color: AppColors.brandTeal.withValues(alpha: 0.1),
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  AppColors.brandTeal.withValues(alpha: 0.2),
+                  AppColors.brandTeal.withValues(alpha: 0.0),
+                ],
+              ),
             ),
           ),
         ],
@@ -312,7 +264,7 @@ class WeightTrendsView extends StatelessWidget {
                 final idx = touchedSpot.x.round().clamp(0, data.length - 1);
                 final record = data[idx];
                 return LineTooltipItem(
-                  '${record.weightKg.toStringAsFixed(1)} kg\n',
+                  '${record.weightKg.toStringAsFixed(1)} ${DashboardStrings.kgUnit}\n',
                   const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
@@ -321,7 +273,7 @@ class WeightTrendsView extends StatelessWidget {
                     TextSpan(
                       text: AppDateFormatter.toDayMonthYear(record.date),
                       style: const TextStyle(
-                        color: Colors.white,
+                        color: Colors.white70,
                         fontSize: 10,
                         fontWeight: FontWeight.normal,
                       ),
@@ -331,66 +283,8 @@ class WeightTrendsView extends StatelessWidget {
               }).toList();
             },
           ),
-          handleBuiltInTouches: true,
         ),
       ),
     );
-  }
-
-  Widget _buildHistoryList(WeightController controller, BuildContext context) {
-    final records = controller.records;
-    if (records.isEmpty) {
-      return const SizedBox.shrink();
-    }
-
-    return Material(
-      color: AppColors.surface,
-      borderRadius: BorderRadius.circular(12),
-      clipBehavior: Clip.antiAlias,
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.border),
-        ),
-        child: ListView.separated(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        itemCount: records.length,
-        separatorBuilder: (context, index) =>
-            const Divider(height: 1, color: AppColors.border),
-        itemBuilder: (context, index) {
-          final record = records[index];
-          return ListTile(
-            leading: Container(
-              width: 8,
-              height: 8,
-              decoration: const BoxDecoration(
-                color: AppColors.brandTeal,
-                shape: BoxShape.circle,
-              ),
-            ),
-            title: Text(
-              AppDateFormatter.toDayMonthYear(record.date),
-              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
-            ),
-            subtitle: Text(
-              DateFormat('h:mm a').format(record.date),
-              style: const TextStyle(
-                color: AppColors.textSecondary,
-                fontSize: 12,
-              ),
-            ),
-            trailing: Text(
-              '${record.weightKg.toStringAsFixed(1)} kg',
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
-            ),
-          );
-        },
-      ),
-    ),
-  );
   }
 }

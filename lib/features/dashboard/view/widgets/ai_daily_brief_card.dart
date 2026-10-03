@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
+import 'package:ai_forma/core/theme/app_fonts.dart';
+import 'package:ai_forma/features/dashboard/constants/dashboard_strings.dart';
 import 'package:ai_forma/features/dashboard/controllers/home_controller.dart';
 import 'package:ai_forma/features/dashboard/models/home_response_model.dart';
 import 'package:ai_forma/features/dashboard/view/widgets/answer_daily_brief_bottom_sheet.dart';
@@ -52,8 +54,8 @@ class AIDailyBriefCard extends StatelessWidget {
           );
           if (result.success) {
             Get.snackbar(
-              'Success',
-              'Weight recorded successfully',
+              DashboardStrings.success,
+              DashboardStrings.weightRecordedSuccess,
               snackPosition: SnackPosition.BOTTOM,
               backgroundColor: AppColors.brandTeal,
               colorText: Colors.white,
@@ -66,8 +68,8 @@ class AIDailyBriefCard extends StatelessWidget {
           );
           if (result.success) {
             Get.snackbar(
-              'Success',
-              'Weight recorded successfully',
+              DashboardStrings.success,
+              DashboardStrings.weightRecordedSuccess,
               snackPosition: SnackPosition.BOTTOM,
               backgroundColor: AppColors.brandTeal,
               colorText: Colors.white,
@@ -105,7 +107,7 @@ class AIDailyBriefCard extends StatelessWidget {
 
         if (result.success) {
           Get.snackbar(
-            'Success',
+            DashboardStrings.success,
             result.message,
             snackPosition: SnackPosition.BOTTOM,
             backgroundColor: AppColors.brandTeal,
@@ -114,7 +116,7 @@ class AIDailyBriefCard extends StatelessWidget {
           );
         } else {
           Get.snackbar(
-            'Error',
+            DashboardStrings.error,
             result.message,
             snackPosition: SnackPosition.BOTTOM,
             backgroundColor: Colors.redAccent,
@@ -214,7 +216,7 @@ class AIDailyBriefCard extends StatelessWidget {
                   Text(
                     headingDisplay,
                     style: const TextStyle(
-                      fontFamily: 'Nunito',
+                      fontFamily: AppFonts.family,
                       fontSize: 11,
                       fontWeight: FontWeight.w800,
                       letterSpacing: 0.8,
@@ -224,15 +226,9 @@ class AIDailyBriefCard extends StatelessWidget {
                 ],
               ),
               if (isAnalysisReady && rawHeading.contains('complete'))
-                _buildBadgeChip('SCAN COMPLETE')
+                _buildBadgeChip(DashboardStrings.scanCompleteCaps)
               else if (badgeNum != null)
-                _buildBadgeChip(
-                  badgeNum == 1
-                      ? '1 day until your scan'
-                      : (badgeNum == 0
-                          ? 'Scan day'
-                          : '$badgeNum days until your scan'),
-                ),
+                _buildBadgeChip(DashboardStrings.daysUntilScan(badgeNum)),
             ],
           ),
           const SizedBox(height: 12),
@@ -249,7 +245,7 @@ class AIDailyBriefCard extends StatelessWidget {
                       Text(
                         cardTitle,
                         style: const TextStyle(
-                          fontFamily: 'Nunito',
+                          fontFamily: AppFonts.family,
                           fontSize: 15,
                           fontWeight: FontWeight.bold,
                           color: AppColors.textPrimary,
@@ -261,7 +257,7 @@ class AIDailyBriefCard extends StatelessWidget {
                       Text(
                         cardSubtitle,
                         style: const TextStyle(
-                          fontFamily: 'Nunito',
+                          fontFamily: AppFonts.family,
                           fontSize: 12,
                           color: AppColors.textSecondary,
                           height: 1.35,
@@ -297,9 +293,9 @@ class AIDailyBriefCard extends StatelessWidget {
                     Text(
                       ctaButtonLabel.isNotEmpty && ctaButtonLabel.toLowerCase().contains('analysis')
                           ? ctaButtonLabel
-                          : 'View Your Analysis',
+                          : DashboardStrings.viewYourAnalysis,
                       style: const TextStyle(
-                        fontFamily: 'Nunito',
+                        fontFamily: AppFonts.family,
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
@@ -339,16 +335,16 @@ class AIDailyBriefCard extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: const [
-                    Icon(
+                    const Icon(
                       Icons.check_circle_rounded,
                       size: 18,
                       color: AppColors.brandTeal,
                     ),
-                    SizedBox(width: 8),
-                    Text(
-                      'Completed for Today • Tap to change',
+                    const SizedBox(width: 8),
+                    const Text(
+                      DashboardStrings.completedForTodayTapToChange,
                       style: TextStyle(
-                        fontFamily: 'Nunito',
+                        fontFamily: AppFonts.family,
                         fontSize: 13,
                         fontWeight: FontWeight.bold,
                         color: AppColors.brandTeal,
@@ -390,7 +386,7 @@ class AIDailyBriefCard extends StatelessWidget {
                     Text(
                       ctaButtonLabel,
                       style: const TextStyle(
-                        fontFamily: 'Nunito',
+                        fontFamily: AppFonts.family,
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
@@ -442,7 +438,7 @@ class AIDailyBriefCard extends StatelessWidget {
               Text(
                 headingDisplay,
                 style: const TextStyle(
-                  fontFamily: 'Nunito',
+                  fontFamily: AppFonts.family,
                   fontSize: 11,
                   fontWeight: FontWeight.w800,
                   letterSpacing: 0.8,
@@ -456,7 +452,7 @@ class AIDailyBriefCard extends StatelessWidget {
             Text(
               cardTitle,
               style: const TextStyle(
-                fontFamily: 'Nunito',
+                fontFamily: AppFonts.family,
                 fontSize: 15,
                 fontWeight: FontWeight.bold,
                 color: AppColors.textPrimary,
@@ -468,7 +464,7 @@ class AIDailyBriefCard extends StatelessWidget {
             Text(
               cardSubtitle,
               style: const TextStyle(
-                fontFamily: 'Nunito',
+                fontFamily: AppFonts.family,
                 fontSize: 12,
                 color: AppColors.textSecondary,
                 height: 1.35,
@@ -496,7 +492,7 @@ class AIDailyBriefCard extends StatelessWidget {
       child: Text(
         label,
         style: const TextStyle(
-          fontFamily: 'Nunito',
+          fontFamily: AppFonts.family,
           fontSize: 11,
           fontWeight: FontWeight.w600,
           color: AppColors.brandTeal,

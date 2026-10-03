@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:ai_forma/core/common/app_dialog.dart';
 import 'package:ai_forma/core/network/dio_client.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
 import 'package:ai_forma/features/auth/controllers/user_controller.dart';
@@ -15,6 +14,7 @@ import 'package:ai_forma/features/dashboard/repositories/dashboard_repository.da
 import 'package:ai_forma/features/dashboard/view/widgets/ai_daily_brief_card.dart';
 import 'package:ai_forma/features/dashboard/view/widgets/ai_insight_card.dart';
 import 'package:ai_forma/features/dashboard/view/widgets/answer_daily_brief_bottom_sheet.dart';
+import 'package:ai_forma/features/dashboard/view/widgets/dashboard_dialogs.dart';
 import 'package:ai_forma/features/dashboard/view/widgets/dashboard_header.dart';
 import 'package:ai_forma/features/dashboard/view/widgets/latest_check_in_card.dart';
 import 'package:ai_forma/features/dashboard/view/widgets/metric_card.dart';
@@ -23,10 +23,8 @@ import 'package:ai_forma/features/dashboard/view/widgets/sparkline_chart.dart';
 import 'package:ai_forma/features/dashboard/view/widgets/todays_priority_card.dart';
 import 'package:ai_forma/features/dashboard/view/widgets/weekly_scan_card.dart';
 import 'package:ai_forma/features/dashboard/view/widgets/weight_entry_bottom_sheet.dart';
-import 'package:ai_forma/features/dashboard/view/pages/weight_trends_view.dart';
-import 'package:ai_forma/features/dashboard/view/pages/weekly_progress_view.dart';
-import 'package:ai_forma/features/profile/view/pages/subscription_view.dart';
 import 'package:ai_forma/features/timeline/view/pages/scan_detail_view.dart';
+import 'package:ai_forma/routes/routes_name.dart';
 
 class DashboardView extends StatelessWidget {
   final void Function({String? scanId})? goInsight;
@@ -36,9 +34,9 @@ class DashboardView extends StatelessWidget {
     if (changeKg == null || changeKg.isEmpty) return '-';
     final numVal = double.tryParse(changeKg);
     if (numVal != null && numVal > 0 && !changeKg.startsWith('+')) {
-      return '+$changeKg kg';
+      return '+$changeKg ${DashboardStrings.kgUnit}';
     }
-    return '$changeKg kg';
+    return '$changeKg ${DashboardStrings.kgUnit}';
   }
 
   Color _getStatusToneColor(String? tone) {
@@ -51,29 +49,6 @@ class DashboardView extends StatelessWidget {
       default:
         return AppColors.textSecondary;
     }
-  }
-
-  void _showPremiumDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AppDialog(
-        icon: Icons.workspace_premium_rounded,
-        title: 'AiFORMA Premium',
-        message:
-            'Weekly body scans and AI physique analysis are available exclusively for Premium members. Upgrade now to track your transformation.',
-        confirmText: 'Buy Premium',
-        cancelText: 'Cancel',
-        onConfirm: () {
-          Navigator.pop(ctx);
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (_) => const SubscriptionView(),
-            ),
-          );
-        },
-        onCancel: () => Navigator.pop(ctx),
-      ),
-    );
   }
 
   void _handleTodayPriorityTap(
@@ -102,7 +77,7 @@ class DashboardView extends StatelessWidget {
         final isPremium = isPaid && !paywallRequired;
 
         if (!isPremium) {
-          _showPremiumDialog(context);
+          DashboardDialogs.showPremium(context);
           return;
         }
 
@@ -111,67 +86,57 @@ class DashboardView extends StatelessWidget {
         final bool briefVisible = dailyBrief?.visible ?? false;
 
         if (briefVisible && !isAnswered) {
-          showDialog(
-            context: context,
-            builder: (dialogCtx) => AppDialog(
-              icon: Icons.scale_rounded,
-              title: 'Log Weight Before Scan',
-              message:
-                  'Track your weight for more accurate scan analysis, or skip to proceed.',
-              confirmText: 'Log Weight',
-              cancelText: 'Skip',
-              onConfirm: () {
-                Navigator.pop(dialogCtx);
-                final prefill =
-                    dailyBrief?.weightKgPrefill ?? homeData?.weight?.currentKg;
-                final initialWeight =
-                    prefill != null ? double.tryParse(prefill) : null;
+          DashboardDialogs.showWeightPrompt(
+            context,
+            message: DashboardStrings.logWeightShortMessage,
+            onLogWeight: () {
+              final prefill =
+                  dailyBrief?.weightKgPrefill ?? homeData?.weight?.currentKg;
+              final initialWeight =
+                  prefill != null ? double.tryParse(prefill) : null;
 
-                WeightEntryBottomSheet.show(
-                  context,
-                  initialWeightKg: initialWeight,
-                  onWeightSaved: (savedWeight) async {
-                    if (Get.isRegistered<HomeController>()) {
-                      final controller = Get.find<HomeController>();
-                      if (dailyBrief?.step != null) {
-                        await controller.submitDailyBriefAnswer(
-                          questionKey: dailyBrief?.questionKey ?? 'weight',
-                          selectedOption: dailyBrief?.selectedOption ?? '',
-                          weightKg: savedWeight,
-                          alreadyAnswered: false,
-                        );
-                      } else {
-                        await controller.submitScanDayWeight(
-                          weightKg: savedWeight,
-                        );
-                      }
-                    }
-                    if (context.mounted) {
-                      if (Get.isRegistered<CheckInController>()) {
-                        Get.find<CheckInController>().isWeeklyCheckIn(true);
-                      }
-                      Navigator.of(context).push(
-                        MaterialPageRoute<void>(
-                          builder: (_) => const CameraPositionView(),
-                        ),
+              WeightEntryBottomSheet.show(
+                context,
+                initialWeightKg: initialWeight,
+                onWeightSaved: (savedWeight) async {
+                  if (Get.isRegistered<HomeController>()) {
+                    final controller = Get.find<HomeController>();
+                    if (dailyBrief?.step != null) {
+                      await controller.submitDailyBriefAnswer(
+                        questionKey: dailyBrief?.questionKey ?? 'weight',
+                        selectedOption: dailyBrief?.selectedOption ?? '',
+                        weightKg: savedWeight,
+                        alreadyAnswered: false,
+                      );
+                    } else {
+                      await controller.submitScanDayWeight(
+                        weightKg: savedWeight,
                       );
                     }
-                  },
-                );
-              },
-              onCancel: () {
-                Navigator.pop(dialogCtx);
-                // User chose to skip! Proceed directly to scan
-                if (Get.isRegistered<CheckInController>()) {
-                  Get.find<CheckInController>().isWeeklyCheckIn(true);
-                }
-                Navigator.of(context).push(
-                  MaterialPageRoute<void>(
-                    builder: (_) => const CameraPositionView(),
-                  ),
-                );
-              },
-            ),
+                  }
+                  if (context.mounted) {
+                    if (Get.isRegistered<CheckInController>()) {
+                      Get.find<CheckInController>().isWeeklyCheckIn(true);
+                    }
+                    Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => const CameraPositionView(),
+                      ),
+                    );
+                  }
+                },
+              );
+            },
+            onSkip: () {
+              if (Get.isRegistered<CheckInController>()) {
+                Get.find<CheckInController>().isWeeklyCheckIn(true);
+              }
+              Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const CameraPositionView(),
+                ),
+              );
+            },
           );
           return;
         }
@@ -205,8 +170,8 @@ class DashboardView extends StatelessWidget {
               }
               if (result.success) {
                 Get.snackbar(
-                  'Success',
-                  'Response saved successfully',
+                  DashboardStrings.success,
+                  DashboardStrings.responseSavedSuccess,
                   snackPosition: SnackPosition.BOTTOM,
                   backgroundColor: AppColors.brandTeal,
                   colorText: Colors.white,
@@ -220,7 +185,7 @@ class DashboardView extends StatelessWidget {
 
       case 'analysis_locked':
       case 'paywall_required':
-        _showPremiumDialog(context);
+        DashboardDialogs.showPremium(context);
         break;
 
       case 'analysis':
@@ -307,9 +272,9 @@ class DashboardView extends StatelessWidget {
       }
 
       final currentWeightStr = weightData?.currentKg != null
-          ? '${weightData!.currentKg} kg'
+          ? '${weightData!.currentKg} ${DashboardStrings.kgUnit}'
           : (weightController.currentWeight != null
-                ? '${weightController.currentWeight!.weightKg.toStringAsFixed(1)} kg'
+                ? '${weightController.currentWeight!.weightKg.toStringAsFixed(1)} ${DashboardStrings.kgUnit}'
                 : '-');
 
       final weightChangeStr = weightData?.changeKg != null
@@ -379,7 +344,7 @@ class DashboardView extends StatelessWidget {
               if (isWeeklyScanVisible) ...[
                 WeeklyScanCard(
                   weeklyScanData: homeData?.weeklyScan,
-                  onPaywallTap: () => _showPremiumDialog(context),
+                  onPaywallTap: () => DashboardDialogs.showPremium(context),
                 ),
                 const SizedBox(height: 16),
               ],
@@ -390,13 +355,7 @@ class DashboardView extends StatelessWidget {
                 children: [
                   Expanded(
                     child: GestureDetector(
-                      onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => const WeightTrendsView(),
-                          ),
-                        );
-                      },
+                      onTap: () => Get.toNamed(RoutesName.weightTrends),
                       child: MetricCard(
                         label: DashboardStrings.currentWeight,
                         value: currentWeightStr,
@@ -407,13 +366,7 @@ class DashboardView extends StatelessWidget {
                   const SizedBox(width: 12),
                   Expanded(
                     child: GestureDetector(
-                      onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => const WeeklyProgressView(),
-                          ),
-                        );
-                      },
+                      onTap: () => Get.toNamed(RoutesName.weeklyProgress),
                       child: MetricCard(
                         label: DashboardStrings.weeklyChange,
                         value: weightChangeStr,

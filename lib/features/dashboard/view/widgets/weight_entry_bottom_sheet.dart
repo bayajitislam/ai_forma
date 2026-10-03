@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
 import 'package:ai_forma/core/widgets/primary_button.dart';
+import 'package:ai_forma/features/dashboard/constants/dashboard_strings.dart';
 import 'package:ai_forma/features/onboarding_assessment/constants/assessment_strings.dart';
 import 'package:ai_forma/features/onboarding_assessment/view/widgets/weight_selector.dart';
 import 'package:ai_forma/features/dashboard/controllers/weight_controller.dart';
@@ -92,7 +93,9 @@ class _WeightEntryBottomSheetState extends State<WeightEntryBottomSheet> {
           ),
           const SizedBox(height: 24),
           Text(
-            widget.initialRecord == null ? 'Update Weight' : 'Edit Weight Entry',
+            widget.initialRecord == null
+                ? DashboardStrings.updateWeightTitle
+                : DashboardStrings.editWeightEntry,
             style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
@@ -107,7 +110,7 @@ class _WeightEntryBottomSheetState extends State<WeightEntryBottomSheet> {
           const SizedBox(height: 32),
           PrimaryButton(
             onPressed: _save,
-            label: 'Save Weight',
+            label: DashboardStrings.saveWeight,
           ),
         ],
       ),
