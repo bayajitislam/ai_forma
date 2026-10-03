@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 import 'package:ai_forma/core/icons/app_icons.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
 import 'package:ai_forma/core/theme/app_text_styles.dart';
-import 'package:ai_forma/core/widgets/app_icon.dart';
 import 'package:ai_forma/core/widgets/primary_button.dart';
 import 'package:ai_forma/features/check_in/constants/check_in_strings.dart';
 import 'package:ai_forma/features/check_in/controllers/check_in_controller.dart';
@@ -11,6 +10,7 @@ import 'package:ai_forma/features/check_in/repositories/check_in_repository.dart
 import 'package:ai_forma/features/check_in/view/widgets/check_in_streak_card.dart';
 import 'package:ai_forma/features/auth/controllers/user_controller.dart';
 import 'package:ai_forma/features/check_in/view/widgets/choose_check_in_day_bottom_sheet.dart';
+import 'package:ai_forma/features/check_in/view/widgets/next_scan_info_bottom_sheet.dart';
 import 'package:ai_forma/core/network/dio_client.dart';
 import 'package:ai_forma/features/dashboard/controllers/home_controller.dart';
 import 'package:ai_forma/features/dashboard/view/widgets/weight_entry_bottom_sheet.dart';
@@ -67,11 +67,13 @@ class CheckInHomeView extends StatelessWidget {
     if (isInitialScanCompleted &&
         status != null &&
         status.today?.weeklyCheckinAvailable == false) {
-      _showNextScanInfoBottomSheet(
+      NextScanInfoBottomSheet.show(
         context,
-        status.checkDay.isNotEmpty
-            ? status.checkDay
-            : CheckInStrings.checkDayValue,
+        fullDay: _getFullDayName(
+          status.checkDay.isNotEmpty
+              ? status.checkDay
+              : CheckInStrings.checkDayValue,
+        ),
       );
       return;
     }
@@ -84,7 +86,7 @@ class CheckInHomeView extends StatelessWidget {
     final bool isAnswered = dailyBrief?.alreadyAnswered ?? true;
     final bool briefVisible = dailyBrief?.visible ?? false;
 
-    // If daily brief / weight has not been answered yet, prompt weight bottom sheet first!
+    // If daily brief / weight has not been answered yet, prompt weight bottom sheet first
     if (briefVisible && !isAnswered) {
       final prefill = dailyBrief?.weightKgPrefill ?? homeData?.weight?.currentKg;
       final initialWeight = prefill != null ? double.tryParse(prefill) : null;
@@ -131,115 +133,6 @@ class CheckInHomeView extends StatelessWidget {
     }
   }
 
-  void _showNextScanInfoBottomSheet(BuildContext context, String checkDay) {
-    final fullDay = _getFullDayName(checkDay);
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: AppColors.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (ctx) => Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 44,
-              height: 4,
-              decoration: BoxDecoration(
-                color: AppColors.border,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const SizedBox(height: 20),
-            Container(
-              width: 64,
-              height: 64,
-              decoration: const BoxDecoration(
-                color: AppColors.iconBackground,
-                shape: BoxShape.circle,
-              ),
-              child: const Center(
-                child: AppIcon(
-                  icon: AppIcons.calendar,
-                  size: 32,
-                  color: AppColors.brandTeal,
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'Next Weekly Scan Schedule',
-              style: AppTextStyles.authSectionTitle,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Your check-in for this week is completed! Your next scan will be available on $fullDay.',
-              style: const TextStyle(
-                fontSize: 14,
-                color: AppColors.textSecondary,
-                height: 1.4,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 24),
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: AppColors.onboardingBackground,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppColors.border),
-              ),
-              child: Row(
-                children: [
-                  const Icon(
-                    Icons.event_available_rounded,
-                    color: AppColors.brandTeal,
-                    size: 24,
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Next Check-In Day',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: AppColors.textSecondary,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          fullDay,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            color: AppColors.textPrimary,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 24),
-            PrimaryButton(
-              onPressed: () => Navigator.of(ctx).pop(),
-              label: 'GOT IT',
-            ),
-            const SizedBox(height: 8),
-          ],
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final controller = Get.isRegistered<CheckInController>()
@@ -263,12 +156,13 @@ class CheckInHomeView extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 12),
-              // Heading
-              const Text('Check-In', style: AppTextStyles.authSectionTitle),
-              const SizedBox(height: 4),
-              // Supporting text
               const Text(
-                'Track your progress with a new body scan.',
+                CheckInStrings.checkInHeadline,
+                style: AppTextStyles.authSectionTitle,
+              ),
+              const SizedBox(height: 4),
+              const Text(
+                CheckInStrings.checkInHomeSubtitle,
                 style: AppTextStyles.authBody,
               ),
               const SizedBox(height: 20),
@@ -362,7 +256,7 @@ class CheckInHomeView extends StatelessWidget {
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: Text(
-                                    'Pending change to ${_getFullDayName(status.pendingScanDay!)} (takes effect next cycle)',
+                                    '${CheckInStrings.pendingChangePrefix}${_getFullDayName(status.pendingScanDay!)}${CheckInStrings.pendingChangeSuffix}',
                                     style: const TextStyle(
                                       fontSize: 12,
                                       color: AppColors.textSecondary,
@@ -405,7 +299,7 @@ class CheckInHomeView extends StatelessWidget {
                                         CrossAxisAlignment.start,
                                     children: [
                                       const Text(
-                                        'Transition Schedule Active',
+                                        CheckInStrings.transitionScheduleActive,
                                         style: TextStyle(
                                           fontSize: 14,
                                           fontWeight: FontWeight.bold,
@@ -414,7 +308,7 @@ class CheckInHomeView extends StatelessWidget {
                                       ),
                                       const SizedBox(height: 4),
                                       Text(
-                                        'Your new scan schedule is set. Your next weekly scan is scheduled for $currentDay. Your Daily Brief will begin 6 days before your scan.',
+                                        CheckInStrings.transitionScheduleBody(currentDay),
                                         style: const TextStyle(
                                           fontSize: 13,
                                           color: AppColors.textSecondary,
@@ -449,17 +343,15 @@ class CheckInHomeView extends StatelessWidget {
                   return Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      // PrimaryButton(
-                      //   onPressed: () => _openWeightEntryBottomSheet(context),
-                      //   label: 'UPDATE WEIGHT',
-                      // ),
-                      // const SizedBox(height: 12),
                       PrimaryButton(
                         onPressed: () {
                           if (isAvailable) {
                             _beginScan(context);
                           } else {
-                            _showNextScanInfoBottomSheet(context, checkDay);
+                            NextScanInfoBottomSheet.show(
+                              context,
+                              fullDay: checkDay,
+                            );
                           }
                         },
                         label: ctaLabel,
@@ -467,7 +359,7 @@ class CheckInHomeView extends StatelessWidget {
                       if (!isAvailable) ...[
                         const SizedBox(height: 8),
                         Text(
-                          'Next Weekly check-in available on $checkDay',
+                          '${CheckInStrings.nextWeeklyAvailablePrefix}$checkDay',
                           style: const TextStyle(
                             fontSize: 13,
                             color: AppColors.textSecondary,

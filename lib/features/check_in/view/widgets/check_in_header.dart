@@ -1,6 +1,7 @@
 import 'package:ai_forma/core/storage/auth_storage.dart';
 import 'package:ai_forma/core/widgets/app_brand_text.dart';
 import 'package:ai_forma/features/auth/controllers/user_controller.dart';
+import 'package:ai_forma/features/check_in/constants/check_in_strings.dart';
 import 'package:ai_forma/routes/routes_name.dart';
 import 'package:flutter/material.dart';
 import 'package:ai_forma/core/icons/app_icons.dart';
@@ -29,7 +30,7 @@ class CheckInHeader extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
         ),
         title: const Text(
-          'Log Out?',
+          CheckInStrings.logoutConfirmTitle,
           style: TextStyle(
             color: AppColors.textPrimary,
             fontWeight: FontWeight.bold,
@@ -37,7 +38,7 @@ class CheckInHeader extends StatelessWidget {
           ),
         ),
         content: const Text(
-          'Are you sure you want to log out? You need to complete your initial check-in scan to prepare your personalized dashboard.',
+          CheckInStrings.logoutConfirmMessage,
           style: TextStyle(
             color: AppColors.textPrimary,
             fontSize: 14,
@@ -48,7 +49,7 @@ class CheckInHeader extends StatelessWidget {
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
             child: const Text(
-              'Cancel',
+              CheckInStrings.cancel,
               style: TextStyle(
                 color: AppColors.textPrimary,
                 fontWeight: FontWeight.w600,
@@ -65,7 +66,7 @@ class CheckInHeader extends StatelessWidget {
             ),
             onPressed: () => Navigator.of(ctx).pop(true),
             child: const Text(
-              'Log Out',
+              CheckInStrings.logout,
               style: TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,

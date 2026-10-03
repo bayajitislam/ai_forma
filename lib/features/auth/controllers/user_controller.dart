@@ -2,6 +2,7 @@ import 'package:ai_forma/core/constants/api_endpoint.dart';
 import 'package:ai_forma/core/network/dio_client.dart';
 import 'package:ai_forma/core/storage/auth_storage.dart';
 import 'package:ai_forma/core/failure/failure.dart';
+import 'package:ai_forma/features/auth/constants/auth_strings.dart';
 import 'package:ai_forma/features/auth/models/login_model.dart';
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
@@ -214,7 +215,7 @@ class UserController extends GetxController {
       }
 
       isLoading(false);
-      return Left(ServerFailure(message: 'Failed to upload image.'));
+      return Left(ServerFailure(message: AuthStrings.failedToUploadImage));
     } on DioException catch (e) {
       isLoading(false);
       if (e.response?.data is Map<String, dynamic>) {
@@ -268,13 +269,13 @@ class UserController extends GetxController {
         isLoading(false);
         final detail = (response.data is Map<String, dynamic>)
             ? (response.data['detail']?.toString() ??
-                  'Account deleted successfully.')
-            : 'Account deleted successfully.';
+                  AuthStrings.accountDeletedSuccessfully)
+            : AuthStrings.accountDeletedSuccessfully;
         return Right(detail);
       }
 
       isLoading(false);
-      return Left(ServerFailure(message: 'Failed to delete account.'));
+      return Left(ServerFailure(message: AuthStrings.failedToDeleteAccount));
     } on DioException catch (e) {
       isLoading(false);
       if (e.response?.data is Map<String, dynamic>) {

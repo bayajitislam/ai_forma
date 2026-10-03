@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:ai_forma/features/auth/constants/auth_strings.dart';
 import 'package:ai_forma/features/auth/models/forgot_password_model.dart';
 import 'package:ai_forma/features/auth/repositories/forgot_password_repository.dart';
 import 'package:ai_forma/routes/routes_name.dart';
@@ -92,13 +93,13 @@ class ForgotPasswordController extends GetxController {
     final targetEmail = emailController.text.trim().toLowerCase();
 
     if (targetEmail.isEmpty) {
-      emailError('Email address is required.');
+      emailError(AuthStrings.emailRequired);
       return false;
     }
 
     final emailRegex = RegExp(r'^[\w.+-]+@[\w-]+\.[\w.]+$');
     if (!emailRegex.hasMatch(targetEmail)) {
-      emailError('Please enter a valid email address.');
+      emailError(AuthStrings.emailInvalid);
       return false;
     }
 
@@ -158,7 +159,7 @@ class ForgotPasswordController extends GetxController {
     errorMessage('');
 
     if (_code.length < 6) {
-      errorMessage('Please enter the full 6-digit verification code.');
+      errorMessage(AuthStrings.codeIncomplete);
       return;
     }
 
@@ -197,22 +198,22 @@ class ForgotPasswordController extends GetxController {
     final confirmPass = confirmPasswordController.text;
 
     if (newPass.isEmpty) {
-      passwordError('Password is required.');
+      passwordError(AuthStrings.passwordRequired);
       return false;
     }
 
     if (newPass.length < 8) {
-      passwordError('Password must be at least 8 characters long.');
+      passwordError(AuthStrings.passwordMinLength);
       return false;
     }
 
     if (confirmPass.isEmpty) {
-      errorMessage('Please confirm your new password.');
+      errorMessage(AuthStrings.confirmPasswordRequired);
       return false;
     }
 
     if (newPass != confirmPass) {
-      errorMessage('Passwords do not match.');
+      errorMessage(AuthStrings.passwordsDoNotMatch);
       return false;
     }
 

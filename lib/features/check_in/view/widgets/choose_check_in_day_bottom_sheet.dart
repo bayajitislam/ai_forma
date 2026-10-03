@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
 import 'package:ai_forma/core/theme/app_text_styles.dart';
 import 'package:ai_forma/core/widgets/primary_button.dart';
+import 'package:ai_forma/features/check_in/constants/check_in_strings.dart';
 
 class ChooseCheckInDayBottomSheet extends StatefulWidget {
   final String currentDay;
@@ -82,12 +83,12 @@ class _ChooseCheckInDayBottomSheetState
           ),
           const SizedBox(height: 20),
           const Text(
-            'Choose your check-in day',
+            CheckInStrings.chooseCheckInDayTitle,
             style: AppTextStyles.authSectionTitle,
           ),
           const SizedBox(height: 6),
           const Text(
-            'Select the day you prefer to complete your weekly body scan.',
+            CheckInStrings.chooseCheckInDaySubtitle,
             style: TextStyle(
               fontSize: 14,
               color: AppColors.textSecondary,
@@ -167,7 +168,7 @@ class _ChooseCheckInDayBottomSheetState
               widget.onSaved(_selectedDay);
               Navigator.of(context).pop();
             },
-            label: 'SAVE',
+            label: CheckInStrings.save,
           ),
         ],
       ),

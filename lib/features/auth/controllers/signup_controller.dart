@@ -1,3 +1,4 @@
+import 'package:ai_forma/features/auth/constants/auth_strings.dart';
 import 'package:ai_forma/features/auth/models/signup_model.dart';
 import 'package:ai_forma/features/auth/repositories/signup_repository.dart';
 import 'package:ai_forma/routes/routes_name.dart';
@@ -73,22 +74,22 @@ class SignupController extends GetxController {
 
     //Name validation
     if (name.isEmpty) {
-      nameError('Full name is required.');
+      nameError(AuthStrings.fullNameRequired);
       return false;
     }
     if (name.length < 2) {
-      nameError('Name must be at least 2 characters.');
+      nameError(AuthStrings.fullNameMinLength);
       return false;
     }
 
     //Email validation
     if (email.isEmpty) {
-      emailError('Email address is required.');
+      emailError(AuthStrings.emailRequired);
       return false;
     }
     final emailRegex = RegExp(r'^[\w.+-]+@[\w-]+\.[\w.]+$');
     if (!emailRegex.hasMatch(email)) {
-      emailError('Enter a valid email address.');
+      emailError(AuthStrings.emailInvalid);
       return false;
     }
 

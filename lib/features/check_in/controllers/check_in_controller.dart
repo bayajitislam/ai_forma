@@ -2,12 +2,13 @@ import 'dart:io';
 import 'dart:isolate';
 
 import 'package:ai_forma/core/theme/app_colors.dart';
-import 'package:ai_forma/core/theme/app_text_styles.dart';
 import 'package:ai_forma/core/widgets/app_bottom_sheet.dart';
-import 'package:ai_forma/core/widgets/primary_button.dart';
+import 'package:ai_forma/features/auth/controllers/user_controller.dart';
+import 'package:ai_forma/features/check_in/constants/check_in_strings.dart';
 import 'package:ai_forma/features/check_in/models/checkin_status_model.dart';
 import 'package:ai_forma/features/check_in/models/scan_validation_model.dart';
 import 'package:ai_forma/features/check_in/repositories/check_in_repository.dart';
+import 'package:ai_forma/features/check_in/view/widgets/schedule_feedback_bottom_sheet.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -15,8 +16,6 @@ import 'package:flutter_devlog/flutter_devlog.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:image/image.dart' as img;
-
-import 'package:ai_forma/features/auth/controllers/user_controller.dart';
 
 /// Background isolate image processing helper to prevent main UI thread jank.
 Uint8List? processCapturedImageBytes({
@@ -74,7 +73,7 @@ class CheckInController extends GetxController {
   final RxBool isCapturing = false.obs;
 
   // Scan Angle State: 'Front', 'Side', 'Back'
-  final RxString currentAngle = 'Front'.obs;
+  final RxString currentAngle = CheckInStrings.angleFront.obs;
 
   // Captured Image Files
   final Rx<File?> frontImage = Rx<File?>(null);
@@ -134,10 +133,10 @@ class CheckInController extends GetxController {
           showScheduleErrorPopup(activeContext, failure.message);
         } else {
           Get.snackbar(
-            'Schedule Change Restricted',
+            CheckInStrings.scheduleChangeRestricted,
             failure.message.isNotEmpty
                 ? failure.message
-                : 'Failed to update check-in day',
+                : CheckInStrings.failedToUpdateCheckInDay,
             snackPosition: SnackPosition.BOTTOM,
             backgroundColor: Colors.redAccent,
             colorText: Colors.white,
@@ -158,8 +157,8 @@ class CheckInController extends GetxController {
 
         final String popupTitle = confirmation?['title']?.toString() ??
             (activeCycleExists
-                ? 'Scan Schedule Change Set'
-                : 'Scan Schedule Updated');
+                ? CheckInStrings.scanScheduleChangeSet
+                : CheckInStrings.scanScheduleUpdated);
 
         final String? nextScanLine = confirmation?['next_scan_line']?.toString();
         final List<dynamic>? bodyList = confirmation?['body'] as List<dynamic>?;
@@ -169,7 +168,7 @@ class CheckInController extends GetxController {
 
         final String message = nextScanLine != null
             ? (bodyJoined.isNotEmpty ? '$nextScanLine\n\n$bodyJoined' : nextScanLine)
-            : (data['message']?.toString() ?? 'Weekly scan day successfully updated.');
+            : (data['message']?.toString() ?? CheckInStrings.weeklyScanDayUpdated);
 
         if (scanDay != null && scanDay.isNotEmpty) {
           selectedCheckDay.value = scanDay;
@@ -211,142 +210,20 @@ class CheckInController extends GetxController {
     bool activeCycleExists = false,
     String? pendingScanDay,
   }) {
-    final displayTitle = title ??
-        (activeCycleExists
-            ? 'Scan Schedule Change Set'
-            : 'Scan Schedule Updated');
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: AppColors.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (ctx) => Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 44,
-              height: 4,
-              decoration: BoxDecoration(
-                color: AppColors.border,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const SizedBox(height: 20),
-            Container(
-              width: 64,
-              height: 64,
-              decoration: const BoxDecoration(
-                color: AppColors.iconBackground,
-                shape: BoxShape.circle,
-              ),
-              child: const Center(
-                child: Icon(
-                  Icons.event_available_rounded,
-                  size: 32,
-                  color: AppColors.brandTeal,
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              displayTitle,
-              style: AppTextStyles.authSectionTitle,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 10),
-            Text(
-              message,
-              style: const TextStyle(
-                fontSize: 14,
-                color: AppColors.textSecondary,
-                height: 1.4,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 24),
-            PrimaryButton(
-              onPressed: () => Navigator.of(ctx).pop(),
-              label: 'GOT IT',
-            ),
-            const SizedBox(height: 8),
-          ],
-        ),
-      ),
+    ScheduleFeedbackBottomSheet.showSuccess(
+      context,
+      title: title,
+      message: message,
+      activeCycleExists: activeCycleExists,
+      pendingScanDay: pendingScanDay,
     );
   }
 
   /// Show popup error dialog when schedule update fails (e.g. 7-day restriction)
   void showScheduleErrorPopup(BuildContext context, String message) {
-    final cleanMsg = message.isNotEmpty
-        ? message
-        : 'You can only change your weekly check-in day once every 7 days.';
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: AppColors.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (ctx) => Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 44,
-              height: 4,
-              decoration: BoxDecoration(
-                color: AppColors.border,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const SizedBox(height: 20),
-            Container(
-              width: 64,
-              height: 64,
-              decoration: BoxDecoration(
-                color: Colors.red.withValues(alpha: 0.1),
-                shape: BoxShape.circle,
-              ),
-              child: const Center(
-                child: Icon(
-                  Icons.calendar_month_rounded,
-                  size: 32,
-                  color: Colors.redAccent,
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'Schedule Change Restricted',
-              style: AppTextStyles.authSectionTitle,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 10),
-            Text(
-              cleanMsg,
-              style: const TextStyle(
-                fontSize: 14,
-                color: AppColors.textSecondary,
-                height: 1.4,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 24),
-            PrimaryButton(
-              onPressed: () => Navigator.of(ctx).pop(),
-              label: 'GOT IT',
-            ),
-            const SizedBox(height: 8),
-          ],
-        ),
-      ),
+    ScheduleFeedbackBottomSheet.showError(
+      context,
+      message: message,
     );
   }
 
@@ -366,7 +243,7 @@ class CheckInController extends GetxController {
 
   /// Initialize real device camera
   Future<void> initCamera() async {
-    // If camera is already initialized and running, reuse it instantly without delay!
+    // If camera is already initialized and running, reuse it instantly without delay
     if (cameraController != null && cameraController!.value.isInitialized) {
       isCameraInitialized(true);
       return;
@@ -377,7 +254,7 @@ class CheckInController extends GetxController {
         availableCameraList = await availableCameras();
       }
       if (availableCameraList.isEmpty) {
-        errorMessage('No camera found on this device.');
+        errorMessage(CheckInStrings.noCameraFound);
         return;
       }
 
@@ -389,7 +266,7 @@ class CheckInController extends GetxController {
 
       await _initCameraController(availableCameraList[selectedCameraIndex]);
     } catch (e) {
-      errorMessage('Failed to initialize camera: $e');
+      errorMessage('${CheckInStrings.failedToInitCamera}$e');
     }
   }
 
@@ -418,19 +295,12 @@ class CheckInController extends GetxController {
     await _initCameraController(availableCameraList[selectedCameraIndex]);
   }
 
-  /// Show Top Right "Tips" ⓘ Bottom Sheet Modal
+  /// Show Top Right "Tips" Bottom Sheet Modal
   void showPhotoTips(BuildContext context) {
     AppBottomSheet.show(
       context: context,
-      title: 'Photo Tips',
-      bulletPoints: const [
-        'Use good, even lighting.',
-        'Stand against a plain background.',
-        'Keep your whole body inside the frame.',
-        'Stand naturally and look straight ahead.',
-        'Wear fitted clothing where possible.',
-        'Avoid hats, bulky clothing and loose accessories.',
-      ],
+      title: CheckInStrings.photoTipsTitle,
+      bulletPoints: CheckInStrings.photoTipsBulletPoints,
     );
   }
 
@@ -440,36 +310,18 @@ class CheckInController extends GetxController {
     List<String> points;
 
     switch (currentAngle.value) {
-      case 'Side':
-        title = 'Side Photo Guide';
-        points = const [
-          'Turn 90 degrees to face your left or right side.',
-          'Stand straight with your posture natural.',
-          'Keep your arms slightly away from your sides so your body outline is clear.',
-          'Look straight ahead in the direction you are facing.',
-          'Stay still until the photo is taken.',
-        ];
+      case CheckInStrings.angleSide:
+        title = CheckInStrings.sidePhotoGuideTitle;
+        points = CheckInStrings.sidePhotoGuidePoints;
         break;
-      case 'Back':
-        title = 'Back Photo Guide';
-        points = const [
-          'Turn around so your back faces the camera.',
-          'Stand tall with your feet shoulder-width apart.',
-          'Let your arms hang slightly away from your body.',
-          'Keep your head level looking straight ahead.',
-          'Stay still until the photo is taken.',
-        ];
+      case CheckInStrings.angleBack:
+        title = CheckInStrings.backPhotoGuideTitle;
+        points = CheckInStrings.backPhotoGuidePoints;
         break;
-      case 'Front':
+      case CheckInStrings.angleFront:
       default:
-        title = 'Front Photo Guide';
-        points = const [
-          'Stand tall facing the camera.',
-          'Keep your feet shoulder-width apart.',
-          'Let your arms hang slightly away from your body.',
-          'Keep your head level and look straight ahead.',
-          'Stay still until the photo is taken.',
-        ];
+        title = CheckInStrings.frontPhotoGuideTitle;
+        points = CheckInStrings.frontPhotoGuidePoints;
         break;
     }
 
@@ -508,11 +360,11 @@ class CheckInController extends GetxController {
         await file.writeAsBytes(processedBytes);
       }
 
-      if (currentAngle.value == 'Front') {
+      if (currentAngle.value == CheckInStrings.angleFront) {
         frontImage.value = file;
-      } else if (currentAngle.value == 'Side') {
+      } else if (currentAngle.value == CheckInStrings.angleSide) {
         sideImage.value = file;
-      } else if (currentAngle.value == 'Back') {
+      } else if (currentAngle.value == CheckInStrings.angleBack) {
         backImage.value = file;
       }
 
@@ -520,7 +372,7 @@ class CheckInController extends GetxController {
       return file;
     } catch (e) {
       isCapturing(false);
-      errorMessage('Error capturing photo: $e');
+      errorMessage('${CheckInStrings.errorCapturingPhoto}$e');
       return null;
     }
   }
@@ -547,11 +399,11 @@ class CheckInController extends GetxController {
           await file.writeAsBytes(processedBytes);
         }
 
-        if (currentAngle.value == 'Front') {
+        if (currentAngle.value == CheckInStrings.angleFront) {
           frontImage.value = file;
-        } else if (currentAngle.value == 'Side') {
+        } else if (currentAngle.value == CheckInStrings.angleSide) {
           sideImage.value = file;
-        } else if (currentAngle.value == 'Back') {
+        } else if (currentAngle.value == CheckInStrings.angleBack) {
           backImage.value = file;
         }
         return file;
@@ -567,7 +419,7 @@ class CheckInController extends GetxController {
     frontImage.value = null;
     sideImage.value = null;
     backImage.value = null;
-    currentAngle.value = 'Front';
+    currentAngle.value = CheckInStrings.angleFront;
     validationResult.value = null;
     errorMessage('');
   }
@@ -592,9 +444,7 @@ class CheckInController extends GetxController {
     if (frontImage.value == null ||
         sideImage.value == null ||
         backImage.value == null) {
-      errorMessage(
-        'Please capture front, side, and back photos before validating.',
-      );
+      errorMessage(CheckInStrings.captureAllPhotosWarning);
       return false;
     }
 
@@ -632,9 +482,7 @@ class CheckInController extends GetxController {
     if (frontImage.value == null ||
         sideImage.value == null ||
         backImage.value == null) {
-      errorMessage(
-        'Please capture front, side, and back photos before submitting.',
-      );
+      errorMessage(CheckInStrings.submitAllPhotosWarning);
       return false;
     }
 

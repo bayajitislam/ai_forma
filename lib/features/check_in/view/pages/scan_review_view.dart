@@ -1,20 +1,16 @@
-import 'dart:io';
-
-import 'package:ai_forma/core/widgets/app_loader.dart';
-import 'package:ai_forma/features/check_in/controllers/check_in_controller.dart';
-import 'package:ai_forma/features/check_in/models/scan_validation_model.dart';
 import 'package:flutter/material.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
 import 'package:ai_forma/core/theme/app_text_styles.dart';
+import 'package:ai_forma/core/widgets/app_loader.dart';
 import 'package:ai_forma/core/widgets/app_secondary_button.dart';
 import 'package:ai_forma/core/widgets/primary_button.dart';
 import 'package:ai_forma/features/check_in/constants/check_in_strings.dart';
+import 'package:ai_forma/features/check_in/controllers/check_in_controller.dart';
 import 'package:ai_forma/features/check_in/view/pages/camera_capture_view.dart';
 import 'package:ai_forma/features/check_in/view/widgets/check_in_header.dart';
-import 'package:ai_forma/features/check_in/view/widgets/check_in_widgets.dart';
-import 'package:get/get.dart';
-
+import 'package:ai_forma/features/check_in/view/widgets/scan_review_tile.dart';
 import 'package:ai_forma/routes/routes_name.dart';
+import 'package:get/get.dart';
 
 class ScanReviewView extends StatefulWidget {
   const ScanReviewView({super.key});
@@ -71,23 +67,23 @@ class _ScanReviewViewState extends State<ScanReviewView> {
                 final isValidating = controller?.isValidating.value ?? false;
                 final result = controller?.validationResult.value;
 
-                String title = 'Review Your Scan';
+                String title = CheckInStrings.reviewYourScan;
                 String subtitle = CheckInStrings.scanReadySubtitle;
 
                 if (isValidating) {
-                  title = 'Checking Photo Quality...';
-                  subtitle = 'Please wait while AI verifies your scan images.';
+                  title = CheckInStrings.checkingPhotoQuality;
+                  subtitle = CheckInStrings.checkingPhotoQualitySubtitle;
                 } else if (result != null) {
                   if (result.allValid) {
                     title = CheckInStrings.scanReadyTitle;
-                    subtitle = 'All photos validated successfully! Tap Looks Good to proceed.';
+                    subtitle = CheckInStrings.allPhotosValidatedSubtitle;
                   } else {
-                    title = 'Scan Quality Issues';
-                    subtitle = 'Some photos failed quality checks. Please retake.';
+                    title = CheckInStrings.scanQualityIssues;
+                    subtitle = CheckInStrings.scanQualityIssuesSubtitle;
                   }
                 } else if (controller?.errorMessage.value.isNotEmpty == true) {
-                  title = 'Connection Issue';
-                  subtitle = 'Unable to validate photos due to network error. Tap Retry to try again.';
+                  title = CheckInStrings.connectionIssue;
+                  subtitle = CheckInStrings.connectionIssueSubtitle;
                 }
 
                 return Column(
@@ -118,29 +114,26 @@ class _ScanReviewViewState extends State<ScanReviewView> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _buildReviewTile(
+                          ScanReviewTile(
                             label: CheckInStrings.angleFront,
                             angle: ScanAngle.front,
                             file: controller.frontImage.value,
                             checkDetail: result?.frontCheck,
                             isValidating: isValidating,
-                            controller: controller,
                           ),
-                          _buildReviewTile(
+                          ScanReviewTile(
                             label: CheckInStrings.angleSide,
                             angle: ScanAngle.side,
                             file: controller.sideImage.value,
                             checkDetail: result?.sideCheck,
                             isValidating: isValidating,
-                            controller: controller,
                           ),
-                          _buildReviewTile(
+                          ScanReviewTile(
                             label: CheckInStrings.angleBack,
                             angle: ScanAngle.back,
                             file: controller.backImage.value,
                             checkDetail: result?.backCheck,
                             isValidating: isValidating,
-                            controller: controller,
                           ),
                           const SizedBox(height: 12),
 
@@ -161,7 +154,7 @@ class _ScanReviewViewState extends State<ScanReviewView> {
                                   ),
                                   SizedBox(width: 12),
                                   Text(
-                                    'Validating scan images with AI...',
+                                    CheckInStrings.validatingWithAi,
                                     style: TextStyle(
                                       fontSize: 13,
                                       color: AppColors.textSecondary,
@@ -182,12 +175,15 @@ class _ScanReviewViewState extends State<ScanReviewView> {
                                 ),
                                 child: const Row(
                                   children: [
-                                    Icon(Icons.check_circle,
-                                        color: AppColors.brandTeal, size: 20),
+                                    Icon(
+                                      Icons.check_circle,
+                                      color: AppColors.brandTeal,
+                                      size: 20,
+                                    ),
                                     SizedBox(width: 10),
                                     Expanded(
                                       child: Text(
-                                        'All photos validated successfully!',
+                                        CheckInStrings.allPhotosValidated,
                                         style: TextStyle(
                                           fontSize: 13,
                                           color: AppColors.brandTeal,
@@ -204,16 +200,21 @@ class _ScanReviewViewState extends State<ScanReviewView> {
                                 decoration: BoxDecoration(
                                   color: Colors.red.withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(color: Colors.redAccent.withValues(alpha: 0.5)),
+                                  border: Border.all(
+                                    color: Colors.redAccent.withValues(alpha: 0.5),
+                                  ),
                                 ),
                                 child: const Row(
                                   children: [
-                                    Icon(Icons.error_outline,
-                                        color: Colors.redAccent, size: 20),
+                                    Icon(
+                                      Icons.error_outline,
+                                      color: Colors.redAccent,
+                                      size: 20,
+                                    ),
                                     SizedBox(width: 10),
                                     Expanded(
                                       child: Text(
-                                        'Validation failed. Please retake failed photos.',
+                                        CheckInStrings.validationFailedRetake,
                                         style: TextStyle(
                                           fontSize: 13,
                                           color: Colors.redAccent,
@@ -299,7 +300,7 @@ class _ScanReviewViewState extends State<ScanReviewView> {
                     return PrimaryButton(
                       isLoading: isValidating,
                       onPressed: () => controller.validateImages(),
-                      label: 'RETRY VALIDATION',
+                      label: CheckInStrings.retryValidation,
                     );
                   }
 
@@ -344,117 +345,6 @@ class _ScanReviewViewState extends State<ScanReviewView> {
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildReviewTile({
-    required String label,
-    required ScanAngle angle,
-    required File? file,
-    required ViewCheckDetail? checkDetail,
-    required bool isValidating,
-    required CheckInController controller,
-  }) {
-    final bool hasResult = checkDetail != null && !isValidating;
-    final bool isValid = hasResult && checkDetail.isValid;
-    final bool hasError = hasResult && !checkDetail.isValid;
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: hasError ? Colors.redAccent.withValues(alpha: 0.5) : AppColors.cardBorder,
-          width: hasError ? 1.5 : 1.0,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: AppColors.transparent,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: file != null
-                    ? ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: Image.file(file, fit: BoxFit.contain),
-                      )
-                    : const Icon(Icons.image, color: AppColors.textSecondary),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      label,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                    if (isValidating)
-                      const Text(
-                        'Checking image quality...',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-              if (isValidating)
-                const AppLoader(
-                  color: AppColors.brandTeal,
-                  size: 20,
-                )
-              else if (isValid)
-                const Icon(Icons.check_circle_rounded, color: AppColors.brandTeal, size: 24)
-              else if (hasError)
-                const Icon(Icons.cancel_rounded, color: Colors.redAccent, size: 24)
-              else
-                const Icon(Icons.check_circle_outline, color: AppColors.textSecondary, size: 24),
-            ],
-          ),
-          if (hasError) ...[
-            const SizedBox(height: 8),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              decoration: BoxDecoration(
-                color: Colors.red.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.info_outline, size: 14, color: Colors.redAccent),
-                  const SizedBox(width: 6),
-                  Expanded(
-                    child: Text(
-                      checkDetail.displayReason,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: Colors.redAccent,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ],
       ),
     );
   }

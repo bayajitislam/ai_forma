@@ -1,6 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:ai_forma/core/theme/app_text_styles.dart';
 import 'package:ai_forma/core/widgets/app_brand_text.dart';
+import 'package:ai_forma/features/auth/constants/auth_strings.dart';
+import 'package:flutter/material.dart';
 
 class AuthBrandTitle extends StatelessWidget {
   const AuthBrandTitle({
@@ -41,12 +42,15 @@ class AuthWelcomeTitle extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(
-          'Welcome to ',
+        const Text(
+          AuthStrings.successTitlePrefix,
           style: AppTextStyles.successTitle,
         ),
-        AppBrandText(height: 30, width: 130),
-        const Text('.', style: AppTextStyles.successTitle),
+        const AppBrandText(height: 30, width: 130),
+        const Text(
+          AuthStrings.successTitleSuffix,
+          style: AppTextStyles.successTitle,
+        ),
       ],
     );
   }

@@ -153,7 +153,7 @@ class _CameraCaptureViewState extends State<CameraCaptureView>
     _galleryAnimController.forward(from: 0);
   }
 
-  /// User accepts photo -> Proceed to next pose or Review screen INSTANTLY without page destruction or camera dispose!
+  /// User accepts photo -> Proceed to next pose or Review screen INSTANTLY without page destruction or camera dispose
   void _onAcceptPhoto() {
     final next = _nextAngle;
     if (next != null) {
@@ -239,7 +239,7 @@ class _CameraCaptureViewState extends State<CameraCaptureView>
                       ),
                     ),
                   ),
-                  // Top Right Tips Icon (ⓘ)
+                  // Top Right Tips Icon (i)
                   IconButton(
                     onPressed: () => controller.showPhotoTips(context),
                     icon: const AppIcon(
@@ -297,7 +297,7 @@ class _CameraCaptureViewState extends State<CameraCaptureView>
                                 AppLoader(color: Colors.white),
                                 SizedBox(height: 12),
                                 Text(
-                                  "Starting camera...",
+                                  CheckInStrings.startingCamera,
                                   style: TextStyle(
                                     color: Colors.white70,
                                     fontSize: 13,
@@ -380,7 +380,7 @@ class _CameraCaptureViewState extends State<CameraCaptureView>
                                       ),
                                       SizedBox(width: 6),
                                       Text(
-                                        'Gallery',
+                                        CheckInStrings.gallery,
                                         style: TextStyle(
                                           fontFamily: AppFonts.family,
                                           fontSize: 12,
@@ -429,7 +429,7 @@ class _CameraCaptureViewState extends State<CameraCaptureView>
                             color: Colors.white,
                           ),
                           label: const Text(
-                            'Retake',
+                            CheckInStrings.retakePhoto,
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 16,
@@ -455,7 +455,7 @@ class _CameraCaptureViewState extends State<CameraCaptureView>
                             color: AppColors.onPrimary,
                           ),
                           label: const Text(
-                            'Use Photo',
+                            CheckInStrings.usePhoto,
                             style: TextStyle(
                               color: AppColors.onPrimary,
                               fontSize: 16,
@@ -477,7 +477,7 @@ class _CameraCaptureViewState extends State<CameraCaptureView>
                   children: [
                     CameraActionButton(
                       icon: AppIcons.refresh,
-                      label: 'Switch',
+                      label: CheckInStrings.switchCamera,
                       onTap: () => controller.toggleCamera(),
                     ),
                     Obx(

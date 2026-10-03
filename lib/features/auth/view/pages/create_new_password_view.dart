@@ -9,6 +9,7 @@ import 'package:ai_forma/core/widgets/primary_button.dart';
 import 'package:ai_forma/features/auth/constants/auth_strings.dart';
 import 'package:ai_forma/features/auth/controllers/forgot_password_controller.dart';
 import 'package:ai_forma/features/auth/view/widgets/auth_header.dart';
+import 'package:ai_forma/features/auth/view/widgets/auth_message_banner.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -95,35 +96,7 @@ class CreateNewPasswordView extends GetView<ForgotPasswordController> {
                             ),
                           ),
                         ),
-                        const SizedBox(height: 16),
-                        // API Error Banner
-                        Obx(() {
-                          final err = controller.errorMessage.value;
-                          if (err.isEmpty) return const SizedBox.shrink();
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 8),
-                            child: Row(
-                              children: [
-                                Icon(
-                                  Icons.error_outline_rounded,
-                                  size: 14,
-                                  color: Colors.red.shade400,
-                                ),
-                                const SizedBox(width: 6),
-                                Expanded(
-                                  child: Text(
-                                    err,
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      color: Colors.red.shade400,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                        }),
+                        AuthMessageBanner(errorMessage: controller.errorMessage),
                         const Spacer(),
                         Obx(
                           () => PrimaryButton(

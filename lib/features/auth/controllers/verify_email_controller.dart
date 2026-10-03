@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:ai_forma/core/storage/auth_storage.dart';
+import 'package:ai_forma/features/auth/constants/auth_strings.dart';
 import 'package:ai_forma/features/auth/controllers/user_controller.dart';
 import 'package:ai_forma/features/auth/models/verify_email_model.dart';
 import 'package:ai_forma/features/auth/repositories/verify_email_repository.dart';
@@ -76,7 +77,7 @@ class VerifyEmailController extends GetxController {
     successMessage('');
 
     if (_code.length < 6) {
-      errorMessage('Please enter the full 6-digit code.');
+      errorMessage(AuthStrings.emailVerificationCodeIncomplete);
       return false;
     }
 

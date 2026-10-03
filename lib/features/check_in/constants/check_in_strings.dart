@@ -1,5 +1,8 @@
 abstract final class CheckInStrings {
-  // Home tab
+  // Home tab & Dashboard
+  static const String checkInHeadline = 'Check-In';
+  static const String checkInHomeSubtitle =
+      'Track your progress with a new body scan.';
   static const String cameraPosition = 'Position your camera';
   static const String result = 'Result';
   static const String analysingComplete = 'Analysing complete';
@@ -61,13 +64,110 @@ abstract final class CheckInStrings {
   static const String retake = 'Retake';
   static const String guide = 'Guide';
   static const String tips = 'Tips';
+  static const String startingCamera = 'Starting camera...';
+  static const String gallery = 'Gallery';
+  static const String switchCamera = 'Switch';
+  static const String usePhoto = 'Use Photo';
+  static const String retakePhoto = 'Retake';
+  static const String noCameraFound = 'No camera found on this device.';
+  static const String failedToInitCamera = 'Failed to initialize camera: ';
+  static const String errorCapturingPhoto = 'Error capturing photo: ';
 
-  // Review
+  // Photo Tips & Guide modal strings
+  static const String photoTipsTitle = 'Photo Tips';
+  static const List<String> photoTipsBulletPoints = [
+    'Use good, even lighting.',
+    'Stand against a plain background.',
+    'Keep your whole body inside the frame.',
+    'Stand naturally and look straight ahead.',
+    'Wear fitted clothing where possible.',
+    'Avoid hats, bulky clothing and loose accessories.',
+  ];
+
+  static const String sidePhotoGuideTitle = 'Side Photo Guide';
+  static const List<String> sidePhotoGuidePoints = [
+    'Turn 90 degrees to face your left or right side.',
+    'Stand straight with your posture natural.',
+    'Keep your arms slightly away from your sides so your body outline is clear.',
+    'Look straight ahead in the direction you are facing.',
+    'Stay still until the photo is taken.',
+  ];
+
+  static const String backPhotoGuideTitle = 'Back Photo Guide';
+  static const List<String> backPhotoGuidePoints = [
+    'Turn around so your back faces the camera.',
+    'Stand tall with your feet shoulder-width apart.',
+    'Let your arms hang slightly away from your body.',
+    'Keep your head level looking straight ahead.',
+    'Stay still until the photo is taken.',
+  ];
+
+  static const String frontPhotoGuideTitle = 'Front Photo Guide';
+  static const List<String> frontPhotoGuidePoints = [
+    'Stand tall facing the camera.',
+    'Keep your feet shoulder-width apart.',
+    'Let your arms hang slightly away from your body.',
+    'Keep your head level and look straight ahead.',
+    'Stay still until the photo is taken.',
+  ];
+
+  // Review & Validation
+  static const String reviewYourScan = 'Review Your Scan';
+  static const String checkingPhotoQuality = 'Checking Photo Quality...';
+  static const String checkingPhotoQualitySubtitle =
+      'Please wait while AI verifies your scan images.';
   static const String scanReadyTitle = 'Your scan is ready.';
   static const String scanReadySubtitle =
       'Review your photos before AiFORMA begins analysing your physique.';
+  static const String allPhotosValidated = 'All photos validated successfully!';
+  static const String allPhotosValidatedSubtitle =
+      'All photos validated successfully! Tap Looks Good to proceed.';
+  static const String scanQualityIssues = 'Scan Quality Issues';
+  static const String scanQualityIssuesSubtitle =
+      'Some photos failed quality checks. Please retake.';
+  static const String connectionIssue = 'Connection Issue';
+  static const String connectionIssueSubtitle =
+      'Unable to validate photos due to network error. Tap Retry to try again.';
+  static const String validatingWithAi = 'Validating scan images with AI...';
+  static const String validationFailedRetake =
+      'Validation failed. Please retake failed photos.';
+  static const String retryValidation = 'RETRY VALIDATION';
+  static const String checkingImageQuality = 'Checking image quality...';
   static const String looksGood = 'LOOK\u2019S GOOD';
   static const String retakePhotos = 'RETAKE PHOTOS';
+  static const String captureAllPhotosWarning =
+      'Please capture front, side, and back photos before validating.';
+  static const String submitAllPhotosWarning =
+      'Please capture front, side, and back photos before submitting.';
+
+  // Schedule Feedback & Day Picker
+  static const String chooseCheckInDayTitle = 'Choose your check-in day';
+  static const String chooseCheckInDaySubtitle =
+      'Select the day you prefer to complete your weekly body scan.';
+  static const String save = 'SAVE';
+  static const String gotIt = 'GOT IT';
+  static const String scheduleChangeRestricted = 'Schedule Change Restricted';
+  static const String scheduleChangeRestrictedBody =
+      'You can only change your weekly check-in day once every 7 days.';
+  static const String failedToUpdateCheckInDay =
+      'Failed to update check-in day';
+  static const String scanScheduleChangeSet = 'Scan Schedule Change Set';
+  static const String scanScheduleUpdated = 'Scan Schedule Updated';
+  static const String weeklyScanDayUpdated =
+      'Weekly scan day successfully updated.';
+  static const String nextWeeklyScanSchedule = 'Next Weekly Scan Schedule';
+  static const String nextScanDayLabel = 'Next Check-In Day';
+  static const String transitionScheduleActive = 'Transition Schedule Active';
+  static const String pendingChangePrefix = 'Pending change to ';
+  static const String pendingChangeSuffix = ' (takes effect next cycle)';
+  static const String nextWeeklyAvailablePrefix =
+      'Next Weekly check-in available on ';
+
+  static String nextScanAvailableMessage(String day) =>
+      'Your check-in for this week is completed! Your next scan will be available on $day.';
+
+  static String transitionScheduleBody(String day) =>
+      'Your new scan schedule is set. Your next weekly scan is scheduled for $day. Your Daily Brief will begin 6 days before your scan.';
 
   // Weight
   static const String weightTitle = 'Current Weight';
@@ -96,13 +196,22 @@ abstract final class CheckInStrings {
   static const String stepInsights = 'Generating personalized insights';
   static const String stepProfile = 'Building your progress profile';
 
+  // Analysis Error Dialog
+  static const String checkInWindowClosed = 'Check-In Window Closed';
+  static const String analysisFailed = 'Analysis Failed';
+  static const String analysisFailedDefaultMessage =
+      'Failed to process body scan analysis. Please try again.';
+  static const String returnToDashboard = 'Return to Dashboard';
+  static const String backToReview = 'Back to Review';
+  static const String tryAgain = 'Try Again';
+
   // Complete
   static const String completeTitle = 'Analysis Complete';
+  static const String analysisCompleteBadge = 'ANALYSIS COMPLETE';
   static const String completeSubtitleFirstScan =
       'Your first physique analysis is ready. Discover what AiFORMA has detected.';
   static const String completeSubtitleRepeatScan =
       'Your latest analysis is ready. See what\u2019s changed since your previous scan.';
-  // Keep legacy alias for any code that still references the old constant
   static const String completeSubtitle = completeSubtitleRepeatScan;
   static const String checkInLabel = 'Check-In';
   static const String currentStreakLabel = 'Current Streak';
@@ -113,4 +222,19 @@ abstract final class CheckInStrings {
   static const String momentumValue = '82';
   static const String momentumSuffix = ' /100';
   static const String viewResults = 'VIEW MY RESULTS';
+
+  // Measurement points on body silhouette
+  static const String pointMuscleDevelopment = 'MUSCLE\nDEVELOPMENT';
+  static const String pointBodyComposition = 'BODY\nCOMPOSITION';
+  static const String pointPostureBalance = 'POSTURE\nBALANCE';
+  static const String pointSymmetryAnalysis = 'SYMMETRY\nANALYSIS';
+  static const String pointFatDistribution = 'FAT\nDISTRIBUTION';
+  static const String pointPhysiqueScore = 'PHYSIQUE\nSCORE';
+
+  // Header & Logout Confirmation
+  static const String logoutConfirmTitle = 'Log Out?';
+  static const String logoutConfirmMessage =
+      'Are you sure you want to log out? You need to complete your initial check-in scan to prepare your personalized dashboard.';
+  static const String cancel = 'Cancel';
+  static const String logout = 'Log Out';
 }

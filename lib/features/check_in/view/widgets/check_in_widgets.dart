@@ -6,63 +6,7 @@ import 'package:ai_forma/core/theme/app_text_styles.dart';
 import 'package:ai_forma/core/widgets/app_icon.dart';
 import 'package:ai_forma/features/check_in/constants/check_in_strings.dart';
 
-class ScanReviewTile extends StatelessWidget {
-  const ScanReviewTile({
-    super.key,
-    required this.label,
-    required this.imagePath,
-  });
-
-  final String label;
-  final String imagePath;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.cardBorder),
-      ),
-      child: Row(
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: Image.asset(
-              imagePath,
-              width: 48,
-              height: 64,
-              fit: BoxFit.cover,
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Text(
-              label,
-              style: AppTextStyles.featureTitle.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-          Container(
-            width: 24,
-            height: 24,
-            decoration: const BoxDecoration(
-              color: AppColors.brandTeal,
-              shape: BoxShape.circle,
-            ),
-            child: const AppIcon(
-              icon: AppIcons.check,
-              size: 14,
-              color: AppColors.onPrimary,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
+export 'scan_review_tile.dart';
 
 class MeasurementRow extends StatefulWidget {
   const MeasurementRow({

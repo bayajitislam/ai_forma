@@ -1,4 +1,5 @@
 import 'package:ai_forma/core/storage/auth_storage.dart';
+import 'package:ai_forma/features/auth/constants/auth_strings.dart';
 import 'package:ai_forma/features/auth/controllers/user_controller.dart';
 import 'package:ai_forma/features/auth/models/login_model.dart';
 import 'package:ai_forma/features/auth/repositories/login_repository.dart';
@@ -40,17 +41,17 @@ class LoginController extends GetxController {
     final password = passwordController.text;
 
     if (email.isEmpty) {
-      emailError('Email address is required.');
+      emailError(AuthStrings.emailRequired);
       return false;
     }
     final emailRegex = RegExp(r'^[\w.+-]+@[\w-]+\.[\w.]+$');
     if (!emailRegex.hasMatch(email)) {
-      emailError('Enter a valid email address.');
+      emailError(AuthStrings.emailInvalid);
       return false;
     }
 
     if (password.isEmpty) {
-      passwordError('Password is required.');
+      passwordError(AuthStrings.passwordRequired);
       return false;
     }
 

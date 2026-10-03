@@ -12,6 +12,7 @@ import 'package:ai_forma/features/auth/constants/auth_strings.dart';
 import 'package:ai_forma/features/auth/view/widgets/auth_brand_title.dart';
 import 'package:ai_forma/features/auth/view/widgets/auth_flow_header.dart';
 import 'package:ai_forma/features/auth/view/widgets/auth_footer_link.dart';
+import 'package:ai_forma/features/auth/view/widgets/auth_message_banner.dart';
 import 'package:ai_forma/features/auth/view/widgets/password_requirements.dart';
 import 'package:get/get.dart';
 
@@ -97,33 +98,10 @@ class SignupView extends GetView<SignupController> {
                             ),
                           ),
                         ),
-                        const SizedBox(height: 16),
-                        //API / general error banner above password requirements
-                        Obx(() {
-                          final msg = controller.errorMessage.value;
-                          if (msg.isEmpty) return const SizedBox.shrink();
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 12),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Icon(Icons.error_outline_rounded,
-                                    size: 15, color: Colors.red.shade400),
-                                const SizedBox(width: 6),
-                                Expanded(
-                                  child: Text(
-                                    msg,
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      color: Colors.red.shade400,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                        }),
+                        AuthMessageBanner(
+                          errorMessage: controller.errorMessage,
+                          padding: const EdgeInsets.only(bottom: 12),
+                        ),
                         const PasswordRequirements(),
                         const Spacer(),
                         const SizedBox(height: 16),
