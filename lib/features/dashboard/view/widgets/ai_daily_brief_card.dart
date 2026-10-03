@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
 import 'package:ai_forma/core/theme/app_fonts.dart';
+import 'package:ai_forma/core/widgets/app_snackbar.dart';
 import 'package:ai_forma/features/dashboard/constants/dashboard_strings.dart';
 import 'package:ai_forma/features/dashboard/controllers/home_controller.dart';
 import 'package:ai_forma/features/dashboard/models/home_response_model.dart';
@@ -53,13 +54,9 @@ class AIDailyBriefCard extends StatelessWidget {
             alreadyAnswered: dailyBriefData?.alreadyAnswered ?? false,
           );
           if (result.success) {
-            Get.snackbar(
-              DashboardStrings.success,
+            AppSnackbar.showSuccess(
               DashboardStrings.weightRecordedSuccess,
-              snackPosition: SnackPosition.BOTTOM,
-              backgroundColor: AppColors.brandTeal,
-              colorText: Colors.white,
-              margin: const EdgeInsets.all(16),
+              title: DashboardStrings.success,
             );
           }
         } else {
@@ -67,13 +64,9 @@ class AIDailyBriefCard extends StatelessWidget {
             weightKg: savedWeight,
           );
           if (result.success) {
-            Get.snackbar(
-              DashboardStrings.success,
+            AppSnackbar.showSuccess(
               DashboardStrings.weightRecordedSuccess,
-              snackPosition: SnackPosition.BOTTOM,
-              backgroundColor: AppColors.brandTeal,
-              colorText: Colors.white,
-              margin: const EdgeInsets.all(16),
+              title: DashboardStrings.success,
             );
           }
         }
@@ -106,22 +99,14 @@ class AIDailyBriefCard extends StatelessWidget {
         }
 
         if (result.success) {
-          Get.snackbar(
-            DashboardStrings.success,
+          AppSnackbar.showSuccess(
             result.message,
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: AppColors.brandTeal,
-            colorText: Colors.white,
-            margin: const EdgeInsets.all(16),
+            title: DashboardStrings.success,
           );
         } else {
-          Get.snackbar(
-            DashboardStrings.error,
+          AppSnackbar.showError(
             result.message,
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: Colors.redAccent,
-            colorText: Colors.white,
-            margin: const EdgeInsets.all(16),
+            title: DashboardStrings.error,
           );
         }
       },

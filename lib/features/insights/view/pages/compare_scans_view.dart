@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:ai_forma/core/network/dio_client.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
 import 'package:ai_forma/core/theme/app_text_styles.dart';
 import 'package:ai_forma/core/widgets/app_network_error_widget.dart';
@@ -8,7 +7,6 @@ import 'package:ai_forma/core/widgets/primary_button.dart';
 import 'package:ai_forma/features/check_in/view/widgets/check_in_header.dart';
 import 'package:ai_forma/features/insights/constants/insights_strings.dart';
 import 'package:ai_forma/features/insights/controllers/compare_scans_controller.dart';
-import 'package:ai_forma/features/insights/repositories/insights_repository.dart';
 import 'package:ai_forma/features/insights/view/pages/comparison_summary_view.dart';
 import 'package:ai_forma/features/insights/view/widgets/compare_scan_card.dart';
 import 'package:ai_forma/core/utils/app_date_formatter.dart';
@@ -39,13 +37,7 @@ class CompareScansView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.isRegistered<CompareScansController>()
-        ? Get.find<CompareScansController>()
-        : Get.put(
-            CompareScansController(
-              repository: InsightsRepository(Get.find<DioClient>()),
-            ),
-          );
+    final controller = Get.find<CompareScansController>();
 
     return Scaffold(
       backgroundColor: AppColors.surface,

@@ -27,17 +27,38 @@ import 'package:ai_forma/features/check_in/view/pages/step_into_frame_view.dart'
 import 'package:ai_forma/features/dashboard/bindings/weight_binding.dart';
 import 'package:ai_forma/features/dashboard/view/pages/weekly_progress_view.dart';
 import 'package:ai_forma/features/dashboard/view/pages/weight_trends_view.dart';
+import 'package:ai_forma/features/insights/bindings/insights_binding.dart';
+import 'package:ai_forma/features/insights/view/pages/compare_scans_view.dart';
+import 'package:ai_forma/features/insights/view/pages/consistency_view.dart';
+import 'package:ai_forma/features/insights/view/pages/fat_loss_view.dart';
+import 'package:ai_forma/features/insights/view/pages/muscle_growth_view.dart';
+import 'package:ai_forma/features/insights/view/pages/posture_analysis_view.dart';
+import 'package:ai_forma/features/insights/view/pages/symmetry_score_view.dart';
 import 'package:ai_forma/features/onboarding/view/pages/onboarding_view.dart';
 import 'package:ai_forma/features/onboarding/view/pages/privacy_onboarding_view.dart';
 import 'package:ai_forma/features/shell/bindings/app_shell_binding.dart';
 import 'package:ai_forma/features/shell/view/pages/app_shell_view.dart';
+import 'package:ai_forma/features/splash/bindings/splash_binding.dart';
 import 'package:ai_forma/features/splash/view/pages/splash_view.dart';
+import 'package:ai_forma/features/profile/bindings/profile_binding.dart';
+import 'package:ai_forma/features/profile/view/pages/community_chat_view.dart';
+import 'package:ai_forma/features/profile/view/pages/edit_personal_details_view.dart';
+import 'package:ai_forma/features/profile/view/pages/help_support_view.dart';
+import 'package:ai_forma/features/profile/view/pages/personal_details_view.dart';
+import 'package:ai_forma/features/profile/view/pages/physique_targets_view.dart';
+import 'package:ai_forma/features/profile/view/pages/profile_view.dart';
+import 'package:ai_forma/features/profile/view/pages/report_bug_view.dart';
+import 'package:ai_forma/features/profile/view/pages/subscription_view.dart';
 import 'package:ai_forma/routes/routes_name.dart';
 import 'package:get/get.dart';
 
 class AppRoutes {
   static List<GetPage> get pages => [
-    GetPage(name: RoutesName.splash, page: () => const SplashView()),
+    GetPage(
+      name: RoutesName.splash,
+      page: () => const SplashView(),
+      binding: SplashBinding(),
+    ),
 
     //Onboarding
     GetPage(name: RoutesName.onboarding, page: () => const OnboardingView()),
@@ -156,6 +177,88 @@ class AppRoutes {
       name: RoutesName.weeklyProgress,
       page: () => const WeeklyProgressView(),
       binding: WeeklyProgressBinding(),
+      middlewares: [AuthMiddleware()],
+    ),
+
+    //Insights sub-pages
+    GetPage(
+      name: RoutesName.muscleGrowth,
+      page: () => const MuscleGrowthView(),
+      binding: MuscleGrowthBinding(),
+      middlewares: [AuthMiddleware()],
+    ),
+    GetPage(
+      name: RoutesName.fatLoss,
+      page: () => const FatLossView(),
+      binding: FatLossBinding(),
+      middlewares: [AuthMiddleware()],
+    ),
+    GetPage(
+      name: RoutesName.postureAnalysis,
+      page: () => const PostureAnalysisView(),
+      binding: PostureBinding(),
+      middlewares: [AuthMiddleware()],
+    ),
+    GetPage(
+      name: RoutesName.symmetryScore,
+      page: () => const SymmetryScoreView(),
+      binding: SymmetryBinding(),
+      middlewares: [AuthMiddleware()],
+    ),
+    GetPage(
+      name: RoutesName.consistency,
+      page: () => const ConsistencyView(),
+      binding: ConsistencyBinding(),
+      middlewares: [AuthMiddleware()],
+    ),
+    GetPage(
+      name: RoutesName.compareScans,
+      page: () => const CompareScansView(),
+      binding: CompareScansBinding(),
+      middlewares: [AuthMiddleware()],
+    ),
+
+    // Profile & sub-pages
+    GetPage(
+      name: RoutesName.profile,
+      page: () => const ProfileView(),
+      binding: ProfileBinding(),
+      middlewares: [AuthMiddleware()],
+    ),
+    GetPage(
+      name: RoutesName.personalDetails,
+      page: () => const PersonalDetailsView(),
+      middlewares: [AuthMiddleware()],
+    ),
+    GetPage(
+      name: RoutesName.editPersonalDetails,
+      page: () => const EditPersonalDetailsView(),
+      middlewares: [AuthMiddleware()],
+    ),
+    GetPage(
+      name: RoutesName.physiqueTargets,
+      page: () => const PhysiqueTargetsView(),
+      middlewares: [AuthMiddleware()],
+    ),
+    GetPage(
+      name: RoutesName.communityChat,
+      page: () => const CommunityChatView(),
+      middlewares: [AuthMiddleware()],
+    ),
+    GetPage(
+      name: RoutesName.reportBug,
+      page: () => const ReportBugView(),
+      binding: ProfileBinding(),
+      middlewares: [AuthMiddleware()],
+    ),
+    GetPage(
+      name: RoutesName.subscription,
+      page: () => const SubscriptionView(),
+      middlewares: [AuthMiddleware()],
+    ),
+    GetPage(
+      name: RoutesName.helpSupport,
+      page: () => const HelpSupportView(),
       middlewares: [AuthMiddleware()],
     ),
 

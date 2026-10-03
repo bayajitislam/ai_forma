@@ -1,10 +1,12 @@
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:ai_forma/core/utils/app_date_formatter.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
+import 'package:ai_forma/core/utils/app_date_formatter.dart';
 import 'package:ai_forma/core/widgets/primary_button.dart';
 import 'package:ai_forma/features/auth/controllers/user_controller.dart';
-import 'package:ai_forma/features/profile/view/pages/edit_personal_details_view.dart';
+import 'package:ai_forma/features/profile/constants/profile_strings.dart';
+import 'package:ai_forma/features/profile/view/widgets/profile_detail_item_row.dart';
+import 'package:ai_forma/routes/routes_name.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 class PersonalDetailsView extends StatelessWidget {
   const PersonalDetailsView({super.key});
@@ -19,11 +21,15 @@ class PersonalDetailsView extends StatelessWidget {
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: AppColors.textPrimary, size: 20),
-          onPressed: () => Navigator.pop(context),
+          icon: const Icon(
+            Icons.arrow_back_ios,
+            color: AppColors.textPrimary,
+            size: 20,
+          ),
+          onPressed: () => Get.back(),
         ),
         title: const Text(
-          'Personal Details',
+          ProfileStrings.personalDetailsTitle,
           style: TextStyle(
             fontFamily: 'Nunito',
             fontSize: 18,
@@ -45,45 +51,49 @@ class PersonalDetailsView extends StatelessWidget {
             final rawDob = user?.profile?.dateOfBirth;
             final dobFormatted = AppDateFormatter.toDayMonthYear(
               rawDob,
-              fallback: 'N/A',
+              fallback: ProfileStrings.notAvailable,
             );
 
             final details = [
-              _DetailRowItem(
+              ProfileDetailItem(
                 icon: Icons.person_outline,
-                label: 'Full Name',
-                value: user?.fullName.isNotEmpty == true ? user!.fullName : 'N/A',
+                label: ProfileStrings.fullNameLabel,
+                value: user?.fullName.isNotEmpty == true
+                    ? user!.fullName
+                    : ProfileStrings.notAvailable,
               ),
-              _DetailRowItem(
+              ProfileDetailItem(
                 icon: Icons.notifications_none,
-                label: 'Email',
-                value: user?.email.isNotEmpty == true ? user!.email : 'N/A',
+                label: ProfileStrings.emailLabel,
+                value: user?.email.isNotEmpty == true
+                    ? user!.email
+                    : ProfileStrings.notAvailable,
               ),
-              _DetailRowItem(
+              ProfileDetailItem(
                 icon: Icons.calendar_today_outlined,
-                label: 'Date of Birth',
+                label: ProfileStrings.dateOfBirthLabel,
                 value: dobFormatted,
               ),
-              _DetailRowItem(
+              ProfileDetailItem(
                 icon: Icons.person_outline,
-                label: 'Gender',
+                label: ProfileStrings.genderLabel,
                 value: user?.gender != null && user!.gender!.isNotEmpty
                     ? user.gender![0].toUpperCase() + user.gender!.substring(1)
-                    : 'N/A',
+                    : ProfileStrings.notAvailable,
               ),
-              _DetailRowItem(
+              ProfileDetailItem(
                 icon: Icons.track_changes_outlined,
-                label: 'Height',
+                label: ProfileStrings.heightLabel,
                 value: user?.profile?.heightCm != null
                     ? '${user!.profile!.heightCm} cm'
-                    : 'N/A',
+                    : ProfileStrings.notAvailable,
               ),
-              _DetailRowItem(
+              ProfileDetailItem(
                 icon: Icons.track_changes_outlined,
-                label: 'Weight',
+                label: ProfileStrings.weightLabel,
                 value: user?.profile?.weightKg != null
                     ? '${user!.profile!.weightKg} kg'
-                    : 'N/A',
+                    : ProfileStrings.notAvailable,
               ),
             ];
 
@@ -92,54 +102,17 @@ class PersonalDetailsView extends StatelessWidget {
                 Expanded(
                   child: ListView.separated(
                     itemCount: details.length,
-                    separatorBuilder: (context, index) => const SizedBox(height: 12),
+                    separatorBuilder: (context, index) =>
+                        const SizedBox(height: 12),
                     itemBuilder: (context, index) {
-                      final item = details[index];
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        child: Row(
-                          children: [
-                            Icon(
-                              item.icon,
-                              color: AppColors.textSecondary.withValues(alpha: 0.8),
-                              size: 22,
-                            ),
-                            const SizedBox(width: 12),
-                            Text(
-                              item.label,
-                              style: const TextStyle(
-                                fontFamily: 'Nunito',
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.textSecondary,
-                              ),
-                            ),
-                            const Spacer(),
-                            Text(
-                              item.value,
-                              style: const TextStyle(
-                                fontFamily: 'Nunito',
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.textPrimary,
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
+                      return ProfileDetailItemRow(item: details[index]);
                     },
                   ),
                 ),
                 const SizedBox(height: 24),
                 PrimaryButton(
-                  onPressed: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => const EditPersonalDetailsView(),
-                      ),
-                    );
-                  },
-                  label: 'EDIT PROFILE',
+                  onPressed: () => Get.toNamed(RoutesName.editPersonalDetails),
+                  label: ProfileStrings.editProfileButton,
                 ),
               ],
             );
@@ -148,16 +121,4 @@ class PersonalDetailsView extends StatelessWidget {
       ),
     );
   }
-}
-
-class _DetailRowItem {
-  final IconData icon;
-  final String label;
-  final String value;
-
-  _DetailRowItem({
-    required this.icon,
-    required this.label,
-    required this.value,
-  });
 }

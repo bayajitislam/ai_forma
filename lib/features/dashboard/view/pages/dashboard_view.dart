@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
+import 'package:ai_forma/core/widgets/app_snackbar.dart';
 import 'package:ai_forma/features/auth/controllers/user_controller.dart';
 import 'package:ai_forma/features/check_in/controllers/check_in_controller.dart';
 import 'package:ai_forma/features/check_in/view/pages/camera_position_view.dart';
@@ -167,13 +168,9 @@ class DashboardView extends StatelessWidget {
                 Navigator.of(context).pop();
               }
               if (result.success) {
-                Get.snackbar(
-                  DashboardStrings.success,
+                AppSnackbar.showSuccess(
                   DashboardStrings.responseSavedSuccess,
-                  snackPosition: SnackPosition.BOTTOM,
-                  backgroundColor: AppColors.brandTeal,
-                  colorText: Colors.white,
-                  margin: const EdgeInsets.all(16),
+                  title: DashboardStrings.success,
                 );
               }
             },
@@ -245,7 +242,7 @@ class DashboardView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final homeController = HomeController.to;
+    final homeController = Get.find<HomeController>();
 
     return Obx(() {
       final isLoading = homeController.isLoading.value;

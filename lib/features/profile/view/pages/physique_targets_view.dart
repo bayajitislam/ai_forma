@@ -1,30 +1,33 @@
-import 'package:flutter/material.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
+import 'package:ai_forma/features/profile/constants/profile_strings.dart';
+import 'package:ai_forma/features/profile/view/widgets/physique_target_item_row.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 class PhysiqueTargetsView extends StatelessWidget {
   const PhysiqueTargetsView({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final targets = [
-      _TargetRowItem(
-        label: 'Current',
-        goalCaption: 'Target: 15%',
+    const targets = [
+      PhysiqueTargetItem(
+        label: ProfileStrings.currentLabel,
+        goalCaption: ProfileStrings.targetBodyFatCaption,
         value: '18.2%',
       ),
-      _TargetRowItem(
-        label: 'Weight',
-        goalCaption: 'Goal: 82 kg',
+      PhysiqueTargetItem(
+        label: ProfileStrings.weightLabel,
+        goalCaption: ProfileStrings.weightGoalCaption,
         value: '87.4 kg',
       ),
-      _TargetRowItem(
+      PhysiqueTargetItem(
         label: 'Muscle Mass',
-        goalCaption: 'Goal: 75 kg',
+        goalCaption: ProfileStrings.muscleMassGoalCaption,
         value: '71.5 kg',
       ),
-      _TargetRowItem(
+      PhysiqueTargetItem(
         label: 'Daily steps',
-        goalCaption: 'Goal: 10,000',
+        goalCaption: ProfileStrings.dailyStepsGoalCaption,
         value: '8,742',
       ),
     ];
@@ -35,11 +38,15 @@ class PhysiqueTargetsView extends StatelessWidget {
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: AppColors.textPrimary, size: 20),
-          onPressed: () => Navigator.pop(context),
+          icon: const Icon(
+            Icons.arrow_back_ios,
+            color: AppColors.textPrimary,
+            size: 20,
+          ),
+          onPressed: () => Get.back(),
         ),
         title: const Text(
-          'Physique Targets',
+          ProfileStrings.physiqueTargetsTitle,
           style: TextStyle(
             fontFamily: 'Nunito',
             fontSize: 18,
@@ -60,7 +67,7 @@ class PhysiqueTargetsView extends StatelessWidget {
             children: [
               const SizedBox(height: 12),
               const Text(
-                'Goals',
+                ProfileStrings.goalsSectionHeader,
                 style: TextStyle(
                   fontFamily: 'Nunito',
                   fontSize: 20,
@@ -77,48 +84,7 @@ class PhysiqueTargetsView extends StatelessWidget {
                     height: 1,
                   ),
                   itemBuilder: (context, index) {
-                    final item = targets[index];
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 18),
-                      child: Row(
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                item.label,
-                                style: const TextStyle(
-                                  fontFamily: 'Nunito',
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.textPrimary,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                item.goalCaption,
-                                style: const TextStyle(
-                                  fontFamily: 'Nunito',
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w500,
-                                  color: AppColors.textSecondary,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const Spacer(),
-                          Text(
-                            item.value,
-                            style: const TextStyle(
-                              fontFamily: 'Nunito',
-                              fontSize: 15,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.textPrimary,
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
+                    return PhysiqueTargetItemRow(item: targets[index]);
                   },
                 ),
               ),
@@ -128,16 +94,4 @@ class PhysiqueTargetsView extends StatelessWidget {
       ),
     );
   }
-}
-
-class _TargetRowItem {
-  final String label;
-  final String goalCaption;
-  final String value;
-
-  _TargetRowItem({
-    required this.label,
-    required this.goalCaption,
-    required this.value,
-  });
 }

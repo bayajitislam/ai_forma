@@ -1,8 +1,7 @@
 import 'dart:io';
 import 'dart:isolate';
-
-import 'package:ai_forma/core/theme/app_colors.dart';
 import 'package:ai_forma/core/widgets/app_bottom_sheet.dart';
+import 'package:ai_forma/core/widgets/app_snackbar.dart';
 import 'package:ai_forma/features/auth/controllers/user_controller.dart';
 import 'package:ai_forma/features/check_in/constants/check_in_strings.dart';
 import 'package:ai_forma/features/check_in/models/checkin_status_model.dart';
@@ -132,15 +131,11 @@ class CheckInController extends GetxController {
         if (activeContext != null) {
           showScheduleErrorPopup(activeContext, failure.message);
         } else {
-          Get.snackbar(
-            CheckInStrings.scheduleChangeRestricted,
+          AppSnackbar.showError(
             failure.message.isNotEmpty
                 ? failure.message
                 : CheckInStrings.failedToUpdateCheckInDay,
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: Colors.redAccent,
-            colorText: Colors.white,
-            margin: const EdgeInsets.all(16),
+            title: CheckInStrings.scheduleChangeRestricted,
           );
         }
         return false;
@@ -188,13 +183,9 @@ class CheckInController extends GetxController {
             pendingScanDay: pendingScanDay,
           );
         } else {
-          Get.snackbar(
-            popupTitle,
+          AppSnackbar.showSuccess(
             nextScanLine ?? message,
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: AppColors.brandTeal,
-            colorText: Colors.white,
-            margin: const EdgeInsets.all(16),
+            title: popupTitle,
           );
         }
         return true;

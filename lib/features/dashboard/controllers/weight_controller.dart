@@ -15,13 +15,6 @@ class WeightController extends GetxController {
   final DioClient _dio;
   WeightController(this._dio);
 
-  static WeightController get to {
-    if (Get.isRegistered<WeightController>()) {
-      return Get.find<WeightController>();
-    }
-    return Get.put(WeightController(Get.find<DioClient>()));
-  }
-
   final _uuid = const Uuid();
 
   // Observable list of weight records

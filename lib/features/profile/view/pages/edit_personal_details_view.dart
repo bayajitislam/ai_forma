@@ -1,21 +1,26 @@
 import 'dart:io';
 
-import 'package:ai_forma/core/widgets/app_cached_image.dart';
+import 'package:ai_forma/core/theme/app_colors.dart';
+import 'package:ai_forma/core/widgets/app_snackbar.dart';
+import 'package:ai_forma/core/widgets/primary_button.dart';
+import 'package:ai_forma/features/auth/controllers/user_controller.dart';
+import 'package:ai_forma/features/profile/constants/profile_strings.dart';
+import 'package:ai_forma/features/profile/view/widgets/edit_profile_avatar.dart';
+import 'package:ai_forma/features/profile/view/widgets/gender_selection_sheet.dart';
+import 'package:ai_forma/features/profile/view/widgets/height_selection_sheet.dart';
+import 'package:ai_forma/features/profile/view/widgets/profile_text_form_field.dart';
+import 'package:ai_forma/features/profile/view/widgets/weight_selection_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
-import 'package:ai_forma/core/theme/app_colors.dart';
-import 'package:ai_forma/core/widgets/primary_button.dart';
-import 'package:ai_forma/features/auth/controllers/user_controller.dart';
-import 'package:ai_forma/features/onboarding_assessment/view/widgets/measurement_wheel_picker.dart';
-import 'package:ai_forma/features/onboarding_assessment/view/widgets/weight_selector.dart';
 
 class EditPersonalDetailsView extends StatefulWidget {
   const EditPersonalDetailsView({super.key});
 
   @override
-  State<EditPersonalDetailsView> createState() => _EditPersonalDetailsViewState();
+  State<EditPersonalDetailsView> createState() =>
+      _EditPersonalDetailsViewState();
 }
 
 class _EditPersonalDetailsViewState extends State<EditPersonalDetailsView> {
@@ -28,7 +33,7 @@ class _EditPersonalDetailsViewState extends State<EditPersonalDetailsView> {
 
   late final UserController _userController;
   DateTime? _selectedDate;
-  String? _selectedGender; // "male", "female", "prefer_not_to_say"
+  String? _selectedGender;
   double? _selectedHeightCm;
   double? _selectedWeightKg;
   bool _isSaving = false;
@@ -46,21 +51,29 @@ class _EditPersonalDetailsViewState extends State<EditPersonalDetailsView> {
     final rawDob = user?.profile?.dateOfBirth;
 
     _selectedGender = user?.gender;
-    if (user?.profile?.heightCm != null && user!.profile!.heightCm!.isNotEmpty) {
+    if (user?.profile?.heightCm != null &&
+        user!.profile!.heightCm!.isNotEmpty) {
       _selectedHeightCm = double.tryParse(user.profile!.heightCm!);
     }
-    if (user?.profile?.weightKg != null && user!.profile!.weightKg!.isNotEmpty) {
+    if (user?.profile?.weightKg != null &&
+        user!.profile!.weightKg!.isNotEmpty) {
       _selectedWeightKg = double.tryParse(user.profile!.weightKg!);
     }
 
     _nameController = TextEditingController(text: initialName);
     _emailController = TextEditingController(text: initialEmail);
-    _genderController = TextEditingController(text: _formatGenderDisplay(_selectedGender));
+    _genderController = TextEditingController(
+      text: _formatGenderDisplay(_selectedGender),
+    );
     _heightController = TextEditingController(
-      text: _selectedHeightCm != null ? '${_selectedHeightCm!.toStringAsFixed(1)} cm' : '',
+      text: _selectedHeightCm != null
+          ? '${_selectedHeightCm!.toStringAsFixed(1)} cm'
+          : '',
     );
     _weightController = TextEditingController(
-      text: _selectedWeightKg != null ? '${_selectedWeightKg!.toStringAsFixed(1)} kg' : '',
+      text: _selectedWeightKg != null
+          ? '${_selectedWeightKg!.toStringAsFixed(1)} kg'
+          : '',
     );
 
     if (rawDob != null && rawDob.isNotEmpty) {
@@ -91,24 +104,15 @@ class _EditPersonalDetailsViewState extends State<EditPersonalDetailsView> {
 
   String _formatGenderDisplay(String? gender) {
     if (gender == null || gender.isEmpty) return '';
-    if (gender == 'male') return 'Male';
-    if (gender == 'female') return 'Female';
-    if (gender == 'prefer_not_to_say') return 'Prefer not to say';
+    if (gender == 'male') return ProfileStrings.genderMale;
+    if (gender == 'female') return ProfileStrings.genderFemale;
+    if (gender == 'prefer_not_to_say') return ProfileStrings.genderPreferNotToSay;
     return gender[0].toUpperCase() + gender.substring(1);
   }
 
   String? _getProfileImageUrl() {
     final user = _userController.currentUser.value;
     return user?.profileImageUrl ?? user?.profile?.profileImageUrl;
-  }
-
-  DecorationImage? _getProfileImageDecoration() {
-    final url = _getProfileImageUrl();
-    if (url == null || url.isEmpty) return null;
-    return DecorationImage(
-      image: AppCachedNetworkImage.provider(url),
-      fit: BoxFit.cover,
-    );
   }
 
   Future<void> _pickAndUploadImage() async {
@@ -137,19 +141,15 @@ class _EditPersonalDetailsViewState extends State<EditPersonalDetailsView> {
 
     result.fold(
       (failure) {
-        Get.snackbar(
-          'Error',
+        AppSnackbar.showError(
           failure.message,
-          backgroundColor: Colors.redAccent,
-          colorText: Colors.white,
+          title: ProfileStrings.error,
         );
       },
       (_) {
-        Get.snackbar(
-          'Success',
-          'Profile photo updated.',
-          backgroundColor: AppColors.brandTeal,
-          colorText: Colors.white,
+        AppSnackbar.showSuccess(
+          ProfileStrings.photoUpdatedSuccess,
+          title: ProfileStrings.success,
         );
       },
     );
@@ -185,198 +185,41 @@ class _EditPersonalDetailsViewState extends State<EditPersonalDetailsView> {
     }
   }
 
-  void _showGenderBottomSheet() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: AppColors.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (ctx) {
-        String tempGender = _selectedGender ?? 'male';
-        return StatefulBuilder(
-          builder: (context, setModalState) {
-            return Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 48,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: AppColors.border,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  const Text(
-                    'Select Gender',
-                    style: TextStyle(
-                      fontFamily: 'Nunito',
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  ListTile(
-                    title: const Text('Male', style: TextStyle(fontFamily: 'Nunito', fontWeight: FontWeight.w600)),
-                    trailing: tempGender == 'male' ? const Icon(Icons.check_circle, color: AppColors.brandTeal) : null,
-                    onTap: () => setModalState(() => tempGender = 'male'),
-                  ),
-                  ListTile(
-                    title: const Text('Female', style: TextStyle(fontFamily: 'Nunito', fontWeight: FontWeight.w600)),
-                    trailing: tempGender == 'female' ? const Icon(Icons.check_circle, color: AppColors.brandTeal) : null,
-                    onTap: () => setModalState(() => tempGender = 'female'),
-                  ),
-                  ListTile(
-                    title: const Text('Prefer not to say', style: TextStyle(fontFamily: 'Nunito', fontWeight: FontWeight.w600)),
-                    trailing: tempGender == 'prefer_not_to_say' ? const Icon(Icons.check_circle, color: AppColors.brandTeal) : null,
-                    onTap: () => setModalState(() => tempGender = 'prefer_not_to_say'),
-                  ),
-                  const SizedBox(height: 24),
-                  PrimaryButton(
-                    onPressed: () {
-                      setState(() {
-                        _selectedGender = tempGender;
-                        _genderController.text = _formatGenderDisplay(tempGender);
-                      });
-                      Navigator.pop(ctx);
-                    },
-                    label: 'SAVE',
-                  ),
-                ],
-              ),
-            );
-          },
-        );
+  void _showGenderSheet() {
+    GenderSelectionSheet.show(
+      context,
+      initialGender: _selectedGender,
+      onSelected: (gender) {
+        setState(() {
+          _selectedGender = gender;
+          _genderController.text = _formatGenderDisplay(gender);
+        });
       },
     );
   }
 
-  void _showHeightBottomSheet() {
-    int tempHeightCm = (_selectedHeightCm ?? 175.0).round().clamp(100, 250);
-
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: AppColors.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (ctx) {
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 48,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: AppColors.border,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              const SizedBox(height: 20),
-              const Text(
-                'Update Height',
-                style: TextStyle(
-                  fontFamily: 'Nunito',
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-              const SizedBox(height: 24),
-              MeasurementWheelPicker(
-                minValue: 100,
-                maxValue: 250,
-                initialValue: tempHeightCm,
-                unit: 'cm',
-                onChanged: (val) {
-                  tempHeightCm = val;
-                },
-              ),
-              const SizedBox(height: 28),
-              PrimaryButton(
-                onPressed: () {
-                  setState(() {
-                    _selectedHeightCm = tempHeightCm.toDouble();
-                    _heightController.text = '$tempHeightCm cm';
-                  });
-                  Navigator.pop(ctx);
-                },
-                label: 'SAVE',
-              ),
-            ],
-          ),
-        );
+  void _showHeightSheet() {
+    HeightSelectionSheet.show(
+      context,
+      initialHeightCm: _selectedHeightCm,
+      onSelected: (height) {
+        setState(() {
+          _selectedHeightCm = height;
+          _heightController.text = '${height.toStringAsFixed(1)} cm';
+        });
       },
     );
   }
 
-  void _showWeightBottomSheet() {
-    double tempWeightKg = _selectedWeightKg ?? 70.0;
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: AppColors.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (ctx) {
-        return Padding(
-          padding: EdgeInsets.only(
-            left: 20,
-            right: 20,
-            top: 24,
-            bottom: MediaQuery.of(ctx).viewInsets.bottom + 32,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Container(
-                width: 48,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: AppColors.border,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              const SizedBox(height: 24),
-              const Text(
-                'Update Weight',
-                style: TextStyle(
-                  fontFamily: 'Nunito',
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-              const SizedBox(height: 24),
-              WeightSelector(
-                initialWeightKg: tempWeightKg,
-                onChanged: (val) {
-                  tempWeightKg = val;
-                },
-              ),
-              const SizedBox(height: 32),
-              PrimaryButton(
-                onPressed: () {
-                  setState(() {
-                    _selectedWeightKg = tempWeightKg;
-                    _weightController.text = '${tempWeightKg.toStringAsFixed(1)} kg';
-                  });
-                  Navigator.pop(ctx);
-                },
-                label: 'SAVE',
-              ),
-            ],
-          ),
-        );
+  void _showWeightSheet() {
+    WeightSelectionSheet.show(
+      context,
+      initialWeightKg: _selectedWeightKg,
+      onSelected: (weight) {
+        setState(() {
+          _selectedWeightKg = weight;
+          _weightController.text = '${weight.toStringAsFixed(1)} kg';
+        });
       },
     );
   }
@@ -386,11 +229,9 @@ class _EditPersonalDetailsViewState extends State<EditPersonalDetailsView> {
     final newDob = _dobController.text.trim();
 
     if (newName.isEmpty) {
-      Get.snackbar(
-        'Required',
-        'Full Name cannot be empty.',
-        backgroundColor: Colors.orangeAccent,
-        colorText: Colors.white,
+      AppSnackbar.showWarning(
+        ProfileStrings.nameRequiredMessage,
+        title: ProfileStrings.required,
       );
       return;
     }
@@ -398,7 +239,8 @@ class _EditPersonalDetailsViewState extends State<EditPersonalDetailsView> {
     final payload = <String, dynamic>{
       'full_name': newName,
       if (newDob.isNotEmpty) 'date_of_birth': newDob,
-      if (_selectedGender != null && _selectedGender!.isNotEmpty) 'gender': _selectedGender,
+      if (_selectedGender != null && _selectedGender!.isNotEmpty)
+        'gender': _selectedGender,
       if (_selectedHeightCm != null)
         'height_cm': double.parse(_selectedHeightCm!.toStringAsFixed(1)),
       if (_selectedWeightKg != null)
@@ -419,21 +261,17 @@ class _EditPersonalDetailsViewState extends State<EditPersonalDetailsView> {
 
     result.fold(
       (failure) {
-        Get.snackbar(
-          'Error',
+        AppSnackbar.showError(
           failure.message,
-          backgroundColor: Colors.redAccent,
-          colorText: Colors.white,
+          title: ProfileStrings.error,
         );
       },
       (updatedUser) {
-        Get.snackbar(
-          'Success',
-          'Profile updated successfully.',
-          backgroundColor: AppColors.brandTeal,
-          colorText: Colors.white,
+        AppSnackbar.showSuccess(
+          ProfileStrings.profileUpdatedSuccess,
+          title: ProfileStrings.success,
         );
-        Navigator.pop(context);
+        Get.back();
       },
     );
   }
@@ -446,11 +284,15 @@ class _EditPersonalDetailsViewState extends State<EditPersonalDetailsView> {
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: AppColors.textPrimary, size: 20),
-          onPressed: () => Navigator.pop(context),
+          icon: const Icon(
+            Icons.arrow_back_ios,
+            color: AppColors.textPrimary,
+            size: 20,
+          ),
+          onPressed: () => Get.back(),
         ),
         title: const Text(
-          'Personal Details',
+          ProfileStrings.editPersonalDetailsTitle,
           style: TextStyle(
             fontFamily: 'Nunito',
             fontSize: 18,
@@ -476,145 +318,82 @@ class _EditPersonalDetailsViewState extends State<EditPersonalDetailsView> {
                     children: [
                       const SizedBox(height: 8),
                       // Profile Image Avatar
-                      Center(
-                        child: GestureDetector(
-                          onTap: _isUploadingImage ? null : _pickAndUploadImage,
-                          child: SizedBox(
-                            width: 100,
-                            height: 100,
-                            child: Stack(
-                              children: [
-                                // Avatar circle
-                                Container(
-                                  width: 100,
-                                  height: 100,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: AppColors.dashboardBackground,
-                                    border: Border.all(
-                                      color: AppColors.cardBorder.withValues(alpha: 0.5),
-                                      width: 2,
-                                    ),
-                                    image: _pickedImage != null
-                                        ? DecorationImage(
-                                            image: FileImage(_pickedImage!),
-                                            fit: BoxFit.cover,
-                                          )
-                                        : _getProfileImageDecoration(),
-                                  ),
-                                  child: (_pickedImage == null && _getProfileImageUrl() == null)
-                                      ? const Icon(
-                                          Icons.person,
-                                          size: 44,
-                                          color: AppColors.textSecondary,
-                                        )
-                                      : null,
-                                ),
-                                // Upload loading overlay
-                                if (_isUploadingImage)
-                                  Container(
-                                    width: 100,
-                                    height: 100,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: Colors.black.withValues(alpha: 0.4),
-                                    ),
-                                    child: const Center(
-                                      child: SizedBox(
-                                        width: 28,
-                                        height: 28,
-                                        child: CircularProgressIndicator(
-                                          color: Colors.white,
-                                          strokeWidth: 2.5,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                // Edit camera icon
-                                Positioned(
-                                  bottom: 0,
-                                  right: 0,
-                                  child: Container(
-                                    width: 32,
-                                    height: 32,
-                                    decoration: BoxDecoration(
-                                      color: AppColors.brandTeal,
-                                      shape: BoxShape.circle,
-                                      border: Border.all(
-                                        color: Colors.white,
-                                        width: 2,
-                                      ),
-                                    ),
-                                    child: const Icon(
-                                      Icons.camera_alt,
-                                      size: 16,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
+                      EditProfileAvatar(
+                        pickedImage: _pickedImage,
+                        imageUrl: _getProfileImageUrl(),
+                        isUploadingImage: _isUploadingImage,
+                        onTap: _pickAndUploadImage,
                       ),
                       const SizedBox(height: 24),
-                      _buildFormField(
-                        label: 'Full Name',
+                      ProfileTextFormField(
+                        label: ProfileStrings.fullNameLabel,
                         controller: _nameController,
                       ),
                       const SizedBox(height: 20),
-                      _buildFormField(
-                        label: 'Email',
+                      ProfileTextFormField(
+                        label: ProfileStrings.emailLabel,
                         controller: _emailController,
                         enabled: false,
-                        hintText: 'Email address (Not editable)',
+                        hintText: ProfileStrings.emailDisabledHint,
                       ),
                       const SizedBox(height: 20),
-                      _buildFormField(
-                        label: 'Date of Birth',
+                      ProfileTextFormField(
+                        label: ProfileStrings.dateOfBirthLabel,
                         controller: _dobController,
                         readOnly: true,
                         onTap: _selectDateOfBirth,
-                        hintText: 'Update Date of Birth',
+                        hintText: ProfileStrings.dobHint,
                         suffixIcon: IconButton(
-                          icon: const Icon(Icons.calendar_today_outlined, color: AppColors.textSecondary),
+                          icon: const Icon(
+                            Icons.calendar_today_outlined,
+                            color: AppColors.textSecondary,
+                          ),
                           onPressed: _selectDateOfBirth,
                         ),
                       ),
                       const SizedBox(height: 20),
-                      _buildFormField(
-                        label: 'Gender',
+                      ProfileTextFormField(
+                        label: ProfileStrings.genderLabel,
                         controller: _genderController,
                         readOnly: true,
-                        onTap: _showGenderBottomSheet,
-                        hintText: 'Select Gender',
+                        onTap: _showGenderSheet,
+                        hintText: ProfileStrings.genderHint,
                         suffixIcon: IconButton(
-                          icon: const Icon(Icons.keyboard_arrow_down, color: AppColors.textSecondary),
-                          onPressed: _showGenderBottomSheet,
+                          icon: const Icon(
+                            Icons.keyboard_arrow_down,
+                            color: AppColors.textSecondary,
+                          ),
+                          onPressed: _showGenderSheet,
                         ),
                       ),
                       const SizedBox(height: 20),
-                      _buildFormField(
-                        label: 'Height',
+                      ProfileTextFormField(
+                        label: ProfileStrings.heightLabel,
                         controller: _heightController,
                         readOnly: true,
-                        onTap: _showHeightBottomSheet,
-                        hintText: 'Select Height',
+                        onTap: _showHeightSheet,
+                        hintText: ProfileStrings.heightHint,
                         suffixIcon: IconButton(
-                          icon: const Icon(Icons.straighten, color: AppColors.textSecondary),
-                          onPressed: _showHeightBottomSheet,
+                          icon: const Icon(
+                            Icons.straighten,
+                            color: AppColors.textSecondary,
+                          ),
+                          onPressed: _showHeightSheet,
                         ),
                       ),
                       const SizedBox(height: 20),
-                      _buildFormField(
-                        label: 'Weight',
+                      ProfileTextFormField(
+                        label: ProfileStrings.weightLabel,
                         controller: _weightController,
                         readOnly: true,
-                        onTap: _showWeightBottomSheet,
-                        hintText: 'Select Weight',
+                        onTap: _showWeightSheet,
+                        hintText: ProfileStrings.weightHint,
                         suffixIcon: IconButton(
-                          icon: const Icon(Icons.monitor_weight_outlined, color: AppColors.textSecondary),
-                          onPressed: _showWeightBottomSheet,
+                          icon: const Icon(
+                            Icons.monitor_weight_outlined,
+                            color: AppColors.textSecondary,
+                          ),
+                          onPressed: _showWeightSheet,
                         ),
                       ),
                     ],
@@ -624,84 +403,14 @@ class _EditPersonalDetailsViewState extends State<EditPersonalDetailsView> {
               const SizedBox(height: 24),
               PrimaryButton(
                 onPressed: _isSaving ? () {} : _saveChanges,
-                label: _isSaving ? 'SAVING...' : 'SAVE CHANGES',
+                label: _isSaving
+                    ? ProfileStrings.saving
+                    : ProfileStrings.saveChanges,
               ),
             ],
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildFormField({
-    required String label,
-    required TextEditingController controller,
-    Widget? suffixIcon,
-    bool enabled = true,
-    bool readOnly = false,
-    VoidCallback? onTap,
-    String? hintText,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontFamily: 'Nunito',
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-            color: AppColors.textSecondary,
-          ),
-        ),
-        const SizedBox(height: 8),
-        TextFormField(
-          controller: controller,
-          enabled: enabled,
-          readOnly: readOnly,
-          onTap: onTap,
-          style: TextStyle(
-            fontFamily: 'Nunito',
-            fontSize: 15,
-            fontWeight: FontWeight.bold,
-            color: enabled ? AppColors.textPrimary : AppColors.textSecondary,
-          ),
-          decoration: InputDecoration(
-            hintText: hintText,
-            hintStyle: TextStyle(
-              fontFamily: 'Nunito',
-              fontSize: 14,
-              fontWeight: FontWeight.normal,
-              color: AppColors.textSecondary.withValues(alpha: 0.6),
-            ),
-            filled: !enabled,
-            fillColor: !enabled ? AppColors.dashboardBackground : Colors.white,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-            suffixIcon: suffixIcon,
-            disabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(
-                color: AppColors.cardBorder.withValues(alpha: 0.3),
-                width: 1.5,
-              ),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(
-                color: AppColors.cardBorder.withValues(alpha: 0.5),
-                width: 1.5,
-              ),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(
-                color: AppColors.brandTeal,
-                width: 1.5,
-              ),
-            ),
-          ),
-        ),
-      ],
     );
   }
 }

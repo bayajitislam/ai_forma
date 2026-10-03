@@ -7,45 +7,37 @@ import 'package:ai_forma/core/widgets/app_network_error_widget.dart';
 import 'package:ai_forma/core/widgets/primary_button.dart';
 import 'package:ai_forma/features/insights/constants/insights_strings.dart';
 import 'package:ai_forma/features/insights/controllers/insights_controller.dart';
-import 'package:ai_forma/features/insights/view/pages/compare_scans_view.dart';
-import 'package:ai_forma/features/insights/view/pages/consistency_view.dart';
-import 'package:ai_forma/features/insights/view/pages/fat_loss_view.dart';
+import 'package:ai_forma/features/insights/models/scan_latest_model.dart';
 import 'package:ai_forma/features/insights/view/pages/focus_areas_view.dart';
-import 'package:ai_forma/features/insights/view/pages/muscle_growth_view.dart';
-import 'package:ai_forma/features/insights/view/pages/posture_analysis_view.dart';
 import 'package:ai_forma/features/insights/view/pages/next_step_view.dart';
 import 'package:ai_forma/features/insights/view/pages/strengths_view.dart';
-import 'package:ai_forma/features/insights/view/pages/symmetry_score_view.dart';
-import 'package:ai_forma/features/insights/models/scan_latest_model.dart';
 import 'package:ai_forma/features/insights/view/widgets/insight_category_card.dart';
 import 'package:ai_forma/features/insights/view/widgets/insight_metric_row.dart';
+import 'package:ai_forma/routes/routes_name.dart';
 
 enum InsightCategory { strengths, focusAreas, recommendations }
 
-class InsightsView extends StatefulWidget {
+class InsightsView extends StatelessWidget {
   const InsightsView({super.key});
 
-  @override
-  State<InsightsView> createState() => _InsightsViewState();
-}
-
-class _InsightsViewState extends State<InsightsView> {
-  void _openCategory(InsightCategory category, AnalysisResultModel? analysis) {
+  void _openCategory(
+    BuildContext context,
+    InsightCategory category,
+    AnalysisResultModel? analysis,
+  ) {
     final page = switch (category) {
       InsightCategory.strengths => StrengthsView(items: analysis?.strength),
       InsightCategory.focusAreas => FocusAreasView(items: analysis?.focusArea),
-      InsightCategory.recommendations => NextStepView(items: analysis?.nextSteps),
+      InsightCategory.recommendations =>
+        NextStepView(items: analysis?.nextSteps),
     };
-    Navigator.push(context, MaterialPageRoute<void>(builder: (_) => page));
-  }
-
-  void _openMetricDetail(Widget page) {
+    // These are lightweight list pages with no controller — Navigator.push is fine.
     Navigator.push(context, MaterialPageRoute<void>(builder: (_) => page));
   }
 
   @override
   Widget build(BuildContext context) {
-    final controller = InsightsController.to;
+    final controller = Get.find<InsightsController>();
 
     return Obx(() {
       // Eagerly capture all observables so Obx subscribes to all on first build.
@@ -73,7 +65,8 @@ class _InsightsViewState extends State<InsightsView> {
       }
 
       final analysis = scan?.analysisResult;
-      final isFirstScan = (scan?.checkinNumber ?? 1) <= 1 || (scan?.source == 'onboarding');
+      final isFirstScan =
+          (scan?.checkinNumber ?? 1) <= 1 || (scan?.source == 'onboarding');
 
       final rawMuscleRemark = analysis?.muscleGrowth?.remark ?? '';
       final rawMuscleStatus = analysis?.muscleGrowth?.status ?? '';
@@ -133,9 +126,8 @@ class _InsightsViewState extends State<InsightsView> {
           ? rawSymmetryStatus
           : InsightsStrings.symmetryStatus;
 
-      final consistencySubtitle = isFirstScan
-          ? 'Scan 1 Complete'
-          : InsightsStrings.consistencySubtitle;
+      final consistencySubtitle =
+          isFirstScan ? 'Scan 1 Complete' : InsightsStrings.consistencySubtitle;
 
       InsightStatusType resolveStatusType(String status) {
         final s = status.toLowerCase();
@@ -152,7 +144,8 @@ class _InsightsViewState extends State<InsightsView> {
       final fatStatusType = resolveStatusType(fatStatus);
       final postureStatusType = resolveStatusType(postureStatus);
       final symmetryStatusType = resolveStatusType(symmetryStatus);
-      final consistencyStatusType = resolveStatusType(InsightsStrings.consistencyStatus);
+      final consistencyStatusType =
+          resolveStatusType(InsightsStrings.consistencyStatus);
 
       return RefreshIndicator(
         onRefresh: () => controller.fetchLatestScan(),
@@ -169,7 +162,7 @@ class _InsightsViewState extends State<InsightsView> {
                     label: InsightsStrings.categoryStrengths,
                     icon: AppIcons.shieldCheck,
                     isSelected: false,
-                    onTap: () => _openCategory(InsightCategory.strengths, analysis),
+                    onTap: () => _openCategory(context, InsightCategory.strengths, analysis),
                   ),
                   const SizedBox(width: 10),
                   InsightCategoryCard(
@@ -177,14 +170,14 @@ class _InsightsViewState extends State<InsightsView> {
                     icon: AppIcons.fire,
                     iconColor: AppColors.insightWarning,
                     isSelected: false,
-                    onTap: () => _openCategory(InsightCategory.focusAreas, analysis),
+                    onTap: () => _openCategory(context, InsightCategory.focusAreas, analysis),
                   ),
                   const SizedBox(width: 10),
                   InsightCategoryCard(
                     label: InsightsStrings.categoryNextSteps,
                     icon: AppIcons.cpu,
                     isSelected: false,
-                    onTap: () => _openCategory(InsightCategory.recommendations, analysis),
+                    onTap: () => _openCategory(context, InsightCategory.recommendations, analysis),
                   ),
                 ],
               ),
@@ -200,7 +193,7 @@ class _InsightsViewState extends State<InsightsView> {
                 subtitle: muscleSubtitle,
                 status: muscleStatus,
                 statusType: muscleStatusType,
-                onTap: () => _openMetricDetail(const MuscleGrowthView()),
+                onTap: () => Get.toNamed(RoutesName.muscleGrowth),
               ),
               const SizedBox(height: 10),
               InsightMetricRow(
@@ -209,7 +202,7 @@ class _InsightsViewState extends State<InsightsView> {
                 subtitle: fatSubtitle,
                 status: fatStatus,
                 statusType: fatStatusType,
-                onTap: () => _openMetricDetail(const FatLossView()),
+                onTap: () => Get.toNamed(RoutesName.fatLoss),
               ),
               const SizedBox(height: 10),
               InsightMetricRow(
@@ -218,7 +211,7 @@ class _InsightsViewState extends State<InsightsView> {
                 subtitle: postureSubtitle,
                 status: postureStatus,
                 statusType: postureStatusType,
-                onTap: () => _openMetricDetail(const PostureAnalysisView()),
+                onTap: () => Get.toNamed(RoutesName.postureAnalysis),
               ),
               const SizedBox(height: 10),
               InsightMetricRow(
@@ -227,7 +220,7 @@ class _InsightsViewState extends State<InsightsView> {
                 subtitle: symmetrySubtitle,
                 status: symmetryStatus,
                 statusType: symmetryStatusType,
-                onTap: () => _openMetricDetail(const SymmetryScoreView()),
+                onTap: () => Get.toNamed(RoutesName.symmetryScore),
               ),
               const SizedBox(height: 10),
               InsightMetricRow(
@@ -236,18 +229,11 @@ class _InsightsViewState extends State<InsightsView> {
                 subtitle: consistencySubtitle,
                 status: InsightsStrings.consistencyStatus,
                 statusType: consistencyStatusType,
-                onTap: () => _openMetricDetail(const ConsistencyView()),
+                onTap: () => Get.toNamed(RoutesName.consistency),
               ),
               const SizedBox(height: 24),
               PrimaryButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute<void>(
-                      builder: (_) => const CompareScansView(),
-                    ),
-                  );
-                },
+                onPressed: () => Get.toNamed(RoutesName.compareScans),
                 label: InsightsStrings.compareScans,
               ),
             ],

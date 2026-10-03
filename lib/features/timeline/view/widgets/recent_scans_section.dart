@@ -4,6 +4,7 @@ import 'package:ai_forma/core/theme/app_text_styles.dart';
 import 'package:ai_forma/core/constants/app_images.dart';
 import 'package:ai_forma/core/widgets/app_cached_image.dart';
 import 'package:ai_forma/core/utils/app_date_formatter.dart';
+import 'package:ai_forma/features/timeline/constants/timeline_strings.dart';
 import 'package:ai_forma/features/timeline/models/timeline_overview_model.dart';
 
 class RecentScansSection extends StatelessWidget {
@@ -30,7 +31,7 @@ class RecentScansSection extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Text(
-            'Recent Scans',
+            TimelineStrings.recentScansTitle,
             style: AppTextStyles.featureTitle.copyWith(
               fontSize: 18,
               fontWeight: FontWeight.w700,

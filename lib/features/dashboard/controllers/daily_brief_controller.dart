@@ -3,13 +3,6 @@ import 'package:get/get.dart';
 enum SleepQuality { excellent, good, average, poor }
 
 class DailyBriefController extends GetxController {
-  static DailyBriefController get to {
-    if (Get.isRegistered<DailyBriefController>()) {
-      return Get.find<DailyBriefController>();
-    }
-    return Get.put(DailyBriefController(), permanent: true);
-  }
-
   // Daily brief response state
   final Rxn<SleepQuality> selectedSleep = Rxn<SleepQuality>();
   final RxBool isAnswered = false.obs;

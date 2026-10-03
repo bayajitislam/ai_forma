@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
 import 'package:ai_forma/core/theme/app_text_styles.dart';
+import 'package:ai_forma/features/timeline/constants/timeline_strings.dart';
 import 'package:ai_forma/features/timeline/models/timeline_overview_model.dart';
 import 'package:ai_forma/features/timeline/view/widgets/progress_line_chart.dart';
 
@@ -36,7 +37,7 @@ class ProgressTrendSection extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Text(
-            'Your Progress',
+            TimelineStrings.yourProgressTitle,
             style: AppTextStyles.featureTitle.copyWith(
               fontSize: 18,
               fontWeight: FontWeight.w600,
@@ -72,17 +73,17 @@ class ProgressTrendSection extends StatelessWidget {
                   children: [
                     _buildMetricItem(
                       value: muscleStr,
-                      unit: ' kg Muscle',
+                      unit: ' kg ${TimelineStrings.leanMuscleLabel}',
                       color: AppColors.textPrimary,
                     ),
                     _buildMetricItem(
                       value: fatStr,
-                      unit: ' Body Fat',
+                      unit: ' ${TimelineStrings.bodyFatLabel}',
                       color: AppColors.brandTeal,
                     ),
                     _buildMetricItem(
                       value: momentumStr,
-                      unit: ' Momentum',
+                      unit: ' ${TimelineStrings.momentumLabel}',
                       color: AppColors.textPrimary,
                     ),
                   ],

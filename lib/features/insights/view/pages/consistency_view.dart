@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:ai_forma/core/network/dio_client.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
 import 'package:ai_forma/core/widgets/app_network_error_widget.dart';
 import 'package:ai_forma/features/insights/constants/insights_strings.dart';
 import 'package:ai_forma/features/insights/controllers/consistency_controller.dart';
-import 'package:ai_forma/features/insights/repositories/insights_repository.dart';
 import 'package:ai_forma/features/insights/view/widgets/insight_analysis_section.dart';
 import 'package:ai_forma/features/insights/view/widgets/insight_consistency_widgets.dart';
 import 'package:ai_forma/features/insights/view/widgets/insight_metric_scaffold.dart';
@@ -16,13 +14,7 @@ class ConsistencyView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.isRegistered<ConsistencyController>()
-        ? Get.find<ConsistencyController>()
-        : Get.put(
-            ConsistencyController(
-              repository: InsightsRepository(Get.find<DioClient>()),
-            ),
-          );
+    final controller = Get.find<ConsistencyController>();
 
     return Obx(() {
       final isLoading = controller.isLoading.value;

@@ -29,6 +29,23 @@ class RoutesName {
   //Dashboard
   static const String weightTrends = '/weight_trends';
   static const String weeklyProgress = '/weekly_progress';
+  //Insights
+  static const String muscleGrowth = '/muscle_growth';
+  static const String fatLoss = '/fat_loss';
+  static const String postureAnalysis = '/posture_analysis';
+  static const String symmetryScore = '/symmetry_score';
+  static const String consistency = '/consistency';
+  static const String compareScans = '/compare_scans';
+  static const String comparisonSummary = '/comparison_summary';
   //Dev UI Test Gallery
   static const String uiTestGallery = '/ui_test_gallery';
+  //Profile
+  static const String profile = '/profile';
+  static const String personalDetails = '/personal_details';
+  static const String editPersonalDetails = '/edit_personal_details';
+  static const String physiqueTargets = '/physique_targets';
+  static const String communityChat = '/community_chat';
+  static const String reportBug = '/report_bug';
+  static const String subscription = '/subscription';
+  static const String helpSupport = '/help_support';
 }

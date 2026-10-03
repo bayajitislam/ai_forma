@@ -6,6 +6,7 @@ import 'package:ai_forma/core/services/push_notification_service.dart';
 import 'package:ai_forma/core/storage/auth_storage.dart';
 import 'package:ai_forma/core/theme/app_theme.dart';
 import 'package:ai_forma/core/widgets/app_error_widget.dart';
+import 'package:ai_forma/core/widgets/app_snackbar.dart';
 import 'package:ai_forma/firebase_options.dart';
 import 'package:ai_forma/routes/app_routes.dart';
 import 'package:ai_forma/routes/routes_name.dart';
@@ -82,6 +83,7 @@ class AiFormaApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
+      scaffoldMessengerKey: AppSnackbar.messengerKey,
       title: AppStrings.appName,
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,

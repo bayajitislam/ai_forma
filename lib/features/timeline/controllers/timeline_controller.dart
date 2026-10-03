@@ -98,21 +98,18 @@ class TimelineController extends GetxController {
     historyError('');
     try {
       final result = await repository.getHistory(page: _currentPage);
-      result.fold(
-        (failure) => historyError(failure.message),
-        (data) {
-          if (isRefresh) {
-            historyList.assignAll(data.results);
-          } else {
-            historyList.addAll(data.results);
-          }
-          if (data.next == null || data.results.isEmpty) {
-            _hasMoreHistory = false;
-          } else {
-            _currentPage++;
-          }
-        },
-      );
+      result.fold((failure) => historyError(failure.message), (data) {
+        if (isRefresh) {
+          historyList.assignAll(data.results);
+        } else {
+          historyList.addAll(data.results);
+        }
+        if (data.next == null || data.results.isEmpty) {
+          _hasMoreHistory = false;
+        } else {
+          _currentPage++;
+        }
+      });
     } catch (e) {
       historyError('Failed to load scan history.');
     } finally {

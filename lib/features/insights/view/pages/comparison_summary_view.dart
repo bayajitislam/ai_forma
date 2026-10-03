@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:ai_forma/core/constants/app_images.dart';
 import 'package:ai_forma/core/icons/app_icons.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
@@ -182,11 +183,11 @@ class ComparisonSummaryView extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
               child: PrimaryButton(
                 onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute<void>(
-                      builder: (_) =>
-                          VisualScanView(result: result, thenScan: thenScan, nowScan: nowScan),
+                  Get.to(
+                    () => VisualScanView(
+                      result: result,
+                      thenScan: thenScan,
+                      nowScan: nowScan,
                     ),
                   );
                 },

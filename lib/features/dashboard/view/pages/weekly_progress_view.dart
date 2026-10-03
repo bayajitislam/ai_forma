@@ -15,7 +15,7 @@ class WeeklyProgressView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final controller = WeightController.to;
+    final controller = Get.find<WeightController>();
 
     return Scaffold(
       backgroundColor: AppColors.dashboardBackground,

@@ -1,139 +1,21 @@
-import 'package:ai_forma/core/storage/auth_storage.dart';
-import 'package:ai_forma/features/auth/controllers/user_controller.dart';
-import 'package:ai_forma/routes/routes_name.dart';
-import 'package:flutter/material.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
 import 'package:ai_forma/core/widgets/primary_button.dart';
-import 'package:ai_forma/features/profile/view/pages/report_bug_view.dart';
+import 'package:ai_forma/features/profile/constants/profile_strings.dart';
+import 'package:ai_forma/features/profile/controllers/profile_controller.dart';
+import 'package:ai_forma/features/profile/view/widgets/profile_option_tile.dart';
+import 'package:ai_forma/routes/routes_name.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class HelpSupportView extends StatelessWidget {
   const HelpSupportView({super.key});
 
-  Future<void> _handleLogout(BuildContext context) async {
-    // Clear user session from SharedPreferences & global UserController state
-    if (Get.isRegistered<UserController>()) {
-      await Get.find<UserController>().logout();
-    } else {
-      await AuthStorage.clearSession();
-    }
-
-    // Clear navigation stack and go to Login view
-    Get.offAllNamed(RoutesName.login);
-  }
-
-  void _showDeleteAccountDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        title: const Text(
-          'Delete Account',
-          style: TextStyle(
-            fontFamily: 'Nunito',
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: AppColors.textPrimary,
-          ),
-        ),
-        content: const Text(
-          'This action is permanent and cannot be undone. All your data including scans, check-ins, weight logs, and subscription records will be permanently deleted.',
-          style: TextStyle(
-            fontFamily: 'Nunito',
-            fontSize: 14,
-            color: AppColors.textSecondary,
-            height: 1.4,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text(
-              'CANCEL',
-              style: TextStyle(
-                fontFamily: 'Nunito',
-                fontWeight: FontWeight.bold,
-                color: AppColors.textSecondary,
-              ),
-            ),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              _executeDeleteAccount(context);
-            },
-            child: const Text(
-              'DELETE',
-              style: TextStyle(
-                fontFamily: 'Nunito',
-                fontWeight: FontWeight.bold,
-                color: Colors.redAccent,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Future<void> _executeDeleteAccount(BuildContext context) async {
-    // Show loading overlay
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) => const Center(
-        child: CircularProgressIndicator(color: AppColors.brandTeal),
-      ),
-    );
-
-    final userController = Get.isRegistered<UserController>()
-        ? Get.find<UserController>()
-        : null;
-
-    if (userController == null) {
-      Navigator.pop(context); // dismiss loading
-      Get.snackbar(
-        'Error',
-        'Unable to process request. Please try again.',
-        backgroundColor: Colors.redAccent,
-        colorText: Colors.white,
-      );
-      return;
-    }
-
-    final result = await userController.deleteAccount();
-
-    // Dismiss loading dialog
-    if (context.mounted) {
-      Navigator.pop(context);
-    }
-
-    result.fold(
-      (failure) {
-        Get.snackbar(
-          'Error',
-          failure.message,
-          backgroundColor: Colors.redAccent,
-          colorText: Colors.white,
-        );
-      },
-      (successMessage) {
-        Get.snackbar(
-          'Account Deleted',
-          successMessage,
-          backgroundColor: AppColors.brandTeal,
-          colorText: Colors.white,
-        );
-        Get.offAllNamed(RoutesName.login);
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
+    final controller = Get.isRegistered<ProfileController>()
+        ? Get.find<ProfileController>()
+        : Get.put(ProfileController());
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -145,10 +27,10 @@ class HelpSupportView extends StatelessWidget {
             color: AppColors.textPrimary,
             size: 20,
           ),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => Get.back(),
         ),
         title: const Text(
-          'Help & Support',
+          ProfileStrings.helpSupportTitle,
           style: TextStyle(
             fontFamily: 'Nunito',
             fontSize: 18,
@@ -168,55 +50,26 @@ class HelpSupportView extends StatelessWidget {
                 child: ListView(
                   children: [
                     const SizedBox(height: 12),
-                    // _buildOptionTile(
-                    //   context,
-                    //   icon: Icons.people_outline,
-                    //   title: 'AiFORMA Community',
-                    //   subtitle: 'Share progress, ask questions and stay motivated.',
-                    //   onTap: () {
-                    //     Navigator.of(context).push(
-                    //       MaterialPageRoute(
-                    //         builder: (context) => const CommunityChatView(),
-                    //       ),
-                    //     );
-                    //   },
-                    // ),
-                    // _buildDivider(),
-                    _buildOptionTile(
-                      context,
+                    ProfileOptionTile(
                       icon: Icons.bug_report_outlined,
-                      title: 'Report an Issue',
-                      subtitle: 'Help us improve AiFORMA.',
-                      onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (context) => const ReportBugView(),
-                          ),
-                        );
-                      },
+                      title: ProfileStrings.reportAnIssueOption,
+                      subtitle: ProfileStrings.reportIssueSubtitle,
+                      onTap: () => Get.toNamed(RoutesName.reportBug),
                     ),
                     _buildDivider(),
-                    // _buildOptionTile(
-                    //   context,
-                    //   icon: Icons.help_outline,
-                    //   title: 'Knowledge Base',
-                    //   subtitle: 'Find answers to common questions.',
-                    //   onTap: () {},
-                    // ),
-                    // _buildDivider(),
                   ],
                 ),
               ),
               const SizedBox(height: 24),
               PrimaryButton(
-                onPressed: () => _handleLogout(context),
-                label: 'LOGOUT',
+                onPressed: controller.handleLogout,
+                label: ProfileStrings.logoutButton,
               ),
               const SizedBox(height: 16),
               GestureDetector(
-                onTap: () => _showDeleteAccountDialog(context),
+                onTap: controller.showDeleteAccountDialog,
                 child: const Text(
-                  'DELETE ACCOUNT',
+                  ProfileStrings.deleteAccountButton,
                   style: TextStyle(
                     fontFamily: 'Nunito',
                     fontSize: 14,
@@ -231,49 +84,6 @@ class HelpSupportView extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildOptionTile(
-    BuildContext context, {
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required VoidCallback onTap,
-  }) {
-    return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-      leading: Icon(
-        icon,
-        color: AppColors.textPrimary.withValues(alpha: 0.7),
-        size: 24,
-      ),
-      title: Text(
-        title,
-        style: const TextStyle(
-          fontFamily: 'Nunito',
-          fontSize: 16,
-          fontWeight: FontWeight.w700,
-          color: AppColors.textPrimary,
-        ),
-      ),
-      subtitle: Padding(
-        padding: const EdgeInsets.only(top: 4),
-        child: Text(
-          subtitle,
-          style: const TextStyle(
-            fontFamily: 'Nunito',
-            fontSize: 12,
-            color: AppColors.textSecondary,
-          ),
-        ),
-      ),
-      trailing: const Icon(
-        Icons.chevron_right,
-        color: AppColors.cardBorder,
-        size: 20,
-      ),
-      onTap: onTap,
     );
   }
 

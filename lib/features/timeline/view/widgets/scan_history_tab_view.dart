@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
 import 'package:ai_forma/core/constants/app_images.dart';
 import 'package:ai_forma/core/widgets/app_cached_image.dart';
+import 'package:ai_forma/features/timeline/constants/timeline_strings.dart';
 import 'package:ai_forma/features/timeline/controllers/timeline_controller.dart';
 import 'package:ai_forma/features/timeline/models/timeline_history_model.dart';
 import 'package:ai_forma/core/utils/app_date_formatter.dart';
@@ -16,7 +17,7 @@ class ScanHistoryTabView extends StatefulWidget {
 }
 
 class _ScanHistoryTabViewState extends State<ScanHistoryTabView> {
-  String _selectedAngle = 'All';
+  String _selectedAngle = TimelineStrings.allFilter;
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +29,12 @@ class _ScanHistoryTabViewState extends State<ScanHistoryTabView> {
         Padding(
           padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
           child: Row(
-            children: ['All', 'Front', 'Side', 'Back'].map((angle) {
+            children: [
+              TimelineStrings.allFilter,
+              TimelineStrings.frontFilter,
+              TimelineStrings.sideFilter,
+              TimelineStrings.backFilter,
+            ].map((angle) {
               final isSelected = angle == _selectedAngle;
               return Padding(
                 padding: const EdgeInsets.only(right: 8),
@@ -118,7 +124,7 @@ class _ScanHistoryTabViewState extends State<ScanHistoryTabView> {
             if (historyItems.isEmpty) {
               return const Center(
                 child: Text(
-                  'No scan history found.',
+                  TimelineStrings.noScanHistory,
                   style: TextStyle(
                     fontFamily: 'Nunito',
                     fontSize: 14,
@@ -133,7 +139,9 @@ class _ScanHistoryTabViewState extends State<ScanHistoryTabView> {
             for (final item in historyItems) {
               final month = item.monthLabel.isNotEmpty
                   ? item.monthLabel
-                  : (item.month.isNotEmpty ? item.month : 'Scan History');
+                  : (item.month.isNotEmpty
+                      ? item.month
+                      : TimelineStrings.defaultHistoryGroup);
               groupedMap.putIfAbsent(month, () => []).add(item);
             }
 
@@ -180,12 +188,10 @@ class _ScanHistoryTabViewState extends State<ScanHistoryTabView> {
 
     return GestureDetector(
       onTap: () {
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (context) => ScanDetailView(
-              scanId: scan.id,
-              date: AppDateFormatter.toDayMonthYear(scan.scanDate),
-            ),
+        Get.to(
+          () => ScanDetailView(
+            scanId: scan.id,
+            date: AppDateFormatter.toDayMonthYear(scan.scanDate),
           ),
         );
       },

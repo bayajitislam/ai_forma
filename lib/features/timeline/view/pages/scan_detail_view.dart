@@ -1,23 +1,22 @@
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:ai_forma/core/theme/app_colors.dart';
 import 'package:ai_forma/core/constants/app_images.dart';
+import 'package:ai_forma/core/theme/app_colors.dart';
+import 'package:ai_forma/core/utils/app_date_formatter.dart';
 import 'package:ai_forma/core/widgets/app_brand_text.dart';
 import 'package:ai_forma/core/widgets/app_cached_image.dart';
 import 'package:ai_forma/core/widgets/app_loader.dart';
-import 'package:ai_forma/core/utils/app_date_formatter.dart';
+import 'package:ai_forma/features/timeline/constants/timeline_strings.dart';
 import 'package:ai_forma/features/timeline/controllers/timeline_controller.dart';
 import 'package:ai_forma/features/timeline/models/timeline_scan_detail_model.dart';
+import 'package:ai_forma/features/timeline/view/widgets/scan_detail_arrow_button.dart';
+import 'package:ai_forma/features/timeline/view/widgets/scan_detail_metric_card.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 class ScanDetailView extends StatefulWidget {
   final String scanId;
   final String? date;
 
-  const ScanDetailView({
-    super.key,
-    this.scanId = '',
-    this.date,
-  });
+  const ScanDetailView({super.key, this.scanId = '', this.date});
 
   @override
   State<ScanDetailView> createState() => _ScanDetailViewState();
@@ -53,8 +52,7 @@ class _ScanDetailViewState extends State<ScanDetailView>
   void _previousPhoto(int totalPhotos) {
     if (totalPhotos == 0) return;
     setState(() {
-      _currentPhotoIndex =
-          (_currentPhotoIndex - 1 + totalPhotos) % totalPhotos;
+      _currentPhotoIndex = (_currentPhotoIndex - 1 + totalPhotos) % totalPhotos;
     });
   }
 
@@ -73,12 +71,10 @@ class _ScanDetailViewState extends State<ScanDetailView>
             color: AppColors.textPrimary,
             size: 20,
           ),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => Get.back(),
         ),
         title: const Center(child: AppBrandText(height: 22, width: 120)),
-        actions: const [
-          SizedBox(width: 48),
-        ],
+        actions: const [SizedBox(width: 48)],
         bottom: TabBar(
           controller: _tabController,
           indicatorColor: AppColors.brandTeal,
@@ -98,8 +94,8 @@ class _ScanDetailViewState extends State<ScanDetailView>
           ),
           indicatorSize: TabBarIndicatorSize.label,
           tabs: const [
-            Tab(text: 'Summary'),
-            Tab(text: 'Photos'),
+            Tab(text: TimelineStrings.summaryTab),
+            Tab(text: TimelineStrings.photosTab),
           ],
         ),
       ),
@@ -129,10 +125,7 @@ class _ScanDetailViewState extends State<ScanDetailView>
 
         return TabBarView(
           controller: _tabController,
-          children: [
-            _buildSummaryTab(detail),
-            _buildPhotosTab(detail),
-          ],
+          children: [_buildSummaryTab(detail), _buildPhotosTab(detail)],
         );
       }),
     );
@@ -142,19 +135,16 @@ class _ScanDetailViewState extends State<ScanDetailView>
     final summary = detail?.summary;
     final comparison = detail?.comparison;
 
-    final bodyFatVal = summary?.bodyFat?.value != null
-        ? '${summary!.bodyFat!.value}%'
-        : '18.2%';
+    final bodyFatVal =
+        summary?.bodyFat?.value != null ? '${summary!.bodyFat!.value}%' : '18.2%';
     final bodyFatChange = summary?.bodyFat?.change;
 
-    final muscleVal = summary?.muscle?.value != null
-        ? '${summary!.muscle!.value} kg'
-        : '71.5 kg';
+    final muscleVal =
+        summary?.muscle?.value != null ? '${summary!.muscle!.value} kg' : '71.5 kg';
     final muscleChange = summary?.muscle?.change;
 
-    final weightVal = summary?.weight?.value != null
-        ? '${summary!.weight!.value} kg'
-        : '87.4 kg';
+    final weightVal =
+        summary?.weight?.value != null ? '${summary!.weight!.value} kg' : '87.4 kg';
     final weightChange = summary?.weight?.change;
 
     final momentumScore = summary?.momentum?.score ?? 82;
@@ -165,7 +155,7 @@ class _ScanDetailViewState extends State<ScanDetailView>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Overview',
+            TimelineStrings.scanDetailOverview,
             style: TextStyle(
               fontFamily: 'Nunito',
               fontSize: 18,
@@ -174,39 +164,41 @@ class _ScanDetailViewState extends State<ScanDetailView>
             ),
           ),
           const SizedBox(height: 16),
-          _buildMetricCard(
-            label: 'Body Fat',
+          ScanDetailMetricCard(
+            label: TimelineStrings.bodyFatLabel,
             value: bodyFatVal,
             trendWidget: bodyFatChange != null
-                ? _buildTrendBadge(bodyFatChange, isPositive: true)
+                ? ScanDetailTrendBadge(label: bodyFatChange, isPositive: true)
                 : const SizedBox.shrink(),
           ),
           const SizedBox(height: 12),
-          _buildMetricCard(
-            label: 'Lean Muscle',
+          ScanDetailMetricCard(
+            label: TimelineStrings.leanMuscleLabel,
             value: muscleVal,
             trendWidget: muscleChange != null
-                ? _buildTrendBadge(muscleChange, isPositive: true)
+                ? ScanDetailTrendBadge(label: muscleChange, isPositive: true)
                 : const SizedBox.shrink(),
           ),
           const SizedBox(height: 12),
-          _buildMetricCard(
-            label: 'Weight',
+          ScanDetailMetricCard(
+            label: TimelineStrings.weightLabel,
             value: weightVal,
             trendWidget: weightChange != null
-                ? _buildTrendBadge(weightChange, isPositive: true)
+                ? ScanDetailTrendBadge(label: weightChange, isPositive: true)
                 : const SizedBox.shrink(),
           ),
           const SizedBox(height: 12),
-          _buildMetricCard(
-            label: 'Momentum',
+          ScanDetailMetricCard(
+            label: TimelineStrings.momentumLabel,
             value: '$momentumScore/100',
             trendWidget: const SizedBox.shrink(),
           ),
           if (comparison != null && comparison.then != null) ...[
             const SizedBox(height: 24),
             Text(
-              comparison.title.isNotEmpty ? comparison.title : 'Then vs Now',
+              comparison.title.isNotEmpty
+                  ? comparison.title
+                  : TimelineStrings.thenVsNow,
               style: const TextStyle(
                 fontFamily: 'Nunito',
                 fontSize: 18,
@@ -218,7 +210,9 @@ class _ScanDetailViewState extends State<ScanDetailView>
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppColors.insightConsistencyIncompleteBg.withValues(alpha: 0.5),
+                color: AppColors.insightConsistencyIncompleteBg.withValues(
+                  alpha: 0.5,
+                ),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
                   color: AppColors.cardBorder.withValues(alpha: 0.5),
@@ -231,7 +225,9 @@ class _ScanDetailViewState extends State<ScanDetailView>
                     child: Column(
                       children: [
                         Text(
-                          AppDateFormatter.toDayMonthYear(comparison.then?.scanDate),
+                          AppDateFormatter.toDayMonthYear(
+                            comparison.then?.scanDate,
+                          ),
                           style: const TextStyle(
                             fontFamily: 'Nunito',
                             fontSize: 12,
@@ -240,7 +236,7 @@ class _ScanDetailViewState extends State<ScanDetailView>
                         ),
                         const SizedBox(height: 4),
                         const Text(
-                          'PREVIOUS',
+                          TimelineStrings.previous,
                           style: TextStyle(
                             fontFamily: 'Nunito',
                             fontSize: 13,
@@ -260,7 +256,9 @@ class _ScanDetailViewState extends State<ScanDetailView>
                     child: Column(
                       children: [
                         Text(
-                          AppDateFormatter.toDayMonthYear(comparison.now?.scanDate),
+                          AppDateFormatter.toDayMonthYear(
+                            comparison.now?.scanDate,
+                          ),
                           style: const TextStyle(
                             fontFamily: 'Nunito',
                             fontSize: 12,
@@ -269,7 +267,7 @@ class _ScanDetailViewState extends State<ScanDetailView>
                         ),
                         const SizedBox(height: 4),
                         const Text(
-                          'THIS SCAN',
+                          TimelineStrings.thisScan,
                           style: TextStyle(
                             fontFamily: 'Nunito',
                             fontSize: 13,
@@ -291,12 +289,12 @@ class _ScanDetailViewState extends State<ScanDetailView>
 
   Widget _buildPhotosTab(TimelineScanDetailResponseModel? detail) {
     final views = detail?.photos?.views ?? [];
-    final mainTitle = detail?.photos?.title ?? 'Body Scan';
+    final mainTitle = detail?.photos?.title ?? TimelineStrings.defaultScanTitle;
 
     if (views.isEmpty) {
       return const Center(
         child: Text(
-          'No photos available for this scan.',
+          TimelineStrings.noPhotos,
           style: TextStyle(
             fontFamily: 'Nunito',
             fontSize: 14,
@@ -314,9 +312,10 @@ class _ScanDetailViewState extends State<ScanDetailView>
     final String fallbackAsset = switch (photo.view.toLowerCase()) {
       'side' => AppImages.sideView,
       'back' => AppImages.backView,
-      _ => (safeIndex == 1)
-          ? AppImages.sideView
-          : (safeIndex == 2 ? AppImages.backView : AppImages.frontView),
+      _ =>
+        (safeIndex == 1)
+            ? AppImages.sideView
+            : (safeIndex == 2 ? AppImages.backView : AppImages.frontView),
     };
 
     return Padding(
@@ -361,26 +360,21 @@ class _ScanDetailViewState extends State<ScanDetailView>
                             autoOrient: true,
                             useOldImageOnUrlChange: false,
                             placeholder: const Center(
-                              child: AppLoader(
-                                color: AppColors.brandTeal,
-                              ),
+                              child: AppLoader(color: AppColors.brandTeal),
                             ),
                             errorWidget: Image.asset(
                               fallbackAsset,
                               fit: BoxFit.contain,
                             ),
                           )
-                        : Image.asset(
-                            fallbackAsset,
-                            fit: BoxFit.contain,
-                          ),
+                        : Image.asset(fallbackAsset, fit: BoxFit.contain),
                   ),
                 ),
                 // Left arrow
                 if (safeIndex > 0)
                   Positioned(
                     left: 0,
-                    child: _buildArrowButton(
+                    child: ScanDetailArrowButton(
                       icon: Icons.arrow_back_ios_rounded,
                       onPressed: () => _previousPhoto(views.length),
                     ),
@@ -389,7 +383,7 @@ class _ScanDetailViewState extends State<ScanDetailView>
                 if (safeIndex < views.length - 1)
                   Positioned(
                     right: 0,
-                    child: _buildArrowButton(
+                    child: ScanDetailArrowButton(
                       icon: Icons.arrow_forward_ios_rounded,
                       onPressed: () => _nextPhoto(views.length),
                     ),
@@ -439,98 +433,6 @@ class _ScanDetailViewState extends State<ScanDetailView>
           ),
           const SizedBox(height: 16),
         ],
-      ),
-    );
-  }
-
-  Widget _buildArrowButton({
-    required IconData icon,
-    required VoidCallback onPressed,
-  }) {
-    return GestureDetector(
-      onTap: onPressed,
-      child: Container(
-        width: 52,
-        height: 52,
-        decoration: BoxDecoration(
-          color: AppColors.insightConsistencyIncompleteBg.withValues(alpha: 0.5),
-          shape: BoxShape.circle,
-          border: Border.all(
-            color: AppColors.cardBorder.withValues(alpha: 0.5),
-            width: 1,
-          ),
-        ),
-        child: Icon(
-          icon,
-          color: AppColors.brandTeal,
-          size: 20,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMetricCard({
-    required String label,
-    required String value,
-    required Widget trendWidget,
-  }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
-      decoration: BoxDecoration(
-        color: AppColors.insightConsistencyIncompleteBg.withValues(alpha: 0.5),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: AppColors.cardBorder.withValues(alpha: 0.5),
-          width: 1,
-        ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                label,
-                style: const TextStyle(
-                  fontFamily: 'Nunito',
-                  fontSize: 12,
-                  color: AppColors.textSecondary,
-                ),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                value,
-                style: const TextStyle(
-                  fontFamily: 'Nunito',
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-            ],
-          ),
-          trendWidget,
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTrendBadge(String label, {required bool isPositive}) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: AppColors.insightBadgePositiveBg,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Text(
-        label,
-        style: const TextStyle(
-          fontFamily: 'Nunito',
-          fontSize: 13,
-          fontWeight: FontWeight.bold,
-          color: AppColors.brandTealDark,
-        ),
       ),
     );
   }

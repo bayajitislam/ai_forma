@@ -13,8 +13,9 @@ This document serves as the official developer handover and technical reference 
 ## Technical Specifications and Stack
 
 * **Framework**: Flutter (Dart 3.x)
-* **Architecture**: Clean Architecture with Feature-First modular structure (Data, Controllers, Views)
-* **State Management and Routing**: GetX (`GetxController`, `Obx`, declarative named routes)
+* **Architecture**: Clean Architecture with Feature-First modular structure (Bindings, Constants, Controllers, Models, Repositories, Views)
+* **State Management and Routing**: GetX (`GetxController`, `Obx`, declarative named routes, dedicated feature `Bindings`)
+* **UI Notification System**: Custom `AppSnackbar` (Floating cards, 4 semantic styles, `ScaffoldMessenger` backed, context-free)
 * **Networking**: Dio 5.x with custom Bearer Auth interceptor, automatic token refresh (`/api/auth/token/refresh/`), and multipart image uploads
 * **Functional Error Handling**: Dartz (`Either<Failure, T>`)
 * **Secure Storage**: `flutter_secure_storage` (Android KeyStore / iOS Keychain) combined with `shared_preferences`
@@ -28,11 +29,12 @@ This document serves as the official developer handover and technical reference 
 
 ## Codebase Architecture and Directory Layout
 
-The project follows a **Feature-First Clean Architecture** pattern. All business logic, state controllers, and UI screens are isolated inside dedicated feature directories under `lib/features/`:
+The project follows a **Feature-First Clean Architecture** pattern. All business logic, state controllers, constants, and UI components are isolated inside dedicated feature directories under `lib/features/`:
 
 ```text
 lib/
 |-- core/                                # Shared foundational modules
+|   |-- bindings/                        # InitialBinding (persistent core singletons)
 |   |-- constants/                       # API endpoints, assets, app strings
 |   |-- failure/                         # Failure abstraction models (ApiFailure, NetworkFailure)
 |   |-- icons/                           # Centralized icon definitions (Remix Icon + custom SVGs)
@@ -40,22 +42,38 @@ lib/
 |   |-- services/                        # PushNotificationService, Background FCM handlers
 |   |-- storage/                         # AuthStorage (SecureStorage + SharedPreferences)
 |   |-- theme/                           # AppColors, AppTheme, AppTextStyles
-|   `-- widgets/                         # Reusable core widgets (PrimaryButton, AppNavbar, AppIcon)
+|   `-- widgets/                         # Reusable core widgets (AppSnackbar, PrimaryButton, AppNavbar, AppIcon)
 |
 |-- features/                            # Domain-driven feature modules
 |   |-- auth/                            # Authentication (Login, Register, OTP, Password Reset, UserController)
+|   |-- check_in/                        # 3-Angle Camera scanner, Pose overlay, Image validator
+|   |-- dashboard/                       # Home screen, Momentum card, Daily brief, Weight log
+|   |-- insights/                        # Muscle, Fat, Posture, Symmetry metrics, Scan comparison slider
 |   |-- onboarding/                      # Initial welcome and intro carousels
 |   |-- onboarding_assessment/           # Multi-step intake survey with wheel pickers
-|   |-- shell/                           # Navigation shell with bottom navbar (AppShellView)
-|   |-- dashboard/                       # Home screen, Momentum card, Daily brief, Weight log
-|   |-- check_in/                        # 3-Angle Camera scanner, Pose overlay, Image validator
-|   |-- insights/                        # Muscle, Fat, Posture, Symmetry metrics, Scan comparison slider
-|   |-- timeline/                        # Historical scan archive, Weight trend analytics
-|   `-- profile/                         # User profile, Notification settings, Subscription, Bug reports
+|   |-- profile/                         # User profile, Notification settings, Subscription, Bug reports
+|   |-- shell/                           # Navigation shell with bottom navbar (AppShellView & AppShellBinding)
+|   |-- splash/                          # App initialization, splash view, session routing
+|   `-- timeline/                        # Historical scan archive, Weight trend analytics
 |
 |-- routes/                              # Declarative routing table and route guards (AppRoutes, RoutesName)
 |-- firebase_options.dart                # Generated Firebase options configuration
 `-- main.dart                            # Application entry point, crash boundaries, dependency injection
+```
+
+### Standard Feature Directory Blueprint
+Every feature module in `lib/features/<feature_name>/` follows this strict layout:
+
+```text
+feature_name/
+|-- bindings/            # GetX Bindings registering controllers (e.g. ProfileBinding)
+|-- constants/           # Localized strings, keys, and asset references (e.g. ProfileStrings)
+|-- controllers/         # State management & business logic (GetxController)
+|-- models/              # Domain entities, DTOs, and JSON serialization models
+|-- repositories/        # Remote and local data fetching implementations
+`-- view/
+    |-- pages/           # Screen-level route destinations (Scaffold widgets)
+    `-- widgets/         # Decomposed modular UI subcomponents
 ```
 
 ---
@@ -79,7 +97,23 @@ lib/
 * Active user IDs are tagged in Crashlytics via `FirebaseCrashlytics.instance.setUserIdentifier(userId)` upon login and cleared upon logout.
 * A user-friendly branded recovery screen replaces the default red/grey screen of death in release builds (`ErrorWidget.builder`).
 
-### 4. Logging Standard: No Raw Prints
+### 4. Custom In-App Notifications (`AppSnackbar`)
+* **Do NOT use `Get.snackbar`**: GetX snackbar overlays can introduce lifecycle and context detachment issues during route transitions.
+* **Always use `AppSnackbar`**: Use the global `AppSnackbar` utility in `lib/core/widgets/app_snackbar.dart`:
+  ```dart
+  AppSnackbar.showSuccess('Scan uploaded successfully!');
+  AppSnackbar.showError('Unable to connect to server');
+  AppSnackbar.showWarning('Please align your silhouette');
+  AppSnackbar.showInfo('Processing background analysis');
+  ```
+* Backed by `ScaffoldMessengerState` via `AppSnackbar.messengerKey` registered in `GetMaterialApp.scaffoldMessengerKey` in `main.dart`. Can be safely invoked anywhere (controllers, repositories, UI callbacks) without requiring a `BuildContext`.
+
+### 5. Dependency Injection: Dedicated Bindings (No `static to`)
+* Controllers must **never** expose `static MyController get to => Get.find()`.
+* All controllers are bound and instantiated via dedicated `Bindings` classes (e.g. `AppShellBinding`, `ProfileBinding`, `AuthBinding`, `DashboardBinding`, `InsightsBinding`, `SplashBinding`) hooked into `AppRoutes`.
+* Sub-widgets access controllers using `Get.find<MyController>()` or inherit from `GetView<MyController>`.
+
+### 6. Logging Standard: No Raw Prints
 * Never use raw `print()` or `debugPrint()` in the codebase.
 * All console emissions use `flutter_devlog`:
   ```dart
@@ -89,7 +123,7 @@ lib/
   ```
 * All `DevLog` methods are encapsulated in Dart `assert()` blocks. When building for production release, the compiler strips these assertions completely, producing zero console leak and zero runtime overhead.
 
-### 5. Asset Manifest Case-Sensitivity
+### 7. Asset Manifest Case-Sensitivity
 * Assets are declared in `pubspec.yaml` under `assets/Icons/`, `assets/app/`, `assets/preview/`, and `assets/fonts/Nunito/`.
 * Always match the exact casing specified in `AppIcons` (`assets/Icons/...`).
 

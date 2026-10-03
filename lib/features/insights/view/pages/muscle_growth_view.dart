@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:ai_forma/core/network/dio_client.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
 import 'package:ai_forma/core/utils/app_date_formatter.dart';
 import 'package:ai_forma/core/widgets/app_network_error_widget.dart';
 import 'package:ai_forma/features/insights/constants/insights_strings.dart';
 import 'package:ai_forma/features/insights/controllers/muscle_growth_controller.dart';
-import 'package:ai_forma/features/insights/repositories/insights_repository.dart';
 import 'package:ai_forma/features/insights/view/widgets/insight_analysis_section.dart';
 import 'package:ai_forma/features/insights/view/widgets/insight_metric_scaffold.dart';
 import 'package:ai_forma/features/insights/view/widgets/insight_score_section.dart';
@@ -18,13 +16,7 @@ class MuscleGrowthView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.isRegistered<MuscleGrowthController>()
-        ? Get.find<MuscleGrowthController>()
-        : Get.put(
-            MuscleGrowthController(
-              repository: InsightsRepository(Get.find<DioClient>()),
-            ),
-          );
+    final controller = Get.find<MuscleGrowthController>();
 
     return Obx(() {
       final isLoading = controller.isLoading.value;
