@@ -14,6 +14,10 @@
 -keepattributes SourceFile,LineNumberTable
 -keep public class * extends java.lang.Exception
 
+# Flutter deferred components & Play Store split install (when deferred components are not used)
+-dontwarn com.google.android.play.core.**
+-dontwarn io.flutter.embedding.engine.deferredcomponents.**
+
 # Preserve JNI and native methods
 -keepclasseswithmembernames class * {
     native <methods>;
@@ -24,3 +28,4 @@
     public static **[] values();
     public static ** valueOf(java.lang.String);
 }
+
