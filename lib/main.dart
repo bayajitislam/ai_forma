@@ -38,7 +38,15 @@ void main() async {
 
     runApp(const AiFormaApp());
   }, (error, stack) {
-    FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+    debugPrint('*** ROOT ZONE CRITICAL ERROR ***: $error');
+    debugPrint('$stack');
+    try {
+      if (Firebase.apps.isNotEmpty) {
+        FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+      }
+    } catch (e) {
+      debugPrint('Could not log error to Crashlytics: $e');
+    }
     DevLog.error(
       'Zoned Root Exception: $error',
       tag: 'RootZone',
@@ -52,7 +60,11 @@ void main() async {
 void _setupErrorHandlers() {
   // Pass all uncaught synchronous Flutter framework errors to Crashlytics
   FlutterError.onError = (FlutterErrorDetails details) {
-    FirebaseCrashlytics.instance.recordFlutterFatalError(details);
+    try {
+      if (Firebase.apps.isNotEmpty) {
+        FirebaseCrashlytics.instance.recordFlutterFatalError(details);
+      }
+    } catch (_) {}
     DevLog.error(
       'Flutter Framework Error: ${details.exceptionAsString()}',
       tag: 'FlutterError',
@@ -63,7 +75,11 @@ void _setupErrorHandlers() {
 
   // Pass all uncaught asynchronous platform errors to Crashlytics
   PlatformDispatcher.instance.onError = (error, stack) {
-    FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+    try {
+      if (Firebase.apps.isNotEmpty) {
+        FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+      }
+    } catch (_) {}
     DevLog.error(
       'Platform Async Error: $error',
       tag: 'PlatformDispatcher',
