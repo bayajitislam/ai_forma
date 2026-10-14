@@ -1,3 +1,4 @@
+import 'package:ai_forma/routes/routes_name.dart';
 import 'package:flutter/material.dart';
 import 'package:ai_forma/core/icons/app_icons.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
@@ -7,7 +8,7 @@ import 'package:ai_forma/core/widgets/app_icon.dart';
 import 'package:ai_forma/features/check_in/constants/check_in_strings.dart';
 
 import 'package:ai_forma/features/check_in/models/checkin_status_model.dart';
-import 'package:ai_forma/features/insights/view/pages/consistency_view.dart';
+import 'package:get/route_manager.dart';
 
 class CheckInStreakCard extends StatefulWidget {
   final VoidCallback? onTap;
@@ -38,9 +39,7 @@ class _CheckInStreakCardState extends State<CheckInStreakCard> {
     if (widget.onTap != null) {
       widget.onTap!();
     } else {
-      Navigator.of(context).push(
-        MaterialPageRoute<void>(builder: (_) => const ConsistencyView()),
-      );
+      Get.toNamed(RoutesName.consistency);
     }
   }
 
@@ -66,10 +65,7 @@ class _CheckInStreakCardState extends State<CheckInStreakCard> {
               gradient: const RadialGradient(
                 center: Alignment(0.9, -0.6),
                 radius: 1.1,
-                colors: [
-                  Color(0xFF0F2E2C),
-                  CheckInStreakCard._cardBackground,
-                ],
+                colors: [Color(0xFF0F2E2C), CheckInStreakCard._cardBackground],
                 stops: [0.0, 0.65],
               ),
             ),
@@ -158,11 +154,14 @@ class _CheckInStreakCardState extends State<CheckInStreakCard> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: List.generate(
-                      widget.streakHistory != null && widget.streakHistory!.isNotEmpty
+                      widget.streakHistory != null &&
+                              widget.streakHistory!.isNotEmpty
                           ? widget.streakHistory!.length
                           : 12,
                       (index) {
-                        final isComp = widget.streakHistory != null && index < widget.streakHistory!.length
+                        final isComp =
+                            widget.streakHistory != null &&
+                                index < widget.streakHistory!.length
                             ? widget.streakHistory![index].isCompleted
                             : true;
 

@@ -18,42 +18,45 @@ import 'package:flutter_devlog/flutter_devlog.dart';
 import 'package:get/get.dart';
 
 void main() async {
-  runZonedGuarded(() async {
-    WidgetsFlutterBinding.ensureInitialized();
+  runZonedGuarded(
+    () async {
+      WidgetsFlutterBinding.ensureInitialized();
 
-    // Ensure fresh install clears lingering iOS Keychain credentials
-    await AuthStorage.ensureCleanInstall();
+      // Ensure fresh install clears lingering iOS Keychain credentials
+      await AuthStorage.ensureCleanInstall();
 
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
 
-    _setupErrorHandlers();
+      _setupErrorHandlers();
 
-    // Initialize core persistent dependencies
-    InitialBinding.init();
+      // Initialize core persistent dependencies
+      InitialBinding.init();
 
-    // Initialize Firebase Push Notifications & FCM Token Registration
-    PushNotificationService.instance.initialize();
+      // Initialize Firebase Push Notifications & FCM Token Registration
+      PushNotificationService.instance.initialize();
 
-    runApp(const AiFormaApp());
-  }, (error, stack) {
-    debugPrint('*** ROOT ZONE CRITICAL ERROR ***: $error');
-    debugPrint('$stack');
-    try {
-      if (Firebase.apps.isNotEmpty) {
-        FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+      runApp(const AiFormaApp());
+    },
+    (error, stack) {
+      debugPrint('*** ROOT ZONE CRITICAL ERROR ***: $error');
+      debugPrint('$stack');
+      try {
+        if (Firebase.apps.isNotEmpty) {
+          FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+        }
+      } catch (e) {
+        debugPrint('Could not log error to Crashlytics: $e');
       }
-    } catch (e) {
-      debugPrint('Could not log error to Crashlytics: $e');
-    }
-    DevLog.error(
-      'Zoned Root Exception: $error',
-      tag: 'RootZone',
-      error: error,
-      stackTrace: stack,
-    );
-  });
+      DevLog.error(
+        'Zoned Root Exception: $error',
+        tag: 'RootZone',
+        error: error,
+        stackTrace: stack,
+      );
+    },
+  );
 }
 
 /// Configure global Flutter and platform error handlers
