@@ -14,6 +14,8 @@ import 'package:ai_forma/features/check_in/view/widgets/next_scan_info_bottom_sh
 import 'package:ai_forma/core/network/dio_client.dart';
 import 'package:ai_forma/features/dashboard/controllers/home_controller.dart';
 import 'package:ai_forma/features/dashboard/view/widgets/weight_entry_bottom_sheet.dart';
+import 'package:ai_forma/core/utils/app_date_formatter.dart';
+import 'package:ai_forma/features/check_in/view/widgets/scan_day_info_card.dart';
 import 'package:ai_forma/routes/routes_name.dart';
 
 class CheckInHomeView extends StatelessWidget {
@@ -230,6 +232,10 @@ class CheckInHomeView extends StatelessWidget {
                             ),
                           ],
                         ),
+                        const SizedBox(height: 16),
+
+                        // Expandable Card: Changing your scan day
+                        const ScanDayInfoCard(),
 
                         // Pending Scan Day Notification Badge
                         if (status?.pendingScanDay != null &&
@@ -338,6 +344,12 @@ class CheckInHomeView extends StatelessWidget {
                   final rawCheckDay =
                       status?.checkDay ?? CheckInStrings.checkDayValue;
                   final checkDay = _getFullDayName(rawCheckDay);
+                  final nextAvailableDate = status?.window?.opensAt != null
+                      ? AppDateFormatter.toWeekdayMonthDay(
+                          status!.window!.opensAt,
+                          fallback: checkDay,
+                        )
+                      : checkDay;
 
                   return Column(
                     mainAxisSize: MainAxisSize.min,
@@ -356,14 +368,39 @@ class CheckInHomeView extends StatelessWidget {
                         label: ctaLabel,
                       ),
                       if (!isAvailable) ...[
-                        const SizedBox(height: 8),
-                        Text(
-                          '${CheckInStrings.nextWeeklyAvailablePrefix}$checkDay',
-                          style: const TextStyle(
-                            fontSize: 13,
-                            color: AppColors.textSecondary,
-                            fontWeight: FontWeight.w500,
-                          ),
+                        const SizedBox(height: 10),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(
+                              Icons.calendar_today_outlined,
+                              size: 14,
+                              color: AppColors.brandTeal,
+                            ),
+                            const SizedBox(width: 6),
+                            RichText(
+                              text: TextSpan(
+                                style: const TextStyle(
+                                  fontFamily: 'Nunito',
+                                  fontSize: 13,
+                                  color: AppColors.textSecondary,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                                children: [
+                                  const TextSpan(
+                                    text: CheckInStrings.nextWeeklyAvailablePrefix,
+                                  ),
+                                  TextSpan(
+                                    text: nextAvailableDate,
+                                    style: const TextStyle(
+                                      color: AppColors.brandTeal,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ],

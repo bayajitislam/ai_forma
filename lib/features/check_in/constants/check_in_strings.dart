@@ -160,8 +160,20 @@ abstract final class CheckInStrings {
   static const String transitionScheduleActive = 'Transition Schedule Active';
   static const String pendingChangePrefix = 'Pending change to ';
   static const String pendingChangeSuffix = ' (takes effect next cycle)';
-  static const String nextWeeklyAvailablePrefix =
-      'Next Weekly check-in available on ';
+  static const String nextWeeklyAvailablePrefix = 'Next scan available: ';
+
+  // Expandable Scan Day Information Card
+  static const String scanDayInfoTitle = 'Changing your scan day';
+  static const String scanDayInfoCollapsedSnippet =
+      'Scans must be at least 7 days apart.';
+  static const String scanDayInfoTapToLearnMore = 'Tap to learn more';
+  static const String scanDayInfoExpandedBody =
+      'Scans must be at least 7 days apart. If you change your scan day and it falls within your current 7-day cycle, your next scan will begin the following week.';
+  static const String dailyBriefQuestionsTitle = 'Daily Brief questions';
+  static const String dailyBriefQuestionsBody =
+      'The Daily Brief questions will start 6 days out from your next scan and run up to your chosen scan day.';
+  static const String progressAndStreakPreserved =
+      'Your progress and streak will be preserved.';
 
   static String nextScanAvailableMessage(String day) =>
       'Your check-in for this week is completed! Your next scan will be available on $day.';

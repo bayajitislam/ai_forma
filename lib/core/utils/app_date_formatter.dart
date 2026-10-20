@@ -10,6 +10,7 @@ class AppDateFormatter {
   static final DateFormat _shortFormat = DateFormat('d MMM yyyy');
   static final DateFormat _monthYearFormat = DateFormat('MMM yyyy');
   static final DateFormat _dayMonthFormat = DateFormat('d MMM');
+  static final DateFormat _weekdayMonthDayFormat = DateFormat('EEEE, MMMM d');
 
   /// Safely parse dynamic input (String, DateTime, int epoch) into a DateTime?
   static DateTime? tryParse(dynamic input) {
@@ -103,6 +104,14 @@ class AppDateFormatter {
     final dt = tryParse(input);
     if (dt == null) return fallback ?? input.toString();
     return _dayMonthFormat.format(dt);
+  }
+
+  /// Converts any date to weekday and month day: "Friday, October 2"
+  static String toWeekdayMonthDay(dynamic input, {String? fallback}) {
+    if (input == null) return fallback ?? '';
+    final dt = tryParse(input);
+    if (dt == null) return fallback ?? input.toString();
+    return _weekdayMonthDayFormat.format(dt);
   }
 }
 

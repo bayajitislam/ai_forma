@@ -1,7 +1,7 @@
 class ApiEndpoint {
   static const String baseUrl = String.fromEnvironment(
     'API_URL',
-    defaultValue: 'https://aiformapi.sobhoy.com',
+    defaultValue: 'https://api.ai-forma.net',
   );
 
   //auth
