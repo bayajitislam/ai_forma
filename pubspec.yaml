@@ -76,6 +76,8 @@ dependencies:
   firebase_messaging: ^15.2.4
   # Firebase Crashlytics: Real-time fatal/non-fatal crash analytics, user ID mapping, and crash reporting
   firebase_crashlytics: ^4.3.10
+  # Flutter Local Notifications: Foreground notification banners, heads-up alerts, and Android notification channels
+  flutter_local_notifications: ^22.3.3
 
   # Device & System Utilities
   # Permission Handler: Manages runtime OS permissions (Notifications, Camera) and opens app settings

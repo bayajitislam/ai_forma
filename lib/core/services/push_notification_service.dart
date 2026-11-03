@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:ai_forma/core/constants/api_endpoint.dart';
 import 'package:ai_forma/core/network/dio_client.dart';
@@ -9,6 +10,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_devlog/flutter_devlog.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -33,6 +35,17 @@ class PushNotificationService {
   PushNotificationService._internal();
 
   FirebaseMessaging get _messaging => FirebaseMessaging.instance;
+  final FlutterLocalNotificationsPlugin _localNotifications =
+      FlutterLocalNotificationsPlugin();
+
+  static const AndroidNotificationChannel _channel = AndroidNotificationChannel(
+    'high_importance_channel', // Matches AndroidManifest.xml default_notification_channel_id
+    'AiFORMA Notifications',
+    description: 'This channel is used for important AiFORMA notifications and check-in reminders.',
+    importance: Importance.max,
+    playSound: true,
+    enableVibration: true,
+  );
 
   Map<String, dynamic>? _pendingNotificationData;
 
@@ -62,13 +75,16 @@ class PushNotificationService {
         return;
       }
 
-      // Set background message handler
+      // 1. Initialize local notifications for foreground alerts
+      await _initLocalNotifications();
+
+      // 2. Set background message handler
       FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
       // Check if user has disabled notifications via in-app preference
       final prefEnabled = await AuthStorage.isNotificationsEnabled();
 
-      // Handle notification tap when app is launched from terminated state (cold boot)
+      // 3. Handle notification tap when app is launched from terminated state (cold boot)
       final initialMessage = await _messaging.getInitialMessage();
       if (initialMessage != null) {
         DevLog.info(
@@ -76,9 +92,24 @@ class PushNotificationService {
           tag: 'PushNotification',
         );
         _pendingNotificationData = initialMessage.data;
+      } else {
+        // Also check if app was opened via local notification
+        final localLaunchDetails =
+            await _localNotifications.getNotificationAppLaunchDetails();
+        if (localLaunchDetails?.didNotificationLaunchApp ?? false) {
+          final payload = localLaunchDetails?.notificationResponse?.payload;
+          if (payload != null && payload.isNotEmpty) {
+            try {
+              final decoded = jsonDecode(payload);
+              if (decoded is Map<String, dynamic>) {
+                _pendingNotificationData = decoded;
+              }
+            } catch (_) {}
+          }
+        }
       }
 
-      // Handle notification tap when app is opened from background state
+      // 4. Handle notification tap when app is opened from background state
       FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
         DevLog.info(
           'Notification opened app from background: ${message.data}',
@@ -87,21 +118,35 @@ class PushNotificationService {
         handleNotificationTap(message.data);
       });
 
-      // Foreground notification listener
+      // 5. Foreground notification listener
       FirebaseMessaging.onMessage.listen((RemoteMessage message) {
         DevLog.info(
           'Received foreground notification: ${message.notification?.title}',
           tag: 'PushNotification',
         );
+        // On Android (or iOS data-only pushes), display local notification banner
+        if (!kIsWeb &&
+            (Platform.isAndroid || (Platform.isIOS && message.notification == null))) {
+          _showForegroundNotification(message);
+        }
       });
 
-      // Request notification permissions (required for iOS and Android 13+)
+      // 6. Request notification permissions (required for iOS and Android 13+)
       final settings = await _messaging.requestPermission(
         alert: true,
         badge: true,
         sound: true,
         provisional: false,
       );
+
+      // Configure iOS foreground presentation options (alert, badge, sound)
+      if (!kIsWeb && Platform.isIOS) {
+        await _messaging.setForegroundNotificationPresentationOptions(
+          alert: true,
+          badge: true,
+          sound: true,
+        );
+      }
 
       DevLog.info(
         'Push notification permission status: ${settings.authorizationStatus.name}',
@@ -141,6 +186,110 @@ class PushNotificationService {
         error: e,
         stackTrace: s,
       );
+    }
+  }
+
+  /// Sets up local notifications plugin and creates Android notification channels
+  Future<void> _initLocalNotifications() async {
+    if (kIsWeb) return;
+    try {
+      const androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
+      const darwinInit = DarwinInitializationSettings(
+        requestAlertPermission: false,
+        requestBadgePermission: false,
+        requestSoundPermission: false,
+      );
+      const initSettings = InitializationSettings(
+        android: androidInit,
+        iOS: darwinInit,
+      );
+
+      await _localNotifications.initialize(
+        settings: initSettings,
+        onDidReceiveNotificationResponse: _onSelectNotificationResponse,
+      );
+
+      // Register high importance channel for Android 8.0+
+      if (Platform.isAndroid) {
+        final androidPlugin = _localNotifications.resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>();
+        await androidPlugin?.createNotificationChannel(_channel);
+      }
+    } catch (e, s) {
+      DevLog.error(
+        'Failed to initialize local notifications: $e',
+        tag: 'PushNotification',
+        error: e,
+        stackTrace: s,
+      );
+    }
+  }
+
+  /// Displays foreground notification banner on device
+  Future<void> _showForegroundNotification(RemoteMessage message) async {
+    try {
+      final notification = message.notification;
+      final title = notification?.title ?? message.data['title']?.toString();
+      final body = notification?.body ?? message.data['body']?.toString();
+
+      if (title == null && body == null) return;
+
+      final androidDetails = AndroidNotificationDetails(
+        _channel.id,
+        _channel.name,
+        channelDescription: _channel.description,
+        importance: Importance.max,
+        priority: Priority.high,
+        icon: '@mipmap/ic_launcher',
+        playSound: true,
+        enableVibration: true,
+      );
+      const darwinDetails = DarwinNotificationDetails(
+        presentAlert: true,
+        presentBadge: true,
+        presentSound: true,
+      );
+      final details = NotificationDetails(
+        android: androidDetails,
+        iOS: darwinDetails,
+      );
+
+      await _localNotifications.show(
+        id: message.hashCode,
+        title: title,
+        body: body,
+        notificationDetails: details,
+        payload: jsonEncode(message.data),
+      );
+    } catch (e, s) {
+      DevLog.error(
+        'Failed to display foreground notification: $e',
+        tag: 'PushNotification',
+        error: e,
+        stackTrace: s,
+      );
+    }
+  }
+
+  /// Callback when user taps a foreground local notification
+  void _onSelectNotificationResponse(NotificationResponse response) {
+    final payload = response.payload;
+    if (payload != null && payload.isNotEmpty) {
+      try {
+        final decoded = jsonDecode(payload);
+        if (decoded is Map<String, dynamic>) {
+          DevLog.info(
+            'Foreground notification tapped with payload: $decoded',
+            tag: 'PushNotification',
+          );
+          handleNotificationTap(decoded);
+        }
+      } catch (e) {
+        DevLog.warn(
+          'Could not decode local notification payload: $e',
+          tag: 'PushNotification',
+        );
+      }
     }
   }
 

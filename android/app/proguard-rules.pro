@@ -9,6 +9,10 @@
 # Flutter Secure Storage
 -keep class com.it_nomads.fluttersecurestorage.** { *; }
 
+# Flutter Local Notifications
+-keep class com.dexterous.flutterlocalnotifications.** { *; }
+-dontwarn com.dexterous.flutterlocalnotifications.**
+
 # Firebase Core & Component Registrars (prevents R8 NoSuchMethodException on <init>)
 -keep class * implements com.google.firebase.components.ComponentRegistrar {
     public <init>();
