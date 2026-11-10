@@ -15,18 +15,31 @@ class AuthStorage {
   static const String _keyFirstCheckInCompleted = 'first_check_in_completed';
   static const String _keyHasRunBefore = 'app_has_run_before';
 
-  /// Ensure secure storage is cleared if the app was freshly installed.
+  /// Ensure secure storage is cleared ONLY if the app was genuinely freshly installed.
   /// On iOS, the Keychain persists across app deletions and reinstalls, whereas
   /// SharedPreferences is deleted. By tracking an install marker in SharedPreferences,
-  /// we detect a re-install and purge any orphaned Keychain credentials so the user
-  /// starts fresh with onboarding and login.
+  /// we detect a re-install and purge any orphaned Keychain credentials.
+  ///
+  /// CRITICAL: If the app was updated from a previous version, existing SharedPreferences
+  /// data (e.g. user_data or legacy tokens) will be present even if app_has_run_before
+  /// was not yet set. We MUST NOT delete secure storage during an app update!
   static Future<void> ensureCleanInstall() async {
     final prefs = await SharedPreferences.getInstance();
     final hasRunBefore = prefs.getBool(_keyHasRunBefore) ?? false;
     if (!hasRunBefore) {
-      try {
-        await _secureStorage.deleteAll();
-      } catch (_) {}
+      // Check if this is an app update with existing session or user profile data
+      final hasExistingData = prefs.containsKey(_keyUserData) ||
+          prefs.containsKey(_keyAccessToken) ||
+          prefs.containsKey(_keyRefreshToken);
+
+      if (!hasExistingData) {
+        // True fresh install: purge any orphaned Keychain credentials
+        try {
+          await _secureStorage.deleteAll();
+        } catch (_) {}
+      }
+
+      // Mark as initialized so future launches and updates never purge storage
       await prefs.setBool(_keyHasRunBefore, true);
     }
   }

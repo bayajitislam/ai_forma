@@ -116,5 +116,26 @@ void main() {
 
       expect(await AuthStorage.getAccessToken(), equals('mock_access_token_123'));
     });
+
+    test('ensureCleanInstall preserves secure storage tokens during an app update with existing session data', () async {
+      // Setup active user in secure storage and SharedPreferences
+      await AuthStorage.saveAuthData(tokens: testTokens, user: testUser);
+
+      // Simulate an update from an older build where app_has_run_before was never set,
+      // but user_data exists in SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('app_has_run_before');
+      expect(prefs.containsKey('user_data'), isTrue);
+      expect(prefs.getBool('app_has_run_before'), isNull);
+
+      // Run ensureCleanInstall as it would run in main() after updating
+      await AuthStorage.ensureCleanInstall();
+
+      // Tokens MUST be preserved, and app_has_run_before marked true
+      expect(await AuthStorage.getAccessToken(), equals('mock_access_token_123'));
+      expect(await AuthStorage.getRefreshToken(), equals('mock_refresh_token_456'));
+      expect(await AuthStorage.getUser(), isNotNull);
+      expect(prefs.getBool('app_has_run_before'), isTrue);
+    });
   });
 }
