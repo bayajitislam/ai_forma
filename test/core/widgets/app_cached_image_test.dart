@@ -4,6 +4,7 @@ import 'package:ai_forma/core/constants/api_endpoint.dart';
 import 'package:ai_forma/core/constants/app_images.dart';
 import 'package:ai_forma/core/services/app_image_cache_manager.dart';
 import 'package:ai_forma/core/widgets/app_cached_image.dart';
+import 'package:ai_forma/core/widgets/app_error_widget.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -123,6 +124,41 @@ void main() {
       );
 
       expect(find.byIcon(Icons.broken_image_rounded), findsOneWidget);
+    });
+
+    testWidgets('AppErrorWidget renders in full-screen and compact constraints without overflow', (tester) async {
+      final details = FlutterErrorDetails(
+        exception: Exception('Simulated test exception'),
+        stack: StackTrace.current,
+      );
+
+      // Test compact constraint (< 160px height)
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: SizedBox(
+              width: 200,
+              height: 100,
+              child: AppErrorWidget(details: details),
+            ),
+          ),
+        ),
+      );
+      expect(tester.takeException(), isNull);
+
+      // Test full constraint
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: SizedBox(
+              width: 400,
+              height: 600,
+              child: AppErrorWidget(details: details),
+            ),
+          ),
+        ),
+      );
+      expect(tester.takeException(), isNull);
     });
   });
 }

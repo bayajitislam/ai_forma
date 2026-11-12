@@ -160,12 +160,22 @@ class _AppCachedNetworkImageState extends State<AppCachedNetworkImage> {
     );
     _imageStream = provider.resolve(const ImageConfiguration());
     _streamListener = ImageStreamListener(
-      (ImageInfo info, bool _) {
-        if (mounted) {
-          final isLandscape = info.image.width > info.image.height;
-          if (_isLandscape != isLandscape) {
-            setState(() {
-              _isLandscape = isLandscape;
+      (ImageInfo info, bool synchronousCall) {
+        if (!mounted) return;
+        final isLandscape = info.image.width > info.image.height;
+        if (_isLandscape != isLandscape) {
+          if (synchronousCall) {
+            // If already resolved synchronously during initState or didUpdateWidget,
+            // mutate directly without calling setState to avoid "setState() called during build" errors.
+            _isLandscape = isLandscape;
+          } else {
+            // Defer setState until after the current frame completes to prevent build conflicts.
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted) {
+                setState(() {
+                  _isLandscape = isLandscape;
+                });
+              }
             });
           }
         }
@@ -217,22 +227,16 @@ class _AppCachedNetworkImageState extends State<AppCachedNetworkImage> {
       placeholderFadeInDuration: widget.placeholderFadeInDuration,
       useOldImageOnUrlChange: widget.useOldImageOnUrlChange,
       imageBuilder: (context, imageProvider) {
-        Widget image = Image(
+        final image = Image(
           image: imageProvider,
           fit: widget.fit,
-          width: shouldRotate ? null : widget.width,
-          height: shouldRotate ? null : widget.height,
         );
 
         if (shouldRotate) {
-          image = SizedBox(
-            width: widget.width,
-            height: widget.height,
-            child: Center(
-              child: RotatedBox(
-                quarterTurns: 1,
-                child: image,
-              ),
+          return Center(
+            child: RotatedBox(
+              quarterTurns: 1,
+              child: image,
             ),
           );
         }

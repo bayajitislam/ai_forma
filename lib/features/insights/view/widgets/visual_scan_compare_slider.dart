@@ -35,7 +35,10 @@ class _VisualScanCompareSliderState extends State<VisualScanCompareSlider> {
   }
 
   Widget _buildImage(String path, double width, double height) {
-    if (path.startsWith('http://') || path.startsWith('https://')) {
+    if (path.startsWith('http://') ||
+        path.startsWith('https://') ||
+        path.startsWith('/') ||
+        path.startsWith('media/')) {
       return AppCachedNetworkImage(
         imageUrl: path,
         fit: BoxFit.contain,

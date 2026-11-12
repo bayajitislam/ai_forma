@@ -217,7 +217,9 @@ class _ScanHistoryTabViewState extends State<ScanHistoryTabView> {
             Expanded(
               child: Row(
                 children: thumbs.map((urlOrAsset) {
-                  final isNetwork = urlOrAsset.startsWith('http');
+                  final isNetwork = urlOrAsset.startsWith('http') ||
+                      urlOrAsset.startsWith('/') ||
+                      urlOrAsset.startsWith('media');
                   return Padding(
                     padding: const EdgeInsets.only(right: 8),
                     child: Container(
