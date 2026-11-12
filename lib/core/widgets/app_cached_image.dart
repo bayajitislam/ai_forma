@@ -2,13 +2,16 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:ai_forma/core/constants/api_endpoint.dart';
 import 'package:ai_forma/core/constants/app_images.dart';
+import 'package:ai_forma/core/services/app_image_cache_manager.dart';
 import 'package:ai_forma/core/theme/app_colors.dart';
+import 'package:flutter_devlog/flutter_devlog.dart';
 
-/// Reusable cached network image widget with disk/memory caching,
+/// Reusable cached network image widget with persistent disk/memory caching,
 /// smooth neutral grey shimmer placeholder on first download, instant cached rendering,
-/// and optional autoOrient to ensure vertical scans stay upright in portrait.
+/// seamless transitions when image URLs change, and optional autoOrient.
 class AppCachedNetworkImage extends StatefulWidget {
   final String imageUrl;
+  final String? cacheKey;
   final double? width;
   final double? height;
   final BoxFit fit;
@@ -17,10 +20,17 @@ class AppCachedNetworkImage extends StatefulWidget {
   final Widget? errorWidget;
   final bool autoOrient;
   final bool useOldImageOnUrlChange;
+  final Duration placeholderFadeInDuration;
+  final Duration fadeInDuration;
+  final int? maxWidthDiskCache;
+  final int? maxHeightDiskCache;
+  final int? memCacheWidth;
+  final int? memCacheHeight;
 
   const AppCachedNetworkImage({
     super.key,
     required this.imageUrl,
+    this.cacheKey,
     this.width,
     this.height,
     this.fit = BoxFit.cover,
@@ -28,7 +38,13 @@ class AppCachedNetworkImage extends StatefulWidget {
     this.placeholder,
     this.errorWidget,
     this.autoOrient = true,
-    this.useOldImageOnUrlChange = false,
+    this.useOldImageOnUrlChange = true,
+    this.placeholderFadeInDuration = const Duration(milliseconds: 300),
+    this.fadeInDuration = const Duration(milliseconds: 150),
+    this.maxWidthDiskCache,
+    this.maxHeightDiskCache,
+    this.memCacheWidth,
+    this.memCacheHeight,
   });
 
   /// Helper to ensure relative URLs have full baseUrl prefix
@@ -44,13 +60,59 @@ class AppCachedNetworkImage extends StatefulWidget {
     return '${ApiEndpoint.baseUrl}/$trimmed';
   }
 
+  /// Generates a normalized cache key for any image URL.
+  /// For S3, CloudFront, GCS, or Azure signed URLs with temporary signatures/tokens,
+  /// this strips transient authentication query parameters so identical images
+  /// share the exact same persistent local cache key across app launches!
+  static String extractCacheKey(String? url) {
+    final cleanUrl = resolveUrl(url);
+    if (cleanUrl.isEmpty) return '';
+
+    try {
+      final uri = Uri.parse(cleanUrl);
+      if (!uri.hasQuery) {
+        return cleanUrl;
+      }
+      return Uri(
+        scheme: uri.scheme,
+        host: uri.host,
+        port: uri.hasPort ? uri.port : null,
+        path: uri.path,
+      ).toString();
+    } catch (_) {
+      return cleanUrl;
+    }
+  }
+
   /// Helper ImageProvider for CircleAvatar and BoxDecoration
-  static ImageProvider provider(String? url) {
+  static ImageProvider provider(String? url, {String? cacheKey}) {
     final cleanUrl = resolveUrl(url);
     if (cleanUrl.isEmpty) {
       return const AssetImage(AppImages.logo);
     }
-    return CachedNetworkImageProvider(cleanUrl);
+    final effectiveKey = cacheKey ?? extractCacheKey(cleanUrl);
+    return CachedNetworkImageProvider(
+      cleanUrl,
+      cacheKey: effectiveKey,
+      cacheManager: AppImageCacheManager.instance,
+    );
+  }
+
+  /// Evict a specific image URL from the local disk cache
+  static Future<void> evict(String? url) async {
+    final cleanUrl = resolveUrl(url);
+    if (cleanUrl.isNotEmpty) {
+      final effectiveKey = extractCacheKey(cleanUrl);
+      await AppImageCacheManager.evict(effectiveKey);
+      if (effectiveKey != cleanUrl) {
+        await AppImageCacheManager.evict(cleanUrl);
+      }
+    }
+  }
+
+  /// Clear all cached images from the local disk cache
+  static Future<void> clearAll() async {
+    await AppImageCacheManager.clearCache();
   }
 
   @override
@@ -88,7 +150,14 @@ class _AppCachedNetworkImageState extends State<AppCachedNetworkImage> {
     final cleanUrl = AppCachedNetworkImage.resolveUrl(widget.imageUrl);
     if (cleanUrl.isEmpty) return;
 
-    final provider = CachedNetworkImageProvider(cleanUrl);
+    final effectiveKey =
+        widget.cacheKey ?? AppCachedNetworkImage.extractCacheKey(cleanUrl);
+
+    final provider = CachedNetworkImageProvider(
+      cleanUrl,
+      cacheKey: effectiveKey,
+      cacheManager: AppImageCacheManager.instance,
+    );
     _imageStream = provider.resolve(const ImageConfiguration());
     _streamListener = ImageStreamListener(
       (ImageInfo info, bool _) {
@@ -128,15 +197,48 @@ class _AppCachedNetworkImageState extends State<AppCachedNetworkImage> {
     }
 
     final bool shouldRotate = widget.autoOrient && _isLandscape;
+    final effectiveCacheKey =
+        widget.cacheKey ?? AppCachedNetworkImage.extractCacheKey(cleanUrl);
 
     Widget imageWidget = CachedNetworkImage(
+      key: ValueKey('cni_$effectiveCacheKey'),
       imageUrl: cleanUrl,
-      width: shouldRotate ? null : widget.width,
-      height: shouldRotate ? null : widget.height,
+      cacheKey: effectiveCacheKey,
+      cacheManager: AppImageCacheManager.instance,
+      maxWidthDiskCache: widget.maxWidthDiskCache,
+      maxHeightDiskCache: widget.maxHeightDiskCache,
+      memCacheWidth: widget.memCacheWidth,
+      memCacheHeight: widget.memCacheHeight,
+      width: widget.width,
+      height: widget.height,
       fit: widget.fit,
-      fadeInDuration: Duration.zero,
+      fadeInDuration: widget.fadeInDuration,
       fadeOutDuration: Duration.zero,
+      placeholderFadeInDuration: widget.placeholderFadeInDuration,
       useOldImageOnUrlChange: widget.useOldImageOnUrlChange,
+      imageBuilder: (context, imageProvider) {
+        Widget image = Image(
+          image: imageProvider,
+          fit: widget.fit,
+          width: shouldRotate ? null : widget.width,
+          height: shouldRotate ? null : widget.height,
+        );
+
+        if (shouldRotate) {
+          image = SizedBox(
+            width: widget.width,
+            height: widget.height,
+            child: Center(
+              child: RotatedBox(
+                quarterTurns: 1,
+                child: image,
+              ),
+            ),
+          );
+        }
+
+        return image;
+      },
       placeholder: (context, url) =>
           widget.placeholder ??
           _ShimmerPlaceholder(
@@ -144,22 +246,11 @@ class _AppCachedNetworkImageState extends State<AppCachedNetworkImage> {
             height: widget.height,
             borderRadius: widget.borderRadius,
           ),
-      errorWidget: (context, url, error) =>
-          widget.errorWidget ?? _buildErrorWidget(),
+      errorWidget: (context, url, error) {
+        DevLog.warn('Failed to load image ($url): $error', tag: 'ImageCache');
+        return widget.errorWidget ?? _buildErrorWidget();
+      },
     );
-
-    if (shouldRotate) {
-      imageWidget = SizedBox(
-        width: widget.width,
-        height: widget.height,
-        child: Center(
-          child: RotatedBox(
-            quarterTurns: 1,
-            child: imageWidget,
-          ),
-        ),
-      );
-    }
 
     if (widget.borderRadius != null) {
       return ClipRRect(

@@ -251,6 +251,7 @@ class _LatestCheckInCardState extends State<LatestCheckInCard>
                                 right: index < viewsList.length - 1 ? 10 : 0,
                               ),
                               child: _AnalysisImage(
+                                key: ValueKey('analysis_img_${view.key}'),
                                 imageUrl: url,
                                 fallbackAsset: _analysisImages[index % _analysisImages.length],
                               ),
@@ -299,7 +300,7 @@ class _LatestCheckInCardState extends State<LatestCheckInCard>
 }
 
 class _AnalysisImage extends StatelessWidget {
-  const _AnalysisImage({this.imageUrl, required this.fallbackAsset});
+  const _AnalysisImage({super.key, this.imageUrl, required this.fallbackAsset});
 
   final String? imageUrl;
   final String fallbackAsset;
@@ -313,6 +314,9 @@ class _AnalysisImage extends StatelessWidget {
         color: AppColors.progressInactive,
         child: (imageUrl != null && imageUrl!.isNotEmpty)
             ? AppCachedNetworkImage(
+                key: ValueKey(
+                  'cni_${AppCachedNetworkImage.extractCacheKey(imageUrl)}',
+                ),
                 imageUrl: imageUrl!,
                 fit: BoxFit.contain,
                 height: 152,

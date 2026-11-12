@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:isolate';
 import 'package:ai_forma/core/widgets/app_bottom_sheet.dart';
+import 'package:ai_forma/core/widgets/app_cached_image.dart';
 import 'package:ai_forma/core/widgets/app_snackbar.dart';
 import 'package:ai_forma/features/auth/controllers/user_controller.dart';
 import 'package:ai_forma/features/check_in/constants/check_in_strings.dart';
@@ -534,6 +535,13 @@ class CheckInController extends GetxController {
         return false;
       },
       (data) async {
+        // Evict previous scan thumbnails so new scan images immediately render fresh
+        final oldLatest = statusData.value?.latestScan?.thumbs;
+        if (oldLatest != null) {
+          await AppCachedNetworkImage.evict(oldLatest.front);
+          await AppCachedNetworkImage.evict(oldLatest.side);
+          await AppCachedNetworkImage.evict(oldLatest.back);
+        }
         scanResultData.value = data;
         await fetchStatusData(force: true);
         isSubmittingScan(false);
