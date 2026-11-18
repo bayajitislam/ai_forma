@@ -337,13 +337,46 @@ class PushNotificationService {
     }
   }
 
+  /// Waits until iOS has delivered an APNs token. FCM `getToken()` throws
+  /// `apns-token-not-set` if this is called too early on UIScene apps.
+  Future<bool> _waitForApnsToken({
+    Duration timeout = const Duration(seconds: 12),
+  }) async {
+    if (kIsWeb || !Platform.isIOS) return true;
+
+    final existing = await _messaging.getAPNSToken();
+    if (existing != null && existing.isNotEmpty) return true;
+
+    final deadline = DateTime.now().add(timeout);
+    while (DateTime.now().isBefore(deadline)) {
+      await Future<void>.delayed(const Duration(milliseconds: 400));
+      final token = await _messaging.getAPNSToken();
+      if (token != null && token.isNotEmpty) {
+        DevLog.info('APNs token received.', tag: 'PushNotification');
+        return true;
+      }
+    }
+
+    DevLog.warn(
+      'APNs token was not available before timeout.',
+      tag: 'PushNotification',
+    );
+    return false;
+  }
+
+  Future<String?> _resolveFcmToken() async {
+    final apnsReady = await _waitForApnsToken();
+    if (!apnsReady) return null;
+    return _messaging.getToken();
+  }
+
   /// Non-blocking attempt to get and register the FCM token.
   Future<void> _tryRegisterFcmToken({
     Duration retryDelay = const Duration(seconds: 5),
     bool isRetry = false,
   }) async {
     try {
-      final token = await _messaging.getToken();
+      final token = await _resolveFcmToken();
       if (token != null && token.isNotEmpty) {
         DevLog.info(
           'FCM token obtained${isRetry ? ' (on retry)' : ''}, registering with backend.',
@@ -450,7 +483,7 @@ class PushNotificationService {
       final isPrefEnabled = await AuthStorage.isNotificationsEnabled();
       if (!isPrefEnabled) return;
 
-      final token = await _messaging.getToken();
+      final token = await _resolveFcmToken();
       if (token != null && token.isNotEmpty) {
         await registerTokenWithBackend(token, force: force);
       }
@@ -466,7 +499,7 @@ class PushNotificationService {
   Future<bool> unregisterTokenFromBackend() async {
     try {
       if (Firebase.apps.isEmpty) return false;
-      final token = await _messaging.getToken();
+      final token = await _resolveFcmToken();
       if (token == null || token.isEmpty) return false;
 
       if (!Get.isRegistered<DioClient>()) return false;
