@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:isolate';
+import 'package:ai_forma/core/failure/failure.dart';
 import 'package:ai_forma/core/widgets/app_bottom_sheet.dart';
 import 'package:ai_forma/core/widgets/app_cached_image.dart';
 import 'package:ai_forma/core/widgets/app_snackbar.dart';
@@ -49,6 +50,42 @@ Uint8List? processCapturedImageBytes({
   }
 }
 
+/// True only when [current] is a different scan from [previous].
+///
+/// A timeout recovery must not treat an older `latest_scan` as the upload
+/// that just failed. Identity is the scan id, then a newer scan timestamp
+/// when the id is missing.
+bool isNewlySavedScan({
+  required LatestScanModel? previous,
+  required LatestScanModel? current,
+}) {
+  if (current == null) return false;
+
+  final currentId = _nonEmptyScanValue(current.publicId);
+  final previousId = _nonEmptyScanValue(previous?.publicId);
+  if (currentId != null) return currentId != previousId;
+
+  final currentAt = _scanTimestamp(current.scanDate);
+  if (currentAt == null) return false;
+  if (previous == null) return true;
+
+  final previousAt = _scanTimestamp(previous.scanDate);
+  if (previousAt == null) return true;
+  return currentAt.isAfter(previousAt);
+}
+
+String? _nonEmptyScanValue(String? value) {
+  final trimmed = value?.trim();
+  if (trimmed == null || trimmed.isEmpty) return null;
+  return trimmed;
+}
+
+DateTime? _scanTimestamp(String? raw) {
+  final value = _nonEmptyScanValue(raw);
+  if (value == null) return null;
+  return DateTime.tryParse(value);
+}
+
 class CheckInController extends GetxController {
   final CheckInRepository repository;
   CheckInController({required this.repository});
@@ -69,8 +106,10 @@ class CheckInController extends GetxController {
   CameraController? cameraController;
   List<CameraDescription> availableCameraList = [];
   int selectedCameraIndex = 0;
+  int _cameraGeneration = 0;
   final RxBool isCameraInitialized = false.obs;
   final RxBool isCapturing = false.obs;
+  final RxBool isProcessingGalleryImage = false.obs;
 
   // Scan Angle State: 'Front', 'Side', 'Back'
   final RxString currentAngle = CheckInStrings.angleFront.obs;
@@ -221,16 +260,22 @@ class CheckInController extends GetxController {
 
   @override
   void onClose() {
-    cameraController?.dispose();
+    disposeCamera();
     super.onClose();
   }
 
-  /// Safely dispose camera hardware when leaving camera screen
-  Future<void> disposeCamera() async {
-    final controllerToDispose = cameraController;
+  /// Releases [controller] when it is still the active camera.
+  ///
+  /// The leaving route passes the instance it captured. Once a newer
+  /// [CameraController] is active, this call leaves that newer camera running.
+  Future<void> disposeCamera([CameraController? controller]) async {
+    final requested = controller ?? cameraController;
+    if (requested == null || !identical(cameraController, requested)) return;
+
+    _cameraGeneration++;
     cameraController = null;
     isCameraInitialized.value = false;
-    await controllerToDispose?.dispose();
+    await requested.dispose();
   }
 
   /// Initialize real device camera
@@ -263,20 +308,41 @@ class CheckInController extends GetxController {
   }
 
   Future<void> _initCameraController(CameraDescription camera) async {
+    final generation = ++_cameraGeneration;
     isCameraInitialized(false);
-    await cameraController?.dispose();
+    final previous = cameraController;
+    cameraController = null;
+    if (previous != null) {
+      await previous.dispose();
+    }
+    if (generation != _cameraGeneration) return;
 
-    cameraController = CameraController(
+    final next = CameraController(
       camera,
       ResolutionPreset.medium,
       enableAudio: false,
     );
+    cameraController = next;
 
-    await cameraController!.initialize();
     try {
-      await cameraController!.lockCaptureOrientation(DeviceOrientation.portraitUp);
-    } catch (_) {}
-    isCameraInitialized(true);
+      await next.initialize();
+      if (generation != _cameraGeneration || !identical(cameraController, next)) {
+        return;
+      }
+      try {
+        await next.lockCaptureOrientation(DeviceOrientation.portraitUp);
+      } catch (_) {}
+      if (generation != _cameraGeneration || !identical(cameraController, next)) {
+        return;
+      }
+      isCameraInitialized(true);
+    } catch (e) {
+      if (identical(cameraController, next)) {
+        cameraController = null;
+        isCameraInitialized.value = false;
+      }
+      rethrow;
+    }
   }
 
   /// Toggle between front and back cameras
@@ -369,28 +435,21 @@ class CheckInController extends GetxController {
     }
   }
 
-  /// Pick image from gallery for testing / dev purposes
+  /// Pick image from gallery.
+  ///
+  /// The picker already returns an oriented JPEG when [imageQuality] and a
+  /// max size are set, so this does not decode and re-encode the file again.
   Future<File?> pickFromGallery() async {
     try {
       final XFile? picked = await _picker.pickImage(
         source: ImageSource.gallery,
-        imageQuality: 90,
+        maxWidth: 1600,
+        maxHeight: 1600,
+        imageQuality: 85,
+        requestFullMetadata: false,
       );
       if (picked != null) {
         final file = File(picked.path);
-        final rawBytes = await file.readAsBytes();
-
-        // Process gallery image to bake EXIF and ensure portrait orientation
-        final processedBytes = await Isolate.run(() => processCapturedImageBytes(
-              rawBytes: rawBytes,
-              isFrontCamera: false,
-              quality: 90,
-            ));
-
-        if (processedBytes != null) {
-          await file.writeAsBytes(processedBytes);
-        }
-
         if (currentAngle.value == CheckInStrings.angleFront) {
           frontImage.value = file;
         } else if (currentAngle.value == CheckInStrings.angleSide) {
@@ -414,6 +473,21 @@ class CheckInController extends GetxController {
     currentAngle.value = CheckInStrings.angleFront;
     validationResult.value = null;
     errorMessage('');
+  }
+
+  /// Drop the in-progress scan without disposing this controller.
+  ///
+  /// The check-in tab stays mounted and subscribed, so the controller has to
+  /// keep its status data. Camera hardware and captured files are released.
+  Future<void> releaseScanSession() async {
+    await disposeCamera();
+    resetScan();
+    scanResultData.value = null;
+    isWeeklyCheckIn.value = false;
+    isSubmittingScan.value = false;
+    isValidating.value = false;
+    isProcessingGalleryImage.value = false;
+    isCapturing.value = false;
   }
 
   /// Clear files for failed poses so user can retake them step-by-step
@@ -481,6 +555,19 @@ class CheckInController extends GetxController {
     isSubmittingScan(true);
     errorMessage('');
 
+    // Snapshot the scan that already exists so a dropped upload cannot be
+    // confirmed from that older record.
+    var baseline = statusData.value;
+    if (baseline == null) {
+      final refreshed = await repository.getCheckInStatus();
+      refreshed.fold((_) {}, (status) {
+        baseline = status;
+        statusData.value = status;
+      });
+    }
+    final previousScan = baseline?.latestScan;
+    final bool canConfirmSavedScan = baseline != null;
+
     final bool isWeekly =
         isWeeklyCheckIn.value ||
         (Get.isRegistered<UserController>() &&
@@ -506,29 +593,36 @@ class CheckInController extends GetxController {
 
     return result.fold(
       (failure) async {
-        // If there was a network drop or gateway timeout, verify if the backend
-        // successfully processed the scan in the background before reporting failure.
-        try {
-          final statusResult = await repository.getCheckInStatus();
-          final bool isScanSavedOnBackend = statusResult.fold(
-            (_) => false,
-            (status) {
-              if (isWeekly) {
-                return status.today?.alreadyAnswered == true ||
-                    status.latestScan != null;
-              } else {
-                return status.phase != 'initial_checkin_required' ||
-                    status.latestScan != null;
-              }
-            },
-          );
+        // A dropped connection or gateway timeout can still leave the scan
+        // saved. Confirm that only when status now points at a new scan.
+        final bool mayHaveSavedAnyway =
+            failure is NetworkFailure || failure is ServerFailure;
+        if (mayHaveSavedAnyway && canConfirmSavedScan) {
+          try {
+            final statusResult = await repository.getCheckInStatus();
+            final CheckinStatusModel? recovered = statusResult.fold(
+              (_) => null,
+              (status) => isNewlySavedScan(
+                    previous: previousScan,
+                    current: status.latestScan,
+                  )
+                  ? status
+                  : null,
+            );
 
-          if (isScanSavedOnBackend) {
-            statusData.value = statusResult.getOrElse(() => statusData.value!);
-            isSubmittingScan(false);
-            return true;
-          }
-        } catch (_) {}
+            if (recovered != null) {
+              final oldThumbs = previousScan?.thumbs;
+              if (oldThumbs != null) {
+                await AppCachedNetworkImage.evict(oldThumbs.front);
+                await AppCachedNetworkImage.evict(oldThumbs.side);
+                await AppCachedNetworkImage.evict(oldThumbs.back);
+              }
+              statusData.value = recovered;
+              isSubmittingScan(false);
+              return true;
+            }
+          } catch (_) {}
+        }
 
         errorMessage(failure.message);
         isSubmittingScan(false);

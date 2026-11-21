@@ -1,6 +1,5 @@
 import 'package:ai_forma/core/network/dio_client.dart';
-import 'package:ai_forma/features/check_in/controllers/check_in_controller.dart';
-import 'package:ai_forma/features/check_in/repositories/check_in_repository.dart';
+import 'package:ai_forma/features/check_in/bindings/check_in_binding.dart';
 import 'package:ai_forma/features/dashboard/controllers/home_controller.dart';
 import 'package:ai_forma/features/dashboard/repositories/dashboard_repository.dart';
 import 'package:ai_forma/features/insights/controllers/insights_controller.dart';
@@ -30,17 +29,8 @@ class AppShellBinding extends Bindings {
       );
     }
 
-    // 2. Check-In
-    if (!Get.isRegistered<CheckInRepository>()) {
-      Get.lazyPut<CheckInRepository>(
-        () => CheckInRepository(Get.find<DioClient>()),
-      );
-    }
-    if (!Get.isRegistered<CheckInController>()) {
-      Get.lazyPut<CheckInController>(
-        () => CheckInController(repository: Get.find<CheckInRepository>()),
-      );
-    }
+    // 2. Check-In. Owned by CheckInBinding for the whole time the home tab is mounted.
+    CheckInBinding().dependencies();
 
     // 3. Insights
     if (!Get.isRegistered<InsightsRepository>()) {

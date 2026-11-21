@@ -66,6 +66,7 @@ abstract final class CheckInStrings {
   static const String tips = 'Tips';
   static const String startingCamera = 'Starting camera...';
   static const String gallery = 'Gallery';
+  static const String preparingPhoto = 'Preparing photo...';
   static const String switchCamera = 'Switch';
   static const String usePhoto = 'Use Photo';
   static const String retakePhoto = 'Retake';

@@ -26,9 +26,9 @@ class _AnalysisCompleteViewState extends State<AnalysisCompleteView> {
   @override
   void initState() {
     super.initState();
-    // Dispose CheckInController and release memory/camera resources when reaching this view
+    // Keep the controller. The check-in tab is still mounted and listening.
     if (Get.isRegistered<CheckInController>()) {
-      Get.delete<CheckInController>(force: true);
+      Get.find<CheckInController>().releaseScanSession();
     }
     _loadScanContext();
   }

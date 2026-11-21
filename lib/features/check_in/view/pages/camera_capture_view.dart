@@ -1,9 +1,7 @@
 import 'dart:io';
 
 import 'package:ai_forma/core/widgets/app_loader.dart';
-import 'package:ai_forma/core/network/dio_client.dart';
 import 'package:ai_forma/features/check_in/controllers/check_in_controller.dart';
-import 'package:ai_forma/features/check_in/repositories/check_in_repository.dart';
 import 'package:ai_forma/routes/routes_name.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
@@ -91,13 +89,7 @@ class _CameraCaptureViewState extends State<CameraCaptureView>
   @override
   void initState() {
     super.initState();
-    _controller = Get.isRegistered<CheckInController>()
-        ? Get.find<CheckInController>()
-        : Get.put(
-            CheckInController(
-              repository: CheckInRepository(Get.find<DioClient>()),
-            ),
-          );
+    _controller = Get.find<CheckInController>();
     _activeAngle = widget.angle;
     _previewFile.value = null;
 
@@ -132,12 +124,10 @@ class _CameraCaptureViewState extends State<CameraCaptureView>
   @override
   void dispose() {
     _galleryAnimController.dispose();
-    if (Get.isRegistered<CheckInController>()) {
-      final c = Get.find<CheckInController>();
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        c.disposeCamera();
-      });
-    }
+    // Release this screen's camera before the route finishes. A retake may
+    // already have installed a newer controller; that one is left running.
+    final activeCamera = _controller.cameraController;
+    _controller.disposeCamera(activeCamera);
     super.dispose();
   }
 
@@ -180,15 +170,21 @@ class _CameraCaptureViewState extends State<CameraCaptureView>
     }
   }
 
-  /// Pick photo from gallery for dev/testing
+  /// Pick photo from gallery. Loader stays up until the preview file is set,
+  /// including the moment the system gallery closes.
   Future<void> _onPickFromGallery(CheckInController controller) async {
+    if (controller.isProcessingGalleryImage.value) return;
     controller.currentAngle.value = _title;
-    final photo = await controller.pickFromGallery();
-    if (photo != null) {
+    controller.isProcessingGalleryImage(true);
+    try {
+      final photo = await controller.pickFromGallery();
+      if (!mounted || photo == null) return;
       _previewFile.value = photo;
       if (_activeAngle == ScanAngle.front) controller.frontImage.value = photo;
       if (_activeAngle == ScanAngle.side) controller.sideImage.value = photo;
       if (_activeAngle == ScanAngle.back) controller.backImage.value = photo;
+    } finally {
+      controller.isProcessingGalleryImage(false);
     }
   }
 
@@ -339,9 +335,36 @@ class _CameraCaptureViewState extends State<CameraCaptureView>
                         );
                       }),
 
+                      Obx(() {
+                        if (!controller.isProcessingGalleryImage.value) {
+                          return const SizedBox.shrink();
+                        }
+                        return ColoredBox(
+                          color: Colors.black.withValues(alpha: 0.72),
+                          child: const Center(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                AppLoader(color: Colors.white),
+                                SizedBox(height: 12),
+                                Text(
+                                  CheckInStrings.preparingPhoto,
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      }),
+
                       // Animated Floating Gallery Button (Bottom-Left overlay on camera view)
                       Obx(() {
-                        if (_previewFile.value != null) {
+                        if (_previewFile.value != null ||
+                            controller.isProcessingGalleryImage.value) {
                           return const SizedBox.shrink();
                         }
 
@@ -481,7 +504,8 @@ class _CameraCaptureViewState extends State<CameraCaptureView>
                     ),
                     Obx(
                       () => CameraShutterButton(
-                        onTap: controller.isCapturing.value
+                        onTap: controller.isCapturing.value ||
+                                controller.isProcessingGalleryImage.value
                             ? null
                             : () => _onTakeSnap(controller),
                       ),

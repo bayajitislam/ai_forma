@@ -66,8 +66,7 @@ class _AnalysingViewState extends State<AnalysingView> {
         setState(() => _completedSteps = 5);
         await Future<void>.delayed(const Duration(milliseconds: 600));
 
-        // Dispose CheckInController and free camera/images memory
-        Get.delete<CheckInController>(force: true);
+        await controller.releaseScanSession();
 
         if (!mounted) return;
         Get.offNamed(RoutesName.analysisComplete);
@@ -89,7 +88,7 @@ class _AnalysingViewState extends State<AnalysingView> {
       onReturnToDashboard: () {
         _stepTimer?.cancel();
         if (Get.isRegistered<CheckInController>()) {
-          Get.delete<CheckInController>(force: true);
+          Get.find<CheckInController>().releaseScanSession();
         }
         Navigator.of(context, rootNavigator: true).pop();
         Get.offAllNamed(RoutesName.appShell);

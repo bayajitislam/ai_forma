@@ -6,12 +6,10 @@ import 'package:ai_forma/core/theme/app_text_styles.dart';
 import 'package:ai_forma/core/widgets/primary_button.dart';
 import 'package:ai_forma/features/check_in/constants/check_in_strings.dart';
 import 'package:ai_forma/features/check_in/controllers/check_in_controller.dart';
-import 'package:ai_forma/features/check_in/repositories/check_in_repository.dart';
 import 'package:ai_forma/features/check_in/view/widgets/check_in_streak_card.dart';
 import 'package:ai_forma/features/auth/controllers/user_controller.dart';
 import 'package:ai_forma/features/check_in/view/widgets/choose_check_in_day_bottom_sheet.dart';
 import 'package:ai_forma/features/check_in/view/widgets/next_scan_info_bottom_sheet.dart';
-import 'package:ai_forma/core/network/dio_client.dart';
 import 'package:ai_forma/features/dashboard/controllers/home_controller.dart';
 import 'package:ai_forma/features/dashboard/view/widgets/weight_entry_bottom_sheet.dart';
 import 'package:ai_forma/core/utils/app_date_formatter.dart';
@@ -137,14 +135,7 @@ class CheckInHomeView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.isRegistered<CheckInController>()
-        ? Get.find<CheckInController>()
-        : Get.put(
-            CheckInController(
-              repository: CheckInRepository(Get.find<DioClient>()),
-            ),
-            permanent: true,
-          );
+    final controller = Get.find<CheckInController>();
 
     return SafeArea(
       child: Padding(
