@@ -18,6 +18,13 @@ class AppShellController extends GetxController {
       selectedItem.value = Get.arguments as AppNavItem;
     }
 
+    // Tabs are built lazily, but Begin Scan on the Check-In tab reads
+    // HomeController.homeData to decide whether to ask for scan-day weight.
+    // Create it now so /api/home/ starts loading when the shell opens.
+    if (Get.isRegistered<HomeController>()) {
+      Get.find<HomeController>();
+    }
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (selectedItem.value == AppNavItem.insights) {
         triggerInsightsFetch(force: true);
@@ -29,18 +36,18 @@ class AppShellController extends GetxController {
 
   void triggerInsightsFetch({bool force = false, String? scanId}) {
     if (_insightsFetched && !force) return;
+    if (!Get.isRegistered<InsightsController>()) return;
+    // Only mark as fetched once a fetch actually started, so a skipped fetch
+    // is retried the next time the tab opens instead of leaving it empty.
     _insightsFetched = true;
-    if (Get.isRegistered<InsightsController>()) {
-      Get.find<InsightsController>().fetchLatestScan(scanId: scanId);
-    }
+    Get.find<InsightsController>().fetchLatestScan(scanId: scanId);
   }
 
   void triggerTimelineFetch({bool force = false}) {
     if (_timelineFetched && !force) return;
+    if (!Get.isRegistered<TimelineController>()) return;
     _timelineFetched = true;
-    if (Get.isRegistered<TimelineController>()) {
-      Get.find<TimelineController>().fetchTimelineData(force: force);
-    }
+    Get.find<TimelineController>().fetchTimelineData(force: force);
   }
 
   void navigateToInsights({String? scanId}) {

@@ -52,7 +52,7 @@ class CheckInHomeView extends StatelessWidget {
     }
   }
 
-  void _beginScan(BuildContext context) {
+  Future<void> _beginScan(BuildContext context) async {
     final controller = Get.isRegistered<CheckInController>()
         ? Get.find<CheckInController>()
         : null;
@@ -78,9 +78,19 @@ class CheckInHomeView extends StatelessWidget {
       return;
     }
 
-    final homeData = Get.isRegistered<HomeController>()
-        ? Get.find<HomeController>().homeData.value
+    final homeController = Get.isRegistered<HomeController>()
+        ? Get.find<HomeController>()
         : null;
+
+    // Home data decides whether scan-day weight is still needed. If it has not
+    // loaded yet (e.g. the app opened straight on this tab), wait for it rather
+    // than treating a missing Daily Brief as answered and skipping the prompt.
+    if (homeController != null && homeController.homeData.value == null) {
+      await homeController.fetchHomeData();
+      if (!context.mounted) return;
+    }
+
+    final homeData = homeController?.homeData.value;
 
     final dailyBrief = homeData?.dailyBrief;
     final bool isAnswered = dailyBrief?.alreadyAnswered ?? true;

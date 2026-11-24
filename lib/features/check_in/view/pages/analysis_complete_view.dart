@@ -22,6 +22,7 @@ class AnalysisCompleteView extends StatefulWidget {
 
 class _AnalysisCompleteViewState extends State<AnalysisCompleteView> {
   bool _isFirstScan = false;
+  bool _isNavigating = false;
 
   @override
   void initState() {
@@ -42,12 +43,14 @@ class _AnalysisCompleteViewState extends State<AnalysisCompleteView> {
   }
 
   Future<void> _navigateToAppShell() async {
+    // A double tap, or the button plus the back gesture (PopScope), would
+    // otherwise rebuild the shell twice.
+    if (_isNavigating) return;
+    _isNavigating = true;
     await AuthStorage.setFirstCheckInCompleted(true);
-    // Allow the current frame to complete before destroying the entire widget
-    // tree and rebuilding with AppShellBinding. This prevents controller
-    // lifecycle races when tabs build while controllers are still initializing.
-    await Future<void>.delayed(Duration.zero);
     if (!mounted) return;
+    // AppShellBinding re-registers the shell controllers for the new route, so
+    // this is safe even though the scan was started from an existing shell.
     Get.offAllNamed(RoutesName.appShell, arguments: AppNavItem.insights);
   }
 
