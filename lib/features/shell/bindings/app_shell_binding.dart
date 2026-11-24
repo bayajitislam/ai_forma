@@ -10,54 +10,59 @@ import 'package:ai_forma/features/timeline/repositories/timeline_repository.dart
 import 'package:ai_forma/features/shell/controllers/app_shell_controller.dart';
 import 'package:get/get.dart';
 
+/// Registers everything the app shell and its tabs look up.
+///
+/// Do not guard these with `Get.isRegistered`. The shell is re-entered with
+/// `Get.offAllNamed(appShell)` while the old shell route is still alive (after
+/// a weekly scan, from a push notification, and from AppErrorWidget). At that
+/// moment the old controllers are still registered but marked for deletion,
+/// and GetX deletes them as soon as the old route is disposed.
+///
+/// An unconditional `lazyPut` is a no-op when a live instance exists, and when
+/// the existing one is marked for deletion GetX registers a fresh replacement
+/// for the new route. `fenix: true` also rebuilds a controller on its next
+/// `Get.find` if it was deleted anyway. A guarded `lazyPut` skips both, so the
+/// new shell's tabs threw `"HomeController" not found` and showed the
+/// full-screen "Something went wrong" error after every weekly scan.
 class AppShellBinding extends Bindings {
   @override
   void dependencies() {
-    if (!Get.isRegistered<AppShellController>()) {
-      Get.lazyPut<AppShellController>(() => AppShellController());
-    }
+    Get.lazyPut<AppShellController>(() => AppShellController(), fenix: true);
 
     // 1. Dashboard
-    if (!Get.isRegistered<DashboardRepository>()) {
-      Get.lazyPut<DashboardRepository>(
-        () => DashboardRepository(Get.find<DioClient>()),
-      );
-    }
-    if (!Get.isRegistered<HomeController>()) {
-      Get.lazyPut<HomeController>(
-        () => HomeController(repository: Get.find<DashboardRepository>()),
-      );
-    }
+    Get.lazyPut<DashboardRepository>(
+      () => DashboardRepository(Get.find<DioClient>()),
+      fenix: true,
+    );
+    Get.lazyPut<HomeController>(
+      () => HomeController(repository: Get.find<DashboardRepository>()),
+      fenix: true,
+    );
 
     // 2. Check-In. Owned by CheckInBinding for the whole time the home tab is mounted.
     CheckInBinding().dependencies();
 
     // 3. Insights
-    if (!Get.isRegistered<InsightsRepository>()) {
-      Get.lazyPut<InsightsRepository>(
-        () => InsightsRepository(Get.find<DioClient>()),
-      );
-    }
-    if (!Get.isRegistered<InsightsController>()) {
-      Get.lazyPut<InsightsController>(
-        () => InsightsController(repository: Get.find<InsightsRepository>()),
-      );
-    }
+    Get.lazyPut<InsightsRepository>(
+      () => InsightsRepository(Get.find<DioClient>()),
+      fenix: true,
+    );
+    Get.lazyPut<InsightsController>(
+      () => InsightsController(repository: Get.find<InsightsRepository>()),
+      fenix: true,
+    );
+
     // 4. Timeline
-    if (!Get.isRegistered<TimelineRepository>()) {
-      Get.lazyPut<TimelineRepository>(
-        () => TimelineRepository(Get.find<DioClient>()),
-      );
-    }
-    if (!Get.isRegistered<TimelineController>()) {
-      Get.lazyPut<TimelineController>(
-        () => TimelineController(repository: Get.find<TimelineRepository>()),
-      );
-    }
+    Get.lazyPut<TimelineRepository>(
+      () => TimelineRepository(Get.find<DioClient>()),
+      fenix: true,
+    );
+    Get.lazyPut<TimelineController>(
+      () => TimelineController(repository: Get.find<TimelineRepository>()),
+      fenix: true,
+    );
 
     // 5. Profile
-    if (!Get.isRegistered<ProfileController>()) {
-      Get.lazyPut<ProfileController>(() => ProfileController());
-    }
+    Get.lazyPut<ProfileController>(() => ProfileController(), fenix: true);
   }
 }

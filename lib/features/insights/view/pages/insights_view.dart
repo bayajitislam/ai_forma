@@ -64,14 +64,15 @@ class InsightsView extends StatelessWidget {
         );
       }
 
-      // Guard: scan data hasn't arrived yet (e.g. first Obx build after
-      // controller creation). Show a loading indicator instead of risking
-      // a null-pointer render exception downstream.
+      // No scan loaded and nothing in flight (the fetch was skipped or has not
+      // started). Offer a retry instead of a spinner that never resolves.
       if (scan == null) {
-        return const Padding(
-          padding: EdgeInsets.symmetric(vertical: 60),
-          child: Center(
-            child: CircularProgressIndicator(color: AppColors.brandTeal),
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+          child: AppNetworkErrorWidget(
+            onRetry: controller.fetchLatestScan,
+            title: InsightsStrings.resultsNotLoadedTitle,
+            message: InsightsStrings.resultsNotLoadedMessage,
           ),
         );
       }

@@ -5,6 +5,10 @@ abstract final class InsightsStrings {
 
   static const String keyInsights = 'Key Insights';
 
+  static const String resultsNotLoadedTitle = 'Results not loaded';
+  static const String resultsNotLoadedMessage =
+      'Your latest scan results have not loaded yet. Tap below to load them.';
+
   static const String muscleGrowth = 'Muscle Growth';
   static const String muscleGrowthSubtitle = 'Good progress';
   static const String muscleGrowthStatus = 'Good/Improving';
