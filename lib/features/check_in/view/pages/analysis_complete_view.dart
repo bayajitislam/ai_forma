@@ -43,6 +43,11 @@ class _AnalysisCompleteViewState extends State<AnalysisCompleteView> {
 
   Future<void> _navigateToAppShell() async {
     await AuthStorage.setFirstCheckInCompleted(true);
+    // Allow the current frame to complete before destroying the entire widget
+    // tree and rebuilding with AppShellBinding. This prevents controller
+    // lifecycle races when tabs build while controllers are still initializing.
+    await Future<void>.delayed(Duration.zero);
+    if (!mounted) return;
     Get.offAllNamed(RoutesName.appShell, arguments: AppNavItem.insights);
   }
 

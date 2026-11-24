@@ -64,9 +64,21 @@ class InsightsView extends StatelessWidget {
         );
       }
 
-      final analysis = scan?.analysisResult;
+      // Guard: scan data hasn't arrived yet (e.g. first Obx build after
+      // controller creation). Show a loading indicator instead of risking
+      // a null-pointer render exception downstream.
+      if (scan == null) {
+        return const Padding(
+          padding: EdgeInsets.symmetric(vertical: 60),
+          child: Center(
+            child: CircularProgressIndicator(color: AppColors.brandTeal),
+          ),
+        );
+      }
+
+      final analysis = scan.analysisResult;
       final isFirstScan =
-          (scan?.checkinNumber ?? 1) <= 1 || (scan?.source == 'onboarding');
+          scan.checkinNumber <= 1 || scan.source == 'onboarding';
 
       final rawMuscleRemark = analysis?.muscleGrowth?.remark ?? '';
       final rawMuscleStatus = analysis?.muscleGrowth?.status ?? '';

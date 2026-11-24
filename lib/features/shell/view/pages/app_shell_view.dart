@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:ai_forma/core/theme/app_colors.dart';
 import 'package:ai_forma/core/widgets/app_icon.dart';
 import 'package:ai_forma/core/widgets/app_navbar.dart';
+import 'package:ai_forma/core/widgets/tab_error_boundary.dart';
 import 'package:ai_forma/features/check_in/view/pages/check_in_home_view.dart';
 import 'package:ai_forma/features/dashboard/view/pages/dashboard_view.dart';
 import 'package:ai_forma/features/insights/view/pages/insights_view.dart';
@@ -57,20 +58,25 @@ class AppShellView extends StatelessWidget {
                 ),
               ),
               Expanded(
-                child: IndexedStack(
+                child: _LazyIndexedStack(
                   index: selectedItem.index,
-                  children: [
-                    DashboardView(
-                      goInsight: ({scanId}) =>
-                          controller.navigateToInsights(scanId: scanId),
-                    ),
-                    CheckInHomeView(
-                      goInsightPage: () => controller.navigateToInsights(),
-                    ),
-                    const InsightsView(),
-                    const TimelineView(),
-                    const ProfileView(),
-                  ],
+                  itemCount: 5,
+                  itemBuilder: (index) => TabErrorBoundary(
+                    child: switch (index) {
+                      0 => DashboardView(
+                          goInsight: ({scanId}) =>
+                              controller.navigateToInsights(scanId: scanId),
+                        ),
+                      1 => CheckInHomeView(
+                          goInsightPage: () =>
+                              controller.navigateToInsights(),
+                        ),
+                      2 => const InsightsView(),
+                      3 => const TimelineView(),
+                      4 => const ProfileView(),
+                      _ => const SizedBox.shrink(),
+                    },
+                  ),
                 ),
               ),
             ],
@@ -101,5 +107,56 @@ class AppShellView extends StatelessWidget {
         ),
       );
     });
+  }
+}
+
+/// A lazy variant of [IndexedStack] that only builds a tab the first time
+/// the user visits it. Once built, tabs remain mounted so scroll position,
+/// controller state, and animations are preserved — just like [IndexedStack].
+///
+/// This prevents the controller lifecycle race that caused render exceptions
+/// when all five tabs were built simultaneously during [Get.offAllNamed].
+class _LazyIndexedStack extends StatefulWidget {
+  const _LazyIndexedStack({
+    required this.index,
+    required this.itemCount,
+    required this.itemBuilder,
+  });
+
+  final int index;
+  final int itemCount;
+  final Widget Function(int index) itemBuilder;
+
+  @override
+  State<_LazyIndexedStack> createState() => _LazyIndexedStackState();
+}
+
+class _LazyIndexedStackState extends State<_LazyIndexedStack> {
+  final Set<int> _initializedIndices = {};
+  final Map<int, Widget> _builtChildren = {};
+
+  @override
+  Widget build(BuildContext context) {
+    // Mark the current index as initialized on first visit
+    if (!_initializedIndices.contains(widget.index)) {
+      _initializedIndices.add(widget.index);
+    }
+
+    return Stack(
+      children: List.generate(widget.itemCount, (i) {
+        if (!_initializedIndices.contains(i)) {
+          return const SizedBox.shrink();
+        }
+        // Cache the built widget so it stays alive across tab switches
+        _builtChildren[i] ??= widget.itemBuilder(i);
+        return Offstage(
+          offstage: i != widget.index,
+          child: TickerMode(
+            enabled: i == widget.index,
+            child: _builtChildren[i]!,
+          ),
+        );
+      }),
+    );
   }
 }
